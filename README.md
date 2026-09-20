@@ -25,6 +25,7 @@ The `.exe` is usually not where the shortcut points. Unreal games keep it under
   but the AMD neural path itself is D3D12.
 - About 2 GB of spare VRAM at 1080p-class render resolutions.
 
+
 ## What is in the box
 
 | File | What it is |

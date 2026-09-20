@@ -1,4 +1,4 @@
-# OptiScaler DLSS-NR for AMD — v0.3.0
+# OptiScaler AMD-NR — v0.1.0
 
 DLSS 5 Neural Rendering running on AMD, wired into OptiScaler so it works in any
 Direct3D 12 game that OptiScaler already hooks.

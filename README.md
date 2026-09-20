@@ -92,10 +92,6 @@ The neural runtime itself: `dlssnr_amd_pass1..3.dll` and `dlssnr_on_amd_weights.
 in this archive are his v0.3.1 release, redistributed unmodified so the package works
 without a second download. Everything the network actually computes is his.
 
-**OptiScaler** — *Overclockers* and contributors
-<https://github.com/Overclockers/OptiScaler-Releases>
-The upscaler framework this is built into: the hooking, the FSR/XeSS/frame-generation
-plumbing, the menu, and the game compatibility that makes any of it reachable.
 
 **DLSS 5 AMD project** — *TheAutomatic*
 <https://github.com/TheAutomatic/dlss-5-amd-project>

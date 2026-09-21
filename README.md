@@ -110,7 +110,7 @@ The AMD neural runtime and its weights are redistributed here under their origin
 authorship as credited above. They are included for convenience only — no ownership is
 claimed over them, and no warranty is offered for them.
 
-**NVIDIA's `nvngx_dlssnr.dll` is not in this archive and will not be.** It is NVIDIA's
+**NVIDIA's `nvngx` is not in this archive and will not be.** It is NVIDIA's
 file. The AMD path does not need it; it is only relevant if you run the NVIDIA
 backend, in which case you supply your own copy.
 

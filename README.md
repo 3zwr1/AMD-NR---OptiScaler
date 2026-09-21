@@ -1,7 +1,4 @@
-# OptiScaler AMD-NR — v0.1.0
-To help me : https://ko-fi.com/3zinr
-Our Discord : https://discord.gg/QzbzxfKYyh
-
+# OptiScaler DLSS-NR for AMD — v0.2.0
 
 DLSS 5 Neural Rendering running on AMD, wired into OptiScaler so it works in any
 Direct3D 12 game that OptiScaler already hooks.
@@ -27,7 +24,6 @@ The `.exe` is usually not where the shortcut points. Unreal games keep it under
 - A Direct3D 12 game. D3D11 and Vulkan titles reach OptiScaler through its bridges,
   but the AMD neural path itself is D3D12.
 - About 2 GB of spare VRAM at 1080p-class render resolutions.
-
 
 ## What is in the box
 
@@ -96,6 +92,10 @@ The neural runtime itself: `dlssnr_amd_pass1..3.dll` and `dlssnr_on_amd_weights.
 in this archive are his v0.3.1 release, redistributed unmodified so the package works
 without a second download. Everything the network actually computes is his.
 
+**OptiScaler** — *Overclockers* and contributors
+<https://github.com/Overclockers/OptiScaler-Releases>
+The upscaler framework this is built into: the hooking, the FSR/XeSS/frame-generation
+plumbing, the menu, and the game compatibility that makes any of it reachable.
 
 **DLSS 5 AMD project** — *TheAutomatic*
 <https://github.com/TheAutomatic/dlss-5-amd-project>

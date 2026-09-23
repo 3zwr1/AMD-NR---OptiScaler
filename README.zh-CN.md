@@ -187,15 +187,6 @@ keep、reactive 均值、向量长度与被拒比例）。反馈时附上日志�
 游戏目录中会出现 `OptiScaler.log`。在 `#bug-report` 中附上它，并说明游戏和显卡型号。AMD 后端还会
 写出 `amd_presr.log` 和 `amd_bridge.log`，当神经渲染这一步出问题时它们最有用。
 
-**GTA V（Legacy）以 `dxgi.dll` 命名时 OptiScaler 从不加载？** `GTA5.exe` 的导入表里既没有 `dxgi.dll` 也没有
-`d3d11.dll`（运行时直接从 System32 加载），所以放在旁边的 `dxgi.dll` 永远不会被读取。若使用 ScriptHookV 的
-ASI 加载器（`dinput8.dll`），请把文件命名为 `OptiScaler.asi`；否则用 `winmm.dll` 或 `version.dll`，这两个在
-它的导入表里。仅限故事模式。
-**育碧 Anvil 引擎游戏（AC Black Flag Resynced、Shadows、Mirage）弹出 "DX12 Error 0x80070057"？**
-这些游戏自带 XeSS 帧生成。本构建版会把帧生成交给游戏自己处理（OptiScaler 的 XeFG 输出在此类游戏中自动
-停用，Frame Gen 选项卡会说明原因）；请使用游戏自己的 XeSS FG 选项。若仍然出现，请设置
-`[FrameGen] Enabled=false` 和 `[fakenvapi] ForceXeLL=false`，并附日志反馈。
-
 **《最后生还者 第一部》启动时崩溃？** 那是游戏自身 Streamline 初始化的问题，是已知的 OptiScaler
 问题：把游戏目录中的 `sl.common.dll` 重命名为 `sl.common.dll.bak`，并在游戏设置中选择 **FSR 3.1**
 而不是 DLSS。

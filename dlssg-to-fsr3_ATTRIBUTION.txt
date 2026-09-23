@@ -1,0 +1,10 @@
+dlssg-to-fsr3 by Nukem9
+https://github.com/Nukem9/dlssg-to-fsr3
+
+Shipped in this archive as OptiScaler\amdnr_dlssg_fsr3.dll: the release binary
+dlssg_to_fsr3_amd_is_better.dll, unmodified, renamed so the archive reads as one set.
+Licensed under the GNU General Public License v3 (the LICENSE file in this archive is that
+license); the source is at the repository above.
+
+Used through OptiScaler's FGNvngxReplacement=Nukems option: the game's DLSS Frame Generation
+calls are served by FSR 3 frame generation, on D3D12 and Vulkan.

@@ -1,6 +1,6 @@
-# AMDNR — AMD 显卡上的 DLSS 5 神经渲染（OptiScaler 构建版）— v0.3.1
+# AMDNR — AMD 显卡上的 DLSS 5 神经渲染（OptiScaler 构建版）— v0.3.2
 
-[English](README.md) | **中文** | [Português](README.pt-BR.md)  | [Español](README.es.md)
+[English](README.md) | **中文** | [Português](README.pt-BR.md) | [Español](README.es.md)
 
 > **我们需要你的支持。** 加入 Discord 服务器 —— <https://discord.gg/QzbzxfKYyh> —— 获取帮助、提交
 > 问题、领取测试版；每一份带日志的反馈都会让下一个版本更好。
@@ -11,7 +11,7 @@ DLSS 5 神经渲染（Neural Rendering）在 AMD 显卡上运行，内置于 Opt
 FSR Ray Regeneration。
 
 **Discord：<https://discord.gg/QzbzxfKYyh>** —— 支持、问题反馈（`#bug-report`）、测试版。如果你
-需要 NV 的 `nv`，可以在那里获取；它不在本压缩包中，AMD 路径也不需要它。
+需要 N 的 `nvn`，可以在那里获取；它不在本压缩包中，AMD 路径也不需要它。
 
 **支持本项目：<https://ko-fi.com/3zinr>**
 
@@ -93,11 +93,7 @@ Neural 选项卡中 Enable 复选框旁边、或 Interface > Keybinds 下重新�
 1. `LmxxfNrRuntime.dll` —— 在本压缩包中，与 `OptiScaler.dll` 并列（会随其余文件一起复制）。
 2. `LmxxfNrRuntime.pak`（382 MB，已包含在 AMDNR 压缩包中），放在 `LmxxfNrRuntime.dll` 旁边 —— lmxxf 的
    权重文件、HIP 模块和 HLSL 打包成一个加密并带完整性校验的文件。运行时在内存中打开它，不会向磁盘
-   解包任何内容。旧的文件夹布局同样可用，可替代 pak：`DLSS5-AMD\native-game-tiled-assets\`（约 575 MB），
-   来自 lmxxf 自己的发布（<https://github.com/lmxxf/dlss5-on-amd-9070xt-porting>）。该文件夹放在游戏
-   exe 旁边，使 `<game>\DLSS5-AMD\native-game-tiled-assets\block0-ffn.f16` 存在。dlss-5-amd-project 1.9.0
-   的布局也可以：`native-game-tiled-assets\`（权重）、`lmxxf-modules\` 和 `shaders\` 与游戏 exe 并列，
-   即其安装程序放置的位置。
+
 
 首次启动时若检测到已安装运行时且尚未做出选择，菜单会询问使用哪一个（ini 中以
 `[DlssNr] NrBackend = daniel | lmxxf` 记录；Neural > Neural runtime 可更改，下次启动游戏时生效）。
@@ -156,6 +152,7 @@ keep、reactive 均值、向量长度与被拒比例）。反馈时附上日志�
 
 | 文件 | 说明 |
 |---|---|
+| `OptiScaler/amdnr_dlssg_fsr3.dll` | Nukem9 的 dlssg-to-fsr3，未修改、仅重命名：把游戏的 DLSS 帧生成调用交给 FSR 3 帧生成，Vulkan 也可用（`FGNvngxReplacement=Nukems`）。GPLv3，见 `Licenses/`。 |
 | `dlssnr_amd_pass1..3.dll` | AMD 神经运行时，danielblnc 的 v0.3.1，未经修改。三份副本，多遍（multi-pass）时每遍一份。 |
 | `dlssnr_on_amd_weights.bin` | 运行时加载的网络权重。 |
 
@@ -187,6 +184,28 @@ keep、reactive 均值、向量长度与被拒比例）。反馈时附上日志�
 游戏目录中会出现 `OptiScaler.log`。在 `#bug-report` 中附上它，并说明游戏和显卡型号。AMD 后端还会
 写出 `amd_presr.log` 和 `amd_bridge.log`，当神经渲染这一步出问题时它们最有用。
 
+**NR frames 0/s、运行时下拉框显示 `pass1?`，且 `amd_presr.log` 说该 pass DLL 是本 OptiScaler 不支持的版本？**
+你的 `dlssnr_amd_pass1..3.dll` 不是 danielblnc 的 0.3.1（外面流传着一套 0.2.16）。请使用本发布页的
+`Runtime.zip`：`dlssnr_amd_pass1.dll` 为 7,304,192 字节，SHA256 以 `b108d640` 开头。支持的版本：0.2.17、0.3.0、0.3.1。
+
+**Vulkan 游戏（Indiana Jones and the Great Circle）一启动就报 "Could not create the Vulkan device
+(VK_ERROR_EXTENSION_NOT_PRESENT)"？** 本版本已修复：继承自 NVIDIA 神经路径的代码向 AMD 驱动请求了两个
+仅 NVIDIA 才有的设备扩展。注意神经通道目前没有 Vulkan 路径——两个 AMD 运行时都是 D3D12——所以 Vulkan
+游戏能启动运行，但没有 NR。
+
+**游戏里 Ray Reconstruction 已开启，但 Neural 标签页显示 "Ray Regeneration is off in this title"？**
+该游戏没有提供 FSR Ray Regeneration 所需的数据（Satisfactory：没有相机矩阵）。此时改由 FSR 超分运行，
+NR 回到它平常的 SR 之前位置；ini 里没有任何设置能改变这一点。
+
+**GTA V（Legacy）以 `dxgi.dll` 命名时 OptiScaler 从不加载？** `GTA5.exe` 的导入表里既没有 `dxgi.dll` 也没有
+`d3d11.dll`（运行时直接从 System32 加载），所以放在旁边的 `dxgi.dll` 永远不会被读取。若使用 ScriptHookV 的
+ASI 加载器（`dinput8.dll`），请把文件命名为 `OptiScaler.asi`；否则用 `winmm.dll` 或 `version.dll`，这两个在
+它的导入表里。仅限故事模式。
+**育碧 Anvil 引擎游戏（AC Black Flag Resynced、Shadows、Mirage）弹出 "DX12 Error 0x80070057"？**
+这些游戏自带 XeSS 帧生成。本构建版会把帧生成交给游戏自己处理（OptiScaler 的 XeFG 输出在此类游戏中自动
+停用，Frame Gen 选项卡会说明原因）；请使用游戏自己的 XeSS FG 选项。若仍然出现，请设置
+`[FrameGen] Enabled=false` 和 `[fakenvapi] ForceXeLL=false`，并附日志反馈。
+
 **《最后生还者 第一部》启动时崩溃？** 那是游戏自身 Streamline 初始化的问题，是已知的 OptiScaler
 问题：把游戏目录中的 `sl.common.dll` 重命名为 `sl.common.dll.bak`，并在游戏设置中选择 **FSR 3.1**
 而不是 DLSS。
@@ -195,8 +214,10 @@ keep、reactive 均值、向量长度与被拒比例）。反馈时附上日志�
 
 ## 路线图
 
-- **0.3.1**（本构建版）—— 修复 0.3.0 首批反馈的问题（仅安装 lmxxf 时从不运行、燕云十六声（Where Winds Meet）NR 无效、切换 DLSS
-  画质时崩溃、GTA V Legacy 无法启动），并新增 NR 风格预设与三个自定义槽位。
+- **0.3.2**（本构建版）—— 0.3.1 的反馈：Vulkan 游戏可启动且 lmxxf 不再卡死、lmxxf 色彩与 danielblnc 对齐（自动曝光）、
+  运行时下拉框、光线重建状态与调节；zip 内附 Nukem9 的 dlssg-to-fsr3，用于 Vulkan 帧生成。
+- **0.3.1** —— 修复 0.3.0 首批反馈的问题（仅安装 lmxxf 时从不运行、燕云十六声（Where Winds Meet）NR 无效、切换 DLSS
+。
 - **0.3.0** —— **lmxxf** HIP 神经运行时（RDNA 4）作为可选运行时与 danielblnc 的并列，以
   `LmxxfNrRuntime.dll` + `LmxxfNrRuntime.pak` 发布：网络历史、真实的 Neural passes、编辑整形器、光线
   重建之后的位置、逐游戏诊断与自我修复。特别感谢 TheAutomatic，本次集成建立在他的 DLSS 5 AMD
@@ -231,5 +252,3 @@ keep、reactive 均值、向量长度与被拒比例）。反馈时附上日志�
 本构建版按 `LICENSE` 中的 GPL-3.0 许可证分发；第三方库许可证位于 `Licenses\`。AMD 神经运行时及其
 权重按上述原作者署名再分发，仅为方便使用，不主张任何所有权，不提供任何保证。
 
-NVIDIA 的 `nvngx_dlssnr.dll` 不在本压缩包中。以上内容均未获得 NVIDIA、AMD 或任何游戏发行商的认可、
-关联或支持。它直接驱动一项未公开的功能。使用风险自负。

@@ -3,6 +3,75 @@
 Many thanks to **TheAutomatic** (DLSS 5 AMD project) — the releases, the HIP toolchain and the asset
 layout that the lmxxf runtime integration in 0.3.0 builds on.
 
+## 0.3.2 — 2026-09-23
+
+What you reported on 0.3.1 in its first hours, plus frame generation for Vulkan titles.
+
+### Added
+- **Frame generation for Vulkan titles: Nukem9's dlssg-to-fsr3 ships in the zip** as
+  `OptiScaler\amdnr_dlssg_fsr3.dll` (the release binary, unmodified, renamed; GPLv3 like
+  OptiScaler - see `Licenses\dlssg-to-fsr3_ATTRIBUTION.txt`). OptiScaler's own frame generation
+  (OptiFG, FSR-FG and XeFG outputs) is D3D12-only; on a Vulkan title (Indiana Jones and the Great
+  Circle) set `FGInput=DLSSG`, `FGOutput=DLSSG`, `FGNvngxReplacement=Nukems` with `Dxgi=true`, and
+  the game's own DLSS Frame Generation option runs FSR 3 frame generation. A
+  `dlssg_to_fsr3_amd_is_better.dll` you already have is still honoured.
+- **lmxxf: auto-exposure when the game publishes no exposure texture** (`[DlssNr]
+  AmdLmxxfAutoExposure`, default on; Neural > Image look > Appearance > lmxxf edit). danielblnc's
+  runtime never feeds the network the colour as is: it moves an exposure until the encoded
+  picture's mean sits near 0.5, in every game. lmxxf fed the colour as is, so the network ran
+  off its operating point and its answer drifted in tone and colour - the "colour difference
+  between daniel and lmxxf" (the community workaround, Edit colour 0, only threw the drifted
+  chroma away). The same loop runs for lmxxf now, on the GPU; the edit is divided back, so the
+  game's own tone is untouched. It holds when the fed picture is already within a quarter of the
+  target (Forza, Stray keep their look) and corrects outside it. It also takes over when the
+  game's own exposure is refused - and that refusal no longer fires on a black loading screen
+  (RE Requiem log: muted on a black frame at start, then fed 13x too bright for the whole
+  session; that was the report's colour drift). Off = the 0.3.0 behaviour.
+- **Neural tab, Live: a title whose Ray Reconstruction FSR Ray Regeneration gave up on is named,
+  with the reason** (Satisfactory: the game publishes no camera matrices). The game shows RR as
+  on; this line says FSR upscaling runs in its place and NR keeps its pre-SR position.
+- **FSR Ray Regeneration tuning in the Neural tab**, live: "AMD's default tuning" (AMD's own
+  defaults against the fork's tuned set) and the disocclusion threshold - the knob that decides how
+  fast history is dropped behind a moving face. For the skin / hair ghosting and flicker reports
+  under path tracing + RR (RE Requiem). ini section `[FSR-RR]` documented.
+
+### Fixed
+- **Vulkan titles (Indiana Jones and the Great Circle): "Could not create the Vulkan device
+  (VK_ERROR_EXTENSION_NOT_PRESENT)" before the first frame.** The inherited NVIDIA neural path
+  appended two NVIDIA-only device extensions at `vkCreateDevice` whenever Neural Rendering was on;
+  with Vulkan extension spoofing the driver's list appeared to contain them, AMD's driver does
+  not. Nothing is appended on a non-NVIDIA GPU any more. The neural pass has no Vulkan path in
+  this build (both AMD runtimes are D3D12): Vulkan titles start and run, without NR.
+- **Switching the Neural runtime from the menu did not stick.** The combo needed Save Settings,
+  and an lmxxf chosen with its files incomplete silently ran danielblnc's runtime. The choice is
+  written to the ini the moment it is made (as the first-launch chooser does), the menu says when
+  lmxxf is chosen but incomplete and what is missing, and `amd_bridge.log` says so too. Under
+  danielblnc the row now says that lmxxf is installed and that the list above switches to it.
+- **Vulkan titles with the lmxxf runtime chosen froze right after the first model frame**
+  (Indiana Jones and the Great Circle, over OptiScaler's Vulkan-on-D3D12 bridge:
+  `lmxxf_backend.log` ends at "first frame prepared"). The bridge executes its D3D12 list inside
+  the game's vkQueueSubmit and waits on the CPU for the previous frame's D3D12 work; a queue-side
+  wait on the HIP fence inside that timeline never resolves. On a Vulkan title the answer is now
+  waited for on the CPU instead (bounded; the frame waits for the network, as under danielblnc's
+  inline mode - Model interleave 2 halves the cost), the queue never waits, and if the answer does
+  not come within a second the pass stops with a line in `lmxxf_backend.log` instead of a hang.
+
+
+### Notes
+- Where Winds Meet: DLSS spoofing does not make DLSS / DLSS Frame Generation appear. The log shows
+  DXGI spoofing and the built-in nvapi active and the game never loading Streamline: the decision is
+  taken before OptiScaler is asked (launcher / saved vendor). Multi-frame generation there goes
+  through the game's own XeSS Frame Generation instead: `[XeFG] UnlockUnverifiedBuilds=true`
+  patches its `libxess_fg.dll` 1.3.1.68 (a table derived offline, not yet confirmed in a game).
+- The Last of Us Part I freeze report (danielblnc runtime, FSR-FG input -> XeFG 4X): no error in any
+  log; the pass completed its last frame normally. Isolation asked for (NR off, then FG off, then a
+  Task Manager dump of the frozen process).
+- Frame generation on Vulkan titles (Indiana Jones): OptiFG, FSR-FG output and XeFG output are
+  D3D12-only (the Frame Gen tab greys them out as "Unsupported API"); set in the ini they give a
+  black screen with sound. On Vulkan use the game's own frame generation, or the shipped Nukem9
+  DLL (Added above).
+
+
 ## 0.3.1 — 2026-09-23
 
 Fixes from the first 0.3.0 reports, plus one request.
@@ -22,7 +91,7 @@ Fixes from the first 0.3.0 reports, plus one request.
   (reported in Neverness to Everness, RX 9070 XT). Either runtime's files open the path now,
   lmxxf runs by itself when it is the only runtime installed (the chooser only asks when both
   are), and an AMD card with no runtime files logs the folder it searched.
-- **Where Winds Meet: NR did nothing in 0.3.0.** Our own
+- **Where Winds Meet (danielblnc runtime): NR did nothing in 0.3.0.** Our own
   shaders were compiled with whatever `d3dcompiler_47.dll` the game keeps beside its exe (the
   import binds to the game folder first); an old compiler fails on the temporal pass's shader as
   it is since 0.2.x (`AMD temporal D3D12 error 2147500037`), and that latched the whole backend off.
@@ -38,8 +107,17 @@ Fixes from the first 0.3.0 reports, plus one request.
   treating it as RR (post-RR placement behind the ApplyAfterRR gate), i.e. it never ran. Such a
   handle is a Super Resolution handle for the neural pass now: pre-SR placement, as in any SR
   title.
+- **Skyrim SE (Community Shaders D3D11-on-12 bridge): NR never activated - `Private AMD runtime hash
+  mismatch: pass 1` on every launch.** The reporter's pass DLLs were danielblnc's 0.2.16, a build this
+  host has no layout for, and nothing said so (the menu read `pass1?`, the status line blamed the
+  upscaler's parameters). The log and the status line now name the build found, its size and digest,
+  the supported builds (0.2.17, 0.3.0, 0.3.1) and what to install. Check the `Runtime.zip` you
+  downloaded: `dlssnr_amd_pass1.dll` must be 7,304,192 bytes (SHA256 `b108d640...`).
 
 ### Notes
+- Final image mode (games with FSR 1 or no upscaler at all) stays off in this release. The code
+  carries the work in progress - a no-stall consume and a block-matching carry for the lmxxf
+  runtime - behind a compile-time switch, for the no-upscaler titles of 0.4.0.
 - The 0.3.0 zip shipped lmxxf alone, and lmxxf alone never ran (first fix above). If 0.3.0 did
   nothing for you, this is why.
 
@@ -51,7 +129,6 @@ Fixes from the first 0.3.0 reports, plus one request.
   (`[DlssNr] NrBackend = daniel | lmxxf`). Its edit is applied one frame late through the temporal
   carry, so no frame waits for the network.
 - **`LmxxfNrRuntime.pak`**: the lmxxf weights, HIP modules and HLSL in one encrypted, authenticated
-  file (382 MB) beside the runtime DLL, shipped inside the AMDNR zip.
 - **Network history** (the model's own temporal input) with a two-frame vector chain under Model
   interleave, upstream's history guard, and **Output smoothing** (`AmdLmxxfOutputSmooth`).
 - **Real Neural passes** (2 and 3 launches per frame on the HIP stream); the history loop stays the

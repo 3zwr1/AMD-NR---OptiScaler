@@ -1,4 +1,4 @@
-# AMDNR — DLSS 5 Neural Rendering en AMD (build de OptiScaler) — v0.3.1
+# AMDNR — DLSS 5 Neural Rendering en AMD (build de OptiScaler) — v0.3.2
 
 [English](README.md) | [中文](README.zh-CN.md) | [Português](README.pt-BR.md) | **Español**
 
@@ -11,7 +11,7 @@ una gran ganancia de fotogramas, composición residual, generación de fotograma
 hasta 6X, y FSR Ray Regeneration para los juegos que usan DLSS Ray Reconstruction.
 
 **Discord: <https://discord.gg/QzbzxfKYyh>** — soporte, reportes de errores (`#bug-report`), builds
-de prueba. Si necesitas el `nv` de NV para algo, está disponible allí; no viene en
+de prueba. Si necesitas el `nvn.dll` de  para algo, está disponible allí; no viene en
 estos archivos y la ruta AMD no lo necesita.
 
 **Apoya el proyecto: <https://ko-fi.com/3zinr>**
@@ -98,6 +98,8 @@ danielblnc. Solo RDNA 4. Necesita dos cosas junto al juego:
 2. `LmxxfNrRuntime.pak` (382 MB, incluido en el zip de AMDNR) junto a `LmxxfNrRuntime.dll` - los
    pesos, módulos HIP y HLSL de lmxxf en un solo archivo cifrado y autenticado. El runtime lo abre
    en memoria; nada se desempaqueta en disco. La distribución antigua en carpeta sigue funcionando
+   en lugar del pak: `DLSS5-AMD\native-game-tiled-assets\` (unos 575 MB), de las releases del propio
+
 
 En el primer inicio que encuentra un runtime instalado y ninguna elección hecha, el menú pregunta
 cuál usar (`[DlssNr] NrBackend = daniel | lmxxf` en el ini lo registra; Neural > Neural runtime lo
@@ -164,6 +166,7 @@ Claves del ini: `AmdLmxxfHistory`, `AmdLmxxfEditDetail`, `AmdLmxxfEditSaturation
 
 | Archivo | Qué es |
 |---|---|
+| `OptiScaler/amdnr_dlssg_fsr3.dll` | El dlssg-to-fsr3 de Nukem9, sin modificar y renombrado: las llamadas de DLSS Frame Generation del juego servidas por el frame generation de FSR 3, también en Vulkan (`FGNvngxReplacement=Nukems`). GPLv3, ver `Licenses/`. |
 | `dlssnr_amd_pass1..3.dll` | El runtime neural AMD, v0.3.1 de danielblnc, sin modificar. Tres copias para que el multipase tenga una por pase. |
 | `dlssnr_on_amd_weights.bin` | Los pesos de la red que carga el runtime. |
 
@@ -210,6 +213,22 @@ es una build que este OptiScaler no maneja?** Tus `dlssnr_amd_pass1..3.dll` no s
 (se ha visto circular un juego 0.2.16). Usa el `Runtime.zip` de esta release: `dlssnr_amd_pass1.dll` tiene
 7.304.192 bytes y su SHA256 empieza por `b108d640`. Builds soportadas: 0.2.17, 0.3.0, 0.3.1.
 
+**¿Un juego Vulkan (Indiana Jones and the Great Circle) se detiene al arrancar con "Could not create the
+Vulkan device (VK_ERROR_EXTENSION_NOT_PRESENT)"?** Corregido en esta build: la ruta neural heredada de
+NVIDIA pedía al driver AMD dos extensiones de dispositivo exclusivas de NVIDIA. Ten en cuenta que el pase
+neural aún no tiene ruta Vulkan (los dos runtimes AMD son D3D12), así que los títulos Vulkan arrancan y
+funcionan sin NR.
+
+**¿El Ray Reconstruction del juego está activado pero la pestaña Neural dice "Ray Regeneration is off in
+this title"?** El juego no publica lo que FSR Ray Regeneration necesita (Satisfactory: sin matrices de
+cámara). El escalado FSR corre en su lugar y NR toma su posición habitual antes del SR; nada en el ini
+cambia esto.
+**¿Un juego de Ubisoft Anvil (AC Black Flag Resynced, Shadows, Mirage) muestra "DX12 Error 0x80070057"?**
+Esos juegos llevan su propia generación de fotogramas XeSS. Esta build se la deja a ellos (la salida
+XeFG de OptiScaler se retira ahí y la pestaña Frame Gen lo indica); usa la opción XeSS FG del propio
+juego. Si sigue ocurriendo, pon `[FrameGen] Enabled=false` y `[fakenvapi] ForceXeLL=false` y repórtalo
+con el log.
+
 **¿The Last of Us Part I se cierra al arrancar?** Es la propia inicialización de Streamline del
 juego, un problema conocido de OptiScaler: renombra `sl.common.dll` en la carpeta del juego a
 `sl.common.dll.bak` y elige **FSR 3.1** en los ajustes del juego en lugar de DLSS.
@@ -218,9 +237,11 @@ Notas completas de esta versión: `RELEASE-NOTES.md` en el repositorio.
 
 ## Hoja de ruta
 
-- **0.3.1** (esta build) — correcciones de los primeros reportes de 0.3.0 (lmxxf solo nunca
-  funcionaba, el NR silencioso de Where Winds Meet, el cierre al cambiar la calidad de DLSS, GTA V
-  Legacy) y presets de estilo de NR con tres ranuras personalizadas.
+- **0.3.2** (esta build) — los reportes de 0.3.1: los títulos Vulkan arrancan y funcionan con lmxxf, colores
+  de lmxxf alineados con danielblnc (autoexposición), el desplegable del runtime, estado y ajuste de Ray
+  Reconstruction; el dlssg-to-fsr3 de Nukem9 en el zip para frame generation en Vulkan.
+- **0.3.1** — correcciones de los primeros reportes de 0.3.0 (lmxxf solo nunca
+
 - **0.3.0** — el runtime neural HIP **lmxxf** (RDNA 4) como runtime seleccionable junto al de
   danielblnc, distribuido como `LmxxfNrRuntime.dll` + `LmxxfNrRuntime.pak`: historia de la red,
   Neural passes reales, el modelador de la edición, la posición después de Ray Regeneration,
@@ -263,6 +284,3 @@ terceros están en `Licenses\`. El runtime neural AMD y sus pesos se redistribuy
 original tal como se acredita arriba, solo por comodidad, sin reclamar propiedad y sin ofrecer
 garantía.
 
-El `nvngx_dlssnr.dll` de NVIDIA no está en estos archivos. Nada de esto está respaldado, afiliado ni
-soportado por NVIDIA, AMD ni ningún editor de juegos. Maneja directamente una función no documentada.
-Úsalo bajo tu propio riesgo.

@@ -1,6 +1,6 @@
-# AMDNR — DLSS 5 Neural Rendering on AMD (OptiScaler build) — v0.3.1
+# AMDNR — DLSS 5 Neural Rendering on AMD (OptiScaler build) — v0.3.2
 
-**English** | [中文](README.zh-CN.md) | [Português](README.pt-BR.md)  | [Español](README.es.md)
+**English** | [中文](README.zh-CN.md) | [Português](README.pt-BR.md) | [Español](README.es.md)
 
 > **We need your support.** Join the Discord server — <https://discord.gg/QzbzxfKYyh> — for
 > help, bug reports and test builds; every report with a log makes the next build better.
@@ -11,7 +11,7 @@ large frame-rate gain, residual composition, XeSS frame generation unlocked up t
 Ray Regeneration for games that use DLSS Ray Reconstruction.
 
 **Discord: <https://discord.gg/QzbzxfKYyh>** — support, bug reports (`#bug-report`), test
-builds. If you need N `nv` for anything, it is available there; it is not
+builds. If you need NVI's `nvn.dll` for anything, it is available there; it is not
 in these archives and the AMD path does not need it.
 
 **Support the project: <https://ko-fi.com/3zinr>**
@@ -99,11 +99,6 @@ danielblnc's. RDNA 4 only. It needs two things next to the game:
 2. `LmxxfNrRuntime.pak` (382 MB, included in the AMDNR zip) beside `LmxxfNrRuntime.dll` - lmxxf's weight
    files, HIP modules and HLSL in one encrypted, authenticated file. The runtime opens it in
    memory; nothing is unpacked to disk. The older folder layout still works instead of the
-   pak: `DLSS5-AMD\native-game-tiled-assets\` (about 575 MB),
-   from lmxxf's own releases (<https://github.com/lmxxf/dlss5-on-amd-9070xt-porting>). The
-   folder goes next to the game exe, so that `<game>\DLSS5-AMD\native-game-tiled-assets\block0-ffn.f16`
-   exists. The dlss-5-amd-project 1.9.0 layout works as well: `native-game-tiled-assets\`
-   (weights), `lmxxf-modules\` and `shaders\` next to the game exe, as its Setup installs them.
 
 On the first launch that finds a runtime installed and no choice made, the menu asks which one
 to use (`[DlssNr] NrBackend = daniel | lmxxf` in the ini records it; Neural > Neural runtime
@@ -168,6 +163,7 @@ sharpening, Debug view 1 and the Appearance filter apply under both runtimes. In
 
 | File | What it is |
 |---|---|
+| `OptiScaler/amdnr_dlssg_fsr3.dll` | Nukem9's dlssg-to-fsr3, unmodified and renamed: the game's DLSS Frame Generation calls served by FSR 3 frame generation, also on Vulkan (`FGNvngxReplacement=Nukems`). GPLv3, see `Licenses/`. |
 | `dlssnr_amd_pass1..3.dll` | The AMD neural runtime, danielblnc's v0.3.1, unmodified. Three copies so multi-pass has one per pass. |
 | `dlssnr_on_amd_weights.bin` | The network weights the runtime loads. |
 
@@ -207,6 +203,26 @@ move is to change one thing at a time.
 which GPU. The AMD backend also writes `amd_presr.log` and `amd_bridge.log`, which are the useful
 ones when the neural pass specifically misbehaves.
 
+**NR frames 0/s, the runtime combo reads `pass1?`, and `amd_presr.log` says the pass DLL is a build this
+OptiScaler does not drive?** Your `dlssnr_amd_pass1..3.dll` are not danielblnc's 0.3.1 (a 0.2.16 set was
+seen in the wild). Use `Runtime.zip` from this release: `dlssnr_amd_pass1.dll` is 7,304,192 bytes, SHA256
+starting `b108d640`. Supported builds: 0.2.17, 0.3.0, 0.3.1.
+
+**A Vulkan game (Indiana Jones and the Great Circle) stops at start with "Could not create the Vulkan
+device (VK_ERROR_EXTENSION_NOT_PRESENT)"?** Fixed in this build: the inherited NVIDIA neural path asked the
+AMD driver for two NVIDIA-only device extensions. Note that the neural pass has no Vulkan path yet - both
+AMD runtimes are D3D12 - so Vulkan titles start and run without NR.
+
+**The game's Ray Reconstruction is on but the Neural tab says "Ray Regeneration is off in this title"?**
+The game does not publish what FSR Ray Regeneration needs (Satisfactory: no camera matrices). FSR
+upscaling runs in its place and NR takes its normal pre-SR position; nothing in the ini changes this.
+
+**A Ubisoft Anvil game (AC Black Flag Resynced, Shadows, Mirage) shows "DX12 Error 0x80070057"?**
+Those games carry their own XeSS Frame Generation. This build leaves it to them (OptiScaler's XeFG
+output stands down there and the Frame Gen tab says so); use the game's own XeSS FG option. If
+it still happens, set `[FrameGen] Enabled=false` and `[fakenvapi] ForceXeLL=false` and report
+with the log.
+
 **The Last of Us Part I crashes on boot?** That is the game's own Streamline init, a known
 OptiScaler issue: rename `sl.common.dll` in the game folder to `sl.common.dll.bak` and pick
 **FSR 3.1** in the game's settings instead of DLSS.
@@ -215,9 +231,11 @@ Full notes for this version: `RELEASE-NOTES.md` in the repository.
 
 ## Roadmap
 
-- **0.3.1** (this build) — fixes from the first 0.3.0 reports (lmxxf alone never ran, Where Winds
-  Meet's silent NR, the crash on a DLSS-quality change, GTA V Legacy) and NR style presets with
-  three custom slots.
+- **0.3.2** (this build) — the 0.3.1 reports: Vulkan titles start and run with lmxxf, lmxxf colours
+  matched to danielblnc's (auto-exposure), the runtime combo, Ray Reconstruction status and tuning;
+  Nukem9's dlssg-to-fsr3 in the zip for frame generation on Vulkan.
+- **0.3.1** — fixes from the first 0.3.0 reports (lmxxf alone never ran, Where Winds
+
 - **0.3.0** — the **lmxxf** HIP neural runtime (RDNA 4) as a selectable runtime
   beside danielblnc's, shipped as `LmxxfNrRuntime.dll` + `LmxxfNrRuntime.pak`: network history,
   real Neural passes, the edit shaper, the after-Ray-Regeneration placement, per-title
@@ -260,6 +278,4 @@ in `Licenses\`. The AMD neural runtime and its weights are redistributed under t
 authorship as credited above, for convenience only, with no ownership claimed and no warranty
 offered.
 
-NVIDIA's `nvngx_dlssnr.dll` is not in these archives. None of this is endorsed by, affiliated
-with, or supported by NVIDIA, AMD, or any game publisher. It drives an undocumented feature
-directly. Use it at your own risk.
+.

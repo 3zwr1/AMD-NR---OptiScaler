@@ -11,7 +11,7 @@ una gran ganancia de fotogramas, composición residual, generación de fotograma
 hasta 6X, y FSR Ray Regeneration para los juegos que usan DLSS Ray Reconstruction.
 
 **Discord: <https://discord.gg/QzbzxfKYyh>** — soporte, reportes de errores (`#bug-report`), builds
-de prueba. Si necesitas el `nvngx_dlssnr.dll` de NVIDIA para algo, está disponible allí; no viene en
+de prueba. Si necesitas el `nv` de NV para algo, está disponible allí; no viene en
 estos archivos y la ruta AMD no lo necesita.
 
 **Apoya el proyecto: <https://ko-fi.com/3zinr>**
@@ -98,11 +98,6 @@ danielblnc. Solo RDNA 4. Necesita dos cosas junto al juego:
 2. `LmxxfNrRuntime.pak` (382 MB, incluido en el zip de AMDNR) junto a `LmxxfNrRuntime.dll` - los
    pesos, módulos HIP y HLSL de lmxxf en un solo archivo cifrado y autenticado. El runtime lo abre
    en memoria; nada se desempaqueta en disco. La distribución antigua en carpeta sigue funcionando
-   en lugar del pak: `DLSS5-AMD\native-game-tiled-assets\` (unos 575 MB), de las releases del propio
-   lmxxf (<https://github.com/lmxxf/dlss5-on-amd-9070xt-porting>). La carpeta va junto al exe del
-   juego, de modo que exista `<juego>\DLSS5-AMD\native-game-tiled-assets\block0-ffn.f16`. La
-   distribución de dlss-5-amd-project 1.9.0 también funciona: `native-game-tiled-assets\` (pesos),
-   `lmxxf-modules\` y `shaders\` junto al exe del juego, tal como los instala su Setup.
 
 En el primer inicio que encuentra un runtime instalado y ninguna elección hecha, el menú pregunta
 cuál usar (`[DlssNr] NrBackend = daniel | lmxxf` en el ini lo registra; Neural > Neural runtime lo
@@ -214,16 +209,6 @@ lo que falla es específicamente el pase neural.
 es una build que este OptiScaler no maneja?** Tus `dlssnr_amd_pass1..3.dll` no son la 0.3.1 de danielblnc
 (se ha visto circular un juego 0.2.16). Usa el `Runtime.zip` de esta release: `dlssnr_amd_pass1.dll` tiene
 7.304.192 bytes y su SHA256 empieza por `b108d640`. Builds soportadas: 0.2.17, 0.3.0, 0.3.1.
-
-**¿GTA V (Legacy) nunca carga OptiScaler como `dxgi.dll`?** `GTA5.exe` no tiene ni `dxgi.dll` ni `d3d11.dll`
-en su tabla de importación (los carga desde System32 en tiempo de ejecución), así que un `dxgi.dll` a su lado
-nunca se toca. Nombra el archivo `OptiScaler.asi` si usas el ASI loader de ScriptHookV (`dinput8.dll`), o
-`winmm.dll` / `version.dll` en caso contrario - esos sí están en su tabla de importación. Solo modo historia.
-**¿Un juego de Ubisoft Anvil (AC Black Flag Resynced, Shadows, Mirage) muestra "DX12 Error 0x80070057"?**
-Esos juegos llevan su propia generación de fotogramas XeSS. Esta build se la deja a ellos (la salida
-XeFG de OptiScaler se retira ahí y la pestaña Frame Gen lo indica); usa la opción XeSS FG del propio
-juego. Si sigue ocurriendo, pon `[FrameGen] Enabled=false` y `[fakenvapi] ForceXeLL=false` y repórtalo
-con el log.
 
 **¿The Last of Us Part I se cierra al arrancar?** Es la propia inicialización de Streamline del
 juego, un problema conocido de OptiScaler: renombra `sl.common.dll` en la carpeta del juego a

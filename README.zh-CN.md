@@ -1,6 +1,6 @@
 # AMDNR — AMD 显卡上的 DLSS 5 神经渲染（OptiScaler 构建版）— v0.3.1
 
-[English](README.md) | **中文** | [Português](README.pt-BR.md)
+[English](README.md) | **中文** | [Português](README.pt-BR.md)  | [Español](README.es.md)
 
 > **我们需要你的支持。** 加入 Discord 服务器 —— <https://discord.gg/QzbzxfKYyh> —— 获取帮助、提交
 > 问题、领取测试版；每一份带日志的反馈都会让下一个版本更好。

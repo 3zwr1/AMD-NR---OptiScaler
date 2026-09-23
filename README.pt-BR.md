@@ -199,15 +199,6 @@ O `OptiScaler.log` aparece na pasta do jogo. Anexe-o em `#bug-report` e diga qua
 backend AMD também escreve `amd_presr.log` e `amd_bridge.log`, que são os úteis quando o passo neural
 em particular se comporta mal.
 
-**GTA V (Legacy) nunca carrega o OptiScaler como `dxgi.dll`?** O `GTA5.exe` não tem `dxgi.dll` nem `d3d11.dll`
-na tabela de importação (ele os carrega do System32 em tempo de execução), então um `dxgi.dll` ao lado dele nunca
-é tocado. Nomeie o arquivo `OptiScaler.asi` se usar o ASI loader do ScriptHookV (`dinput8.dll`), ou `winmm.dll` /
-`version.dll` caso contrário - esses estão na tabela de importação. Somente modo história.
-**Um jogo Ubisoft Anvil (AC Black Flag Resynced, Shadows, Mirage) mostra "DX12 Error 0x80070057"?**
-Esses jogos trazem a própria geração de quadros XeSS. Esta build a deixa com eles (a saída XeFG do
-OptiScaler fica desativada ali e a aba Frame Gen explica); use a opção XeSS FG do próprio jogo. Se
-ainda acontecer, defina `[FrameGen] Enabled=false` e `[fakenvapi] ForceXeLL=false` e relate com o log.
-
 **The Last of Us Part I trava ao iniciar?** É a inicialização do Streamline do próprio jogo, um
 problema conhecido do OptiScaler: renomeie o `sl.common.dll` na pasta do jogo para
 `sl.common.dll.bak` e escolha **FSR 3.1** nas configurações do jogo em vez de DLSS.

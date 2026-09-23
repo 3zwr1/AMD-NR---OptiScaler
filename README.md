@@ -207,16 +207,6 @@ move is to change one thing at a time.
 which GPU. The AMD backend also writes `amd_presr.log` and `amd_bridge.log`, which are the useful
 ones when the neural pass specifically misbehaves.
 
-**GTA V (Legacy) never loads OptiScaler as `dxgi.dll`?** `GTA5.exe` has neither `dxgi.dll` nor `d3d11.dll` in its
-import table (it loads them from System32 at runtime), so a `dxgi.dll` beside it is never touched. Name the
-file `OptiScaler.asi` if you use ScriptHookV's ASI loader (`dinput8.dll`), or `winmm.dll` / `version.dll`
-otherwise - those are in its import table. Story Mode only.
-**A Ubisoft Anvil game (AC Black Flag Resynced, Shadows, Mirage) shows "DX12 Error 0x80070057"?**
-Those games carry their own XeSS Frame Generation. This build leaves it to them (OptiScaler's XeFG
-output stands down there and the Frame Gen tab says so); use the game's own XeSS FG option. If
-it still happens, set `[FrameGen] Enabled=false` and `[fakenvapi] ForceXeLL=false` and report
-with the log.
-
 **The Last of Us Part I crashes on boot?** That is the game's own Streamline init, a known
 OptiScaler issue: rename `sl.common.dll` in the game folder to `sl.common.dll.bak` and pick
 **FSR 3.1** in the game's settings instead of DLSS.

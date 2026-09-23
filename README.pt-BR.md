@@ -1,4 +1,4 @@
-# AMDNR — DLSS 5 Neural Rendering em GPUs AMD (build OptiScaler) — v0.3.0
+# AMDNR — DLSS 5 Neural Rendering em GPUs AMD (build OptiScaler) — v0.3.1
 
 [English](README.md) | [中文](README.zh-CN.md) | **Português**
 
@@ -11,7 +11,7 @@ grande ganho de taxa de quadros, residual composition, geração de quadros XeSS
 FSR Ray Regeneration para jogos que usam DLSS Ray Reconstruction.
 
 **Discord: <https://discord.gg/QzbzxfKYyh>** — suporte, relatos de bugs (`#bug-report`), builds de
-teste. Se você precisar do `nvngx_dlssnr.dll` da NVIDIA para qualquer coisa, ele está disponível
+teste. Se você precisar do `nv` da NVDA para qualquer coisa, ele está disponível
 lá; não está nestes arquivos e o caminho AMD não precisa dele.
 
 **Apoie o projeto: <https://ko-fi.com/3zinr>**
@@ -199,6 +199,15 @@ O `OptiScaler.log` aparece na pasta do jogo. Anexe-o em `#bug-report` e diga qua
 backend AMD também escreve `amd_presr.log` e `amd_bridge.log`, que são os úteis quando o passo neural
 em particular se comporta mal.
 
+**GTA V (Legacy) nunca carrega o OptiScaler como `dxgi.dll`?** O `GTA5.exe` não tem `dxgi.dll` nem `d3d11.dll`
+na tabela de importação (ele os carrega do System32 em tempo de execução), então um `dxgi.dll` ao lado dele nunca
+é tocado. Nomeie o arquivo `OptiScaler.asi` se usar o ASI loader do ScriptHookV (`dinput8.dll`), ou `winmm.dll` /
+`version.dll` caso contrário - esses estão na tabela de importação. Somente modo história.
+**Um jogo Ubisoft Anvil (AC Black Flag Resynced, Shadows, Mirage) mostra "DX12 Error 0x80070057"?**
+Esses jogos trazem a própria geração de quadros XeSS. Esta build a deixa com eles (a saída XeFG do
+OptiScaler fica desativada ali e a aba Frame Gen explica); use a opção XeSS FG do próprio jogo. Se
+ainda acontecer, defina `[FrameGen] Enabled=false` e `[fakenvapi] ForceXeLL=false` e relate com o log.
+
 **The Last of Us Part I trava ao iniciar?** É a inicialização do Streamline do próprio jogo, um
 problema conhecido do OptiScaler: renomeie o `sl.common.dll` na pasta do jogo para
 `sl.common.dll.bak` e escolha **FSR 3.1** nas configurações do jogo em vez de DLSS.
@@ -207,7 +216,10 @@ Notas completas desta versão: `RELEASE-NOTES.md` no repositório.
 
 ## Roteiro
 
-- **0.3.0** (esta build) — o runtime neural HIP **lmxxf** (RDNA 4) como runtime selecionável ao
+- **0.3.1** (esta build) — correções dos primeiros relatos do 0.3.0 (lmxxf sozinho nunca rodava, NR
+  silencioso no Where Winds Meet, crash ao trocar a qualidade do DLSS, GTA V Legacy) e presets de
+  estilo do NR com três slots personalizados.
+- **0.3.0** — o runtime neural HIP **lmxxf** (RDNA 4) como runtime selecionável ao
   lado do do danielblnc, distribuído como `LmxxfNrRuntime.dll` + `LmxxfNrRuntime.pak`: network
   history, Neural passes reais, o edit shaper, a posição depois do Ray Regeneration, diagnóstico por
   jogo e autocorreção. Muito obrigado ao TheAutomatic, em cujo trabalho no DLSS 5 AMD project esta

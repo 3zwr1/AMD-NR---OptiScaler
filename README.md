@@ -1,4 +1,4 @@
-# AMDNR — DLSS 5 Neural Rendering on AMD (OptiScaler build) — v0.3.0
+# AMDNR — DLSS 5 Neural Rendering on AMD (OptiScaler build) — v0.3.1
 
 **English** | [中文](README.zh-CN.md) | [Português](README.pt-BR.md)
 
@@ -11,7 +11,7 @@ large frame-rate gain, residual composition, XeSS frame generation unlocked up t
 Ray Regeneration for games that use DLSS Ray Reconstruction.
 
 **Discord: <https://discord.gg/QzbzxfKYyh>** — support, bug reports (`#bug-report`), test
-builds. If you need NVIDIA's `nvngx` for anything, it is available there; it is not
+builds. If you need N `nv` for anything, it is available there; it is not
 in these archives and the AMD path does not need it.
 
 **Support the project: <https://ko-fi.com/3zinr>**
@@ -97,6 +97,13 @@ danielblnc's. RDNA 4 only. It needs two things next to the game:
 
 1. `LmxxfNrRuntime.dll` - in this archive, beside `OptiScaler.dll` (it is copied with the rest).
 2. `LmxxfNrRuntime.pak` (382 MB, included in the AMDNR zip) beside `LmxxfNrRuntime.dll` - lmxxf's weight
+   files, HIP modules and HLSL in one encrypted, authenticated file. The runtime opens it in
+   memory; nothing is unpacked to disk. The older folder layout still works instead of the
+   pak: `DLSS5-AMD\native-game-tiled-assets\` (about 575 MB),
+   from lmxxf's own releases (<https://github.com/lmxxf/dlss5-on-amd-9070xt-porting>). The
+   folder goes next to the game exe, so that `<game>\DLSS5-AMD\native-game-tiled-assets\block0-ffn.f16`
+   exists. The dlss-5-amd-project 1.9.0 layout works as well: `native-game-tiled-assets\`
+   (weights), `lmxxf-modules\` and `shaders\` next to the game exe, as its Setup installs them.
 
 On the first launch that finds a runtime installed and no choice made, the menu asks which one
 to use (`[DlssNr] NrBackend = daniel | lmxxf` in the ini records it; Neural > Neural runtime
@@ -127,8 +134,8 @@ and Image look has the **lmxxf edit** group: the edit shaper (Edit detail,
 Edit colour, Edge guard: gain on the fine part of the model's edit, its colour against its
 brightness change, and a fade of the edit across depth edges) and **Output smoothing**
 (upstream's output-side pass, needs Network history). Neural passes, Residual strength/limit,
-sharpening, Debug view 1 and the Appearance filter apply under both runtimes. Ini keys: ``, ``,
-``, ``, `` under `[DlssNr]`.
+sharpening, Debug view 1 and the Appearance filter apply under both runtimes. Ini keys: `AmdLmxxfHistory`, `AmdLmxxfEditDetail`,
+`AmdLmxxfEditSaturation`, `AmdLmxxfEdgeGuard`, `AmdLmxxfOutputSmooth` under `[DlssNr]`.
 
 ## Requirements
 
@@ -177,7 +184,9 @@ move is to change one thing at a time.
 - **Residual limit** — a ceiling on how far one pixel may move. Blotchy patches: **lower** it.
 - **Model interleave** — runs the model every second frame for a large frame-rate gain. The
   skipped frames are filled by the **Interleave preset**; *Guided fill v2* is the default and
-  the one under active work. Pacing of the two frame types is automatic.
+  the one under active work. Pacing of the two frame types is automatic, and **Adaptive
+  interleave** (on by default) runs the model on every frame while the picture is moving, so
+  the skips - and their artefacts - only happen while the picture stands still.
 - **Neural passes** — 2 and 3 stack the model, with diminishing returns. Under lmxxf the
   network's history stays its first pass; the extra passes are spatial refinement only.
 - **Frame generation is off in a fresh ini.** Frame Gen tab: choose the FG Input (e.g. "DLSSG via
@@ -198,6 +207,16 @@ move is to change one thing at a time.
 which GPU. The AMD backend also writes `amd_presr.log` and `amd_bridge.log`, which are the useful
 ones when the neural pass specifically misbehaves.
 
+**GTA V (Legacy) never loads OptiScaler as `dxgi.dll`?** `GTA5.exe` has neither `dxgi.dll` nor `d3d11.dll` in its
+import table (it loads them from System32 at runtime), so a `dxgi.dll` beside it is never touched. Name the
+file `OptiScaler.asi` if you use ScriptHookV's ASI loader (`dinput8.dll`), or `winmm.dll` / `version.dll`
+otherwise - those are in its import table. Story Mode only.
+**A Ubisoft Anvil game (AC Black Flag Resynced, Shadows, Mirage) shows "DX12 Error 0x80070057"?**
+Those games carry their own XeSS Frame Generation. This build leaves it to them (OptiScaler's XeFG
+output stands down there and the Frame Gen tab says so); use the game's own XeSS FG option. If
+it still happens, set `[FrameGen] Enabled=false` and `[fakenvapi] ForceXeLL=false` and report
+with the log.
+
 **The Last of Us Part I crashes on boot?** That is the game's own Streamline init, a known
 OptiScaler issue: rename `sl.common.dll` in the game folder to `sl.common.dll.bak` and pick
 **FSR 3.1** in the game's settings instead of DLSS.
@@ -206,7 +225,10 @@ Full notes for this version: `RELEASE-NOTES.md` in the repository.
 
 ## Roadmap
 
-- **0.3.0** (this build) — the **lmxxf** HIP neural runtime (RDNA 4) as a selectable runtime
+- **0.3.1** (this build) — fixes from the first 0.3.0 reports (lmxxf alone never ran, Where Winds
+  Meet's silent NR, the crash on a DLSS-quality change, GTA V Legacy) and NR style presets with
+  three custom slots.
+- **0.3.0** — the **lmxxf** HIP neural runtime (RDNA 4) as a selectable runtime
   beside danielblnc's, shipped as `LmxxfNrRuntime.dll` + `LmxxfNrRuntime.pak`: network history,
   real Neural passes, the edit shaper, the after-Ray-Regeneration placement, per-title
   diagnostics and self-healing. Many thanks to TheAutomatic, whose DLSS 5 AMD project work
@@ -237,7 +259,8 @@ upstream.
   The framework this is built into: the hooking, the FSR/XeSS/frame-generation plumbing, the
   menu, and the game compatibility that makes any of it reachable.
 
-Code lineage: OptiScaler → Dagherbou / OptiScaler_DLSSNR → wilsjo2 this build. The XeFG unlock and pacing are ported from Coldwood1026's
+Code lineage: OptiScaler → Dagherbou / OptiScaler_DLSSNR → wilsjo2 / OptiScaler-DLSSNR-PreSR-Multipass
+→ Matheus / dlss-5-amd → this build. The XeFG unlock and pacing are ported from Coldwood1026's
 XeFGUnlock (GPL-3.0); the `CubeScale` gamut handling is *hhkbble*'s.
 
 ## Legal
@@ -247,6 +270,6 @@ in `Licenses\`. The AMD neural runtime and its weights are redistributed under t
 authorship as credited above, for convenience only, with no ownership claimed and no warranty
 offered.
 
-NVIDIA's `nvngx` is not in these archives. None of this is endorsed by, affiliated
+NVIDIA's `nvngx_dlssnr.dll` is not in these archives. None of this is endorsed by, affiliated
 with, or supported by NVIDIA, AMD, or any game publisher. It drives an undocumented feature
 directly. Use it at your own risk.

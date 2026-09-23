@@ -1,4 +1,4 @@
-# AMDNR — AMD 显卡上的 DLSS 5 神经渲染（OptiScaler 构建版）— v0.3.0
+# AMDNR — AMD 显卡上的 DLSS 5 神经渲染（OptiScaler 构建版）— v0.3.1
 
 [English](README.md) | **中文** | [Português](README.pt-BR.md)
 
@@ -11,7 +11,7 @@ DLSS 5 神经渲染（Neural Rendering）在 AMD 显卡上运行，内置于 Opt
 FSR Ray Regeneration。
 
 **Discord：<https://discord.gg/QzbzxfKYyh>** —— 支持、问题反馈（`#bug-report`）、测试版。如果你
-需要 NVIDIA 的 `nvngx`，可以在那里获取；它不在本压缩包中，AMD 路径也不需要它。
+需要 NV 的 `nv`，可以在那里获取；它不在本压缩包中，AMD 路径也不需要它。
 
 **支持本项目：<https://ko-fi.com/3zinr>**
 
@@ -92,6 +92,12 @@ Neural 选项卡中 Enable 复选框旁边、或 Interface > Keybinds 下重新�
 
 1. `LmxxfNrRuntime.dll` —— 在本压缩包中，与 `OptiScaler.dll` 并列（会随其余文件一起复制）。
 2. `LmxxfNrRuntime.pak`（382 MB，已包含在 AMDNR 压缩包中），放在 `LmxxfNrRuntime.dll` 旁边 —— lmxxf 的
+   权重文件、HIP 模块和 HLSL 打包成一个加密并带完整性校验的文件。运行时在内存中打开它，不会向磁盘
+   解包任何内容。旧的文件夹布局同样可用，可替代 pak：`DLSS5-AMD\native-game-tiled-assets\`（约 575 MB），
+   来自 lmxxf 自己的发布（<https://github.com/lmxxf/dlss5-on-amd-9070xt-porting>）。该文件夹放在游戏
+   exe 旁边，使 `<game>\DLSS5-AMD\native-game-tiled-assets\block0-ffn.f16` 存在。dlss-5-amd-project 1.9.0
+   的布局也可以：`native-game-tiled-assets\`（权重）、`lmxxf-modules\` 和 `shaders\` 与游戏 exe 并列，
+   即其安装程序放置的位置。
 
 首次启动时若检测到已安装运行时且尚未做出选择，菜单会询问使用哪一个（ini 中以
 `[DlssNr] NrBackend = daniel | lmxxf` 记录；Neural > Neural runtime 可更改，下次启动游戏时生效）。
@@ -118,8 +124,8 @@ keep、reactive 均值、向量长度与被拒比例）。反馈时附上日志�
 **lmxxf edit** 组：编辑整形器（Edit detail、Edit colour、Edge guard：模型编辑细节部分的增益、编辑的
 色彩相对其亮度变化的比例、以及在深度边缘处对编辑的衰减）和 **Output smoothing**（上游的输出侧
 平滑，需要 Network history）。Neural passes、Residual strength/limit、锐化、Debug view 1 和 Appearance
-滤镜对两个运行时都适用。ini 键：`[DlssNr]` 下的 ``、``、
-``、``、``。
+滤镜对两个运行时都适用。ini 键：`[DlssNr]` 下的 `AmdLmxxfHistory`、`AmdLmxxfEditDetail`、
+`AmdLmxxfEditSaturation`、`AmdLmxxfEdgeGuard`、`AmdLmxxfOutputSmooth`。
 
 ## 系统要求
 
@@ -162,7 +168,8 @@ keep、reactive 均值、向量长度与被拒比例）。反馈时附上日志�
 - **Residual strength** —— 模型编辑应用的比例；大于 1 会放大。这是改变画面最大的控制项。
 - **Residual limit** —— 单个像素可移动的上限。出现斑块：**调低**它。
 - **Model interleave** —— 每隔一帧运行模型，大幅提升帧率。跳过的帧由 **Interleave preset** 填补；
-  *Guided fill v2* 是默认值，也是正在持续打磨的一项。两类帧的节拍自动处理。
+  *Guided fill v2* 是默认值，也是正在持续打磨的一项。两类帧的节拍自动处理，**Adaptive interleave**
+  （默认开启）在画面运动时每帧都运行模型，因此跳帧 —— 及其瑕疵 —— 只在画面静止时发生。
 - **Neural passes** —— 2 和 3 会叠加模型，收益递减。在 lmxxf 下网络的历史保持为第一遍；额外的遍
   只是空间上的精修。
 - **新 ini 中帧生成默认关闭。** Frame Gen 选项卡：选择 FG Input（例如带 DLSS 帧生成的游戏中选
@@ -180,6 +187,15 @@ keep、reactive 均值、向量长度与被拒比例）。反馈时附上日志�
 游戏目录中会出现 `OptiScaler.log`。在 `#bug-report` 中附上它，并说明游戏和显卡型号。AMD 后端还会
 写出 `amd_presr.log` 和 `amd_bridge.log`，当神经渲染这一步出问题时它们最有用。
 
+**GTA V（Legacy）以 `dxgi.dll` 命名时 OptiScaler 从不加载？** `GTA5.exe` 的导入表里既没有 `dxgi.dll` 也没有
+`d3d11.dll`（运行时直接从 System32 加载），所以放在旁边的 `dxgi.dll` 永远不会被读取。若使用 ScriptHookV 的
+ASI 加载器（`dinput8.dll`），请把文件命名为 `OptiScaler.asi`；否则用 `winmm.dll` 或 `version.dll`，这两个在
+它的导入表里。仅限故事模式。
+**育碧 Anvil 引擎游戏（AC Black Flag Resynced、Shadows、Mirage）弹出 "DX12 Error 0x80070057"？**
+这些游戏自带 XeSS 帧生成。本构建版会把帧生成交给游戏自己处理（OptiScaler 的 XeFG 输出在此类游戏中自动
+停用，Frame Gen 选项卡会说明原因）；请使用游戏自己的 XeSS FG 选项。若仍然出现，请设置
+`[FrameGen] Enabled=false` 和 `[fakenvapi] ForceXeLL=false`，并附日志反馈。
+
 **《最后生还者 第一部》启动时崩溃？** 那是游戏自身 Streamline 初始化的问题，是已知的 OptiScaler
 问题：把游戏目录中的 `sl.common.dll` 重命名为 `sl.common.dll.bak`，并在游戏设置中选择 **FSR 3.1**
 而不是 DLSS。
@@ -188,7 +204,9 @@ keep、reactive 均值、向量长度与被拒比例）。反馈时附上日志�
 
 ## 路线图
 
-- **0.3.0**（本构建版）—— **lmxxf** HIP 神经运行时（RDNA 4）作为可选运行时与 danielblnc 的并列，以
+- **0.3.1**（本构建版）—— 修复 0.3.0 首批反馈的问题（仅安装 lmxxf 时从不运行、燕云十六声（Where Winds Meet）NR 无效、切换 DLSS
+  画质时崩溃、GTA V Legacy 无法启动），并新增 NR 风格预设与三个自定义槽位。
+- **0.3.0** —— **lmxxf** HIP 神经运行时（RDNA 4）作为可选运行时与 danielblnc 的并列，以
   `LmxxfNrRuntime.dll` + `LmxxfNrRuntime.pak` 发布：网络历史、真实的 Neural passes、编辑整形器、光线
   重建之后的位置、逐游戏诊断与自我修复。特别感谢 TheAutomatic，本次集成建立在他的 DLSS 5 AMD
   project 工作之上。
@@ -213,7 +231,8 @@ keep、reactive 均值、向量长度与被拒比例）。反馈时附上日志�
 - **OptiScaler** —— *Overclockers* 及贡献者 —— <https://github.com/Overclockers/OptiScaler-Releases>
   本项目所嵌入的框架：挂钩、FSR/XeSS/帧生成管线、菜单，以及让这一切得以触达的游戏兼容性。
 
-代码谱系：OptiScaler → Dagherbou / OptiScaler_DLSSNR → wilsjo2  → 本构建版。XeFG 解锁与节拍移植自 Coldwood1026 的 XeFGUnlock（GPL-3.0）；
+代码谱系：OptiScaler → Dagherbou / OptiScaler_DLSSNR → wilsjo2 / OptiScaler-DLSSNR-PreSR-Multipass
+→ Matheus / dlss-5-amd → 本构建版。XeFG 解锁与节拍移植自 Coldwood1026 的 XeFGUnlock（GPL-3.0）；
 `CubeScale` 色域处理来自 *hhkbble*。
 
 ## 法律声明
@@ -221,5 +240,5 @@ keep、reactive 均值、向量长度与被拒比例）。反馈时附上日志�
 本构建版按 `LICENSE` 中的 GPL-3.0 许可证分发；第三方库许可证位于 `Licenses\`。AMD 神经运行时及其
 权重按上述原作者署名再分发，仅为方便使用，不主张任何所有权，不提供任何保证。
 
-NVIDIA 的 `nvngx` 不在本压缩包中。以上内容均未获得 NVIDIA、AMD 或任何游戏发行商的认可、
+NVIDIA 的 `nvngx_dlssnr.dll` 不在本压缩包中。以上内容均未获得 NVIDIA、AMD 或任何游戏发行商的认可、
 关联或支持。它直接驱动一项未公开的功能。使用风险自负。

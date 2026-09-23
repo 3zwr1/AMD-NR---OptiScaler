@@ -1,118 +1,252 @@
-# OptiScaler DLSS-NR for AMD — v0.2.0
+# AMDNR — DLSS 5 Neural Rendering on AMD (OptiScaler build) — v0.3.0
 
-DLSS 5 Neural Rendering running on AMD, wired into OptiScaler so it works in any
-Direct3D 12 game that OptiScaler already hooks.
+**English** | [中文](README.zh-CN.md)
 
-Everything needed is in this archive. There is no second download.
+> **We need your support.** Join the Discord server — <https://discord.gg/QzbzxfKYyh> — for
+> help, bug reports and test builds; every report with a log makes the next build better.
+
+DLSS 5 Neural Rendering running on AMD GPUs, built into OptiScaler so it works in any
+Direct3D 12 game OptiScaler already hooks. On top of the neural pass: model interleave for a
+large frame-rate gain, residual composition, XeSS frame generation unlocked up to 6X, and FSR
+Ray Regeneration for games that use DLSS Ray Reconstruction.
+
+**Discord: <https://discord.gg/QzbzxfKYyh>** — support, bug reports (`#bug-report`), test
+builds. If you need NVIDIA's `nvngx` for anything, it is available there; it is not
+in these archives and the AMD path does not need it.
+
+**Support the project: <https://ko-fi.com/3zinr>**
 
 ---
 
-## Install
+## AMDNR - OptiScaler Installation Guide
 
-1. Extract every file into the game folder, next to the game's `.exe`.
-2. Run `install.bat` **only if the game does not load `dxgi.dll`** — it renames the
-   proxy for you. Most D3D12 games need nothing.
-3. Start the game and press **INSERT** for the menu. Neural Rendering is already on.
+Installation is pretty simple.
 
-The `.exe` is usually not where the shortcut points. Unreal games keep it under
-`<Game>\Binaries\Win64\`.
+### 1. Download the files
+
+Download these two files from GitHub:
+
+* `AMDNR-vX.X.X.zip`
+* `Runtime.zip`
+
+### 2. Extract both files
+
+Extract the contents of both `.zip` files.
+
+### 3. Copy everything to the game folder
+
+First, copy all files from `AMDNR-vX.X.X` into the game's root folder — the same folder where
+the game's `.exe` is located.
+
+Then, do the same with all files from `Runtime`.
+
+### 4. Rename OptiScaler.dll
+
+Inside the game folder, find:
+
+`OptiScaler.dll`
+
+Rename it to:
+
+`dxgi.dll`
+
+`dxgi.dll` is the recommended option.
+
+If the game doesn't launch or the mod doesn't load, try renaming `OptiScaler.dll` to one of
+these instead:
+
+* `d3d12.dll`
+* `winmm.dll`
+* `version.dll`
+* `dbghelp.dll`
+
+Test one name at a time. Do not create multiple copies of `OptiScaler.dll`.
+
+### 5. Launch the game
+
+`HOME` switches Neural Rendering on and off while playing (both runtimes; a small notice says
+On / Off). Rebind it beside the Enable checkbox in the Neural tab or under Interface > Keybinds.
+
+That's it.
+
+Launch the game normally and press:
+
+`INSERT`
+
+This will open the OptiScaler / AMDNR menu, where you can configure the mod however you like.
+
+### If it doesn't work
+
+If the game still doesn't launch with any of the names above, please report it in the
+`#bug-report` channel on Discord.
+
+When reporting the issue, also upload any `.log` files that may have been generated in the
+game's root folder.
+
+These logs are very important and will help us identify the issue much faster.
+
+> The `.exe` is usually not where the shortcut points. Unreal games keep it under
+> `<Game>\Binaries\Win64\`.
+
+---
+
+### The lmxxf runtime (0.3.0, optional)
+
+A second neural runtime (MIT-licensed, by lmxxf) can carry the pass instead of
+danielblnc's. RDNA 4 only. It needs two things next to the game:
+
+1. `LmxxfNrRuntime.dll` - in this archive, beside `OptiScaler.dll` (it is copied with the rest).
+2. `LmxxfNrRuntime.pak` (382 MB, included in the AMDNR zip) beside `LmxxfNrRuntime.dll` - lmxxf's weight
+
+On the first launch that finds a runtime installed and no choice made, the menu asks which one
+to use (`[DlssNr] NrBackend = daniel | lmxxf` in the ini records it; Neural > Neural runtime
+changes it, on the next game start). The lmxxf edit is applied one frame late, carried by the
+motion vectors, so the frame never waits for the network (about 30 ms at 1080p, 15 ms at 720p
+on an RX 9070 XT). Its log is `lmxxf_backend.log` next to the game.
+
+**Compatibility (lmxxf).** The runtime sees only what DLSS sees, so what varies per title is
+a short list: colour format and HDR, motion vectors and their scale, depth and its direction,
+the reactive mask, the exposure texture, the Reset flag, and where the pass sits (before Super
+Resolution, or after Ray Reconstruction). Tested so far:
+
+| Title | API / placement | Notes |
+|---|---|---|
+| Silent Hill 2 | D3D12, before SR | reference title; Unreal's padded colour allocation handled |
+| Forza Horizon 6 | D3D12, before SR | |
+| Stray | D3D11 through the D3D12 bridge, before SR | |
+| GTA V Enhanced | D3D12, before SR, HDR, one-channel reactive mask | fixed in this build: the mask used to read as "everything reactive" and the edit never landed |
+| Any title with Ray Reconstruction | D3D12, after RR (written back into the output) | supported from this build; not yet confirmed in a game |
+
+If a title shows no effect: `lmxxf_backend.log` has an `lmxxf inputs:` line (formats, sizes,
+motion scale, depth direction, mask, exposure) and an `lmxxf stats @N:` line every 600 frames
+(exposure, fed brightness, the model's edit, the carried edit, keep, reactive mean, vector
+length and rejected fraction). Attach the log to a report; those two lines usually say why.
+
+Under lmxxf the Neural runtime block has **Network history** (the model's own temporal input),
+and Image look has the **lmxxf edit** group: the edit shaper (Edit detail,
+Edit colour, Edge guard: gain on the fine part of the model's edit, its colour against its
+brightness change, and a fade of the edit across depth edges) and **Output smoothing**
+(upstream's output-side pass, needs Network history). Neural passes, Residual strength/limit,
+sharpening, Debug view 1 and the Appearance filter apply under both runtimes. Ini keys: ``, ``,
+``, ``, `` under `[DlssNr]`.
 
 ## Requirements
 
-- An AMD GPU with a current driver. The neural runtime uses HIP through the driver;
-  no HIP SDK and no developer mode are needed.
-- A Direct3D 12 game. D3D11 and Vulkan titles reach OptiScaler through its bridges,
-  but the AMD neural path itself is D3D12.
+- An AMD GPU with a current driver. The neural runtime uses HIP through the driver; no HIP
+  SDK and no developer mode are needed. Which chips: RX 9000 (RDNA 4) runs both runtimes;
+  RX 7000 (RDNA 3, desktop and mobile) runs danielblnc's only; handheld APUs (Z1 Extreme /
+  780M, Z2 Extreme / 890M) and RDNA 2 (RX 6000, Steam Deck) are not supported by either yet.
+  The Neural tab says what your GPU can run.
+- A Direct3D 12, Direct3D 11 or Vulkan game. The AMD neural path itself is D3D12; D3D11 and
+  Vulkan titles reach it through OptiScaler's D3D12 bridge, which means the upscaler must be
+  one of the "w/Dx12" backends (`ffx_12`). Leave `Dx11Upscaler` / `VulkanUpscaler` on `auto`
+  and this build picks it for you when neural rendering is on.
 - About 2 GB of spare VRAM at 1080p-class render resolutions.
 
-## What is in the box
+## What is in the two archives
+
+**AMDNR-vX.X.X.zip**
 
 | File | What it is |
 |---|---|
-| `dxgi.dll` | OptiScaler with the DLSS-NR AMD backend. Rename it if your game needs another proxy. |
+| `OptiScaler.dll` | OptiScaler with the DLSS-NR AMD backend. Rename it as the guide says. |
 | `OptiScaler.ini` | Settings. Neural Rendering is enabled; logging is on so a bug report has something to attach. |
-| `dlssnr_amd_pass1..3.dll` | The AMD neural runtime, v0.3.1. Three copies so multi-pass has one per pass. |
+| `LmxxfNrRuntime.dll` | The lmxxf neural runtime (0.3.0). Used only when chosen; reads `LmxxfNrRuntime.pak` beside it, see "The lmxxf runtime". |
+| `LmxxfNrRuntime.pak` | The lmxxf runtime's weights, HIP modules and shaders in one encrypted file (382 MB). Only the lmxxf runtime reads it; harmless to keep with the danielblnc runtime. |
+| `OptiScaler\` | FSR, XeSS, the FidelityFX denoiser and the D3D12 Agility SDK OptiScaler uses. |
+| `Licenses\`, `LICENSE` | Third-party licences and the GPL-3.0 licence of this build. |
+| `SHA256SUMS.txt` | Checksums of every shipped file, both archives. |
+
+**Runtime.zip**
+
+| File | What it is |
+|---|---|
+| `dlssnr_amd_pass1..3.dll` | The AMD neural runtime, danielblnc's v0.3.1, unmodified. Three copies so multi-pass has one per pass. |
 | `dlssnr_on_amd_weights.bin` | The network weights the runtime loads. |
-| `nvngx.dll_dlssnr.dll` | Forwarder for the NVIDIA path. Harmless on AMD. |
-| `OptiScaler\` | FSR and XeSS libraries OptiScaler uses for upscaling and frame generation. |
 
 ## Settings worth knowing
 
-Open the **Neural** tab. The defaults are the most recent tested arrangement, so the
-useful first move is to change one thing at a time rather than five.
+Open the **Neural** tab. The defaults are the most recent tested arrangement, so the useful first
+move is to change one thing at a time.
 
-**NR resolution** — the main quality/cost lever. Below 100% the model works on a
-smaller picture and only its *correction* is carried back up to the full-resolution
-frame, so the frame keeps its own detail. Above 100% the model works on a *larger*
-picture; cost grows with the square, so 150% is 2.25× the model time.
-
-**Residual strength** — how much of the model's edit is applied. Above 1 it
-amplifies. This is the effect-strength control the AMD path does not otherwise have,
-and it is the one that changes the picture most.
-
-**Residual limit** — a ceiling on how far one pixel may move. If you see blotchy
-patches, **lower** this. It is a ceiling, so a higher number lets more through. The
-patches come from the network itself: it works in tiles, and a tile where it
-extrapolated rather than saw returns something far outside its usual range. Extra
-passes make it worse, because each pass runs on top of the last one's blown tile.
-
-**Model interleave** — runs the model every second frame for a large frame-rate gain.
-The frames it skips have to be filled, and how they are filled is the **Interleave
-preset**. This is the part still under active work; if it looks worse than leaving it
-off in your game, that is worth reporting, not a sign you configured it wrongly.
-
-**Residual temporal (no interleave)** — smooths the model's *edit* over time instead
-of the picture. The network re-decides each pixel on every call, and on emissive
-content its answer moves even when the scene does not; that is the flicker. Averaging
-the picture to damp it is what makes ghosts. Averaging only the correction damps the
-same jitter and cannot ghost, because every pixel of geometry on screen is still this
-frame's.
-
-**Neural passes** — 2 and 3 stack the model. Expect diminishing returns: it is a
-denoiser, and a second pass finds much less left to do than the first.
+- **NR resolution** — the main quality/cost lever. Below 100% the model works on a smaller
+  picture and only its *correction* is carried back up to the full-resolution frame, so the
+  frame keeps its own detail. Above 100% cost grows with the square (150% is 2.25x).
+- **Residual strength** — how much of the model's edit is applied; above 1 it amplifies. This is
+  the control that changes the picture most.
+- **Residual limit** — a ceiling on how far one pixel may move. Blotchy patches: **lower** it.
+- **Model interleave** — runs the model every second frame for a large frame-rate gain. The
+  skipped frames are filled by the **Interleave preset**; *Guided fill v2* is the default and
+  the one under active work. Pacing of the two frame types is automatic.
+- **Neural passes** — 2 and 3 stack the model, with diminishing returns. Under lmxxf the
+  network's history stays its first pass; the extra passes are spatial refinement only.
+- **Frame generation is off in a fresh ini.** Frame Gen tab: choose the FG Input (e.g. "DLSSG via
+  Streamline" in a game with DLSS frame generation) and FG Output (XeFG), then tick **Active** in
+  the Frame Generation (XeFG) section and press Save Settings. A 0.1.0 ini that had it on is not
+  carried over when you install 0.2.0's ini.
+- **XeFG multi-frame generation** — 3X to 6X is built in and on by default (`XeFG\UnlockMFG`),
+  for OptiScaler's copy and the game's own. **Delete `XeFGUnlock.asi`** from `OptiScaler\plugins`
+  if you still have it: two copies of the same patch crash the game.
+- **FSR Ray Regeneration** — only in games that use DLSS Ray Reconstruction (Cyberpunk 2077,
+  Alan Wake 2), with the game running DLSS (spoofing on), ray tracing and Ray Reconstruction
+  enabled in its own settings. Neural Rendering then runs after it, on its output, which costs
+  more: lower the NR resolution if the frame rate drops.
 
 ## If something goes wrong
 
-`OptiScaler.log` appears in the game folder. Attach it, and say which game and which
-GPU. The AMD backend also writes `amd_presr.log` and `amd_bridge.log`, which are the
-useful ones when the neural pass specifically misbehaves.
+`OptiScaler.log` appears in the game folder. Attach it in `#bug-report`, and say which game and
+which GPU. The AMD backend also writes `amd_presr.log` and `amd_bridge.log`, which are the useful
+ones when the neural pass specifically misbehaves.
 
-`SHA256SUMS.txt` lists every shipped file if you want to check the download.
+**The Last of Us Part I crashes on boot?** That is the game's own Streamline init, a known
+OptiScaler issue: rename `sl.common.dll` in the game folder to `sl.common.dll.bak` and pick
+**FSR 3.1** in the game's settings instead of DLSS.
+
+Full notes for this version: `RELEASE-NOTES.md` in the repository.
+
+## Roadmap
+
+- **0.3.0** (this build) — the **lmxxf** HIP neural runtime (RDNA 4) as a selectable runtime
+  beside danielblnc's, shipped as `LmxxfNrRuntime.dll` + `LmxxfNrRuntime.pak`: network history,
+  real Neural passes, the edit shaper, the after-Ray-Regeneration placement, per-title
+  diagnostics and self-healing. Many thanks to TheAutomatic, whose DLSS 5 AMD project work
+  this integration builds on.
+- **0.4.0** — the AMDNR Launcher (one-click install of the runtimes and the pak, updates) and
+  support for titles without an upscaler of their own (Stray-class), where OptiScaler supplies
+  the upscaler and the neural pass together.
 
 ---
 
 ## Credits
 
-This build stands on three projects. It is a wiring job over their work, not a
-replacement for it — if you find this useful, the thanks belong upstream.
+This build is a wiring job over other people's work. If you find it useful, the thanks belong
+upstream.
 
-**DLSS-NR on AMD** — *danielblnc*
-<https://github.com/danielblnc/DLSS-NR-on-AMD/releases/tag/v0.3.1>
-The neural runtime itself: `dlssnr_amd_pass1..3.dll` and `dlssnr_on_amd_weights.bin`
-in this archive are his v0.3.1 release, redistributed unmodified so the package works
-without a second download. Everything the network actually computes is his.
+- **DLSS-NR on AMD** — *danielblnc* — <https://github.com/danielblnc/DLSS-NR-on-AMD>
+  The AMD neural runtime and weights in `Runtime.zip` are his v0.3.1 release, redistributed
+  unmodified. Everything the network actually computes is his.
+- **DLSS 5 AMD project** — *TheAutomatic* — <https://github.com/TheAutomatic/dlss-5-amd-project>
+  Groundwork and reference for DLSS 5 Neural Rendering on AMD hardware; the lmxxf runtime
+  integration shipped in 0.3.0 follows his work. Many thanks.
+- **Matheus / dlss-5-amd** — <https://github.com/MatheusGViana/dlss-5-amd-project>
+  The AMD pre-SR bridge this tree descends from.
+- **lmxxf / dlss5-on-amd-9070xt-porting** — <https://github.com/lmxxf/dlss5-on-amd-9070xt-porting>
+  Open-source HIP neural rendering runtime (MIT); the difference-gated temporal mode here follows
+  his `native_output_smooth`.
+- **OptiScaler** — *Overclockers* and contributors — <https://github.com/Overclockers/OptiScaler-Releases>
+  The framework this is built into: the hooking, the FSR/XeSS/frame-generation plumbing, the
+  menu, and the game compatibility that makes any of it reachable.
 
-**OptiScaler** — *Overclockers* and contributors
-<https://github.com/Overclockers/OptiScaler-Releases>
-The upscaler framework this is built into: the hooking, the FSR/XeSS/frame-generation
-plumbing, the menu, and the game compatibility that makes any of it reachable.
-
-**DLSS 5 AMD project** — *TheAutomatic*
-<https://github.com/TheAutomatic/dlss-5-amd-project>
-Reference and groundwork for running DLSS 5 Neural Rendering on AMD hardware.
+Code lineage: OptiScaler → Dagherbou / OptiScaler_DLSSNR → wilsjo2 this build. The XeFG unlock and pacing are ported from Coldwood1026's
+XeFGUnlock (GPL-3.0); the `CubeScale` gamut handling is *hhkbble*'s.
 
 ## Legal
 
-OptiScaler is distributed under the licence in `LICENSE`; third-party library licences
-are in `Licenses\`.
+This build is distributed under the GPL-3.0 licence in `LICENSE`; third-party library licences are
+in `Licenses\`. The AMD neural runtime and its weights are redistributed under their original
+authorship as credited above, for convenience only, with no ownership claimed and no warranty
+offered.
 
-The AMD neural runtime and its weights are redistributed here under their original
-authorship as credited above. They are included for convenience only — no ownership is
-claimed over them, and no warranty is offered for them.
-
-**NVIDIA's `nvngx` is not in this archive and will not be.** It is NVIDIA's
-file. The AMD path does not need it; it is only relevant if you run the NVIDIA
-backend, in which case you supply your own copy.
-
-None of this is endorsed by, affiliated with, or supported by NVIDIA, AMD, or any game
-publisher. It drives an undocumented feature directly. Use it at your own risk.
+NVIDIA's `nvngx` is not in these archives. None of this is endorsed by, affiliated
+with, or supported by NVIDIA, AMD, or any game publisher. It drives an undocumented feature
+directly. Use it at your own risk.

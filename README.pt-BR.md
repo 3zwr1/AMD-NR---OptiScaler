@@ -1,6 +1,6 @@
 # AMDNR — DLSS 5 Neural Rendering em GPUs AMD (build OptiScaler) — v0.3.1
 
-[English](README.md) | [中文](README.zh-CN.md) | **Português**
+[English](README.md) | [中文](README.zh-CN.md) | **Português**  | [Español](README.es.md)
 
 > **Precisamos do seu apoio.** Entre no servidor do Discord — <https://discord.gg/QzbzxfKYyh> — para
 > ajuda, relatos de bugs e builds de teste; cada relato com um log torna a próxima build melhor.

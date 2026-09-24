@@ -2,7 +2,7 @@
 
 [English](README.md) | **中文** | [Português](README.pt-BR.md) | [Español](README.es.md)
 
-> **我们需要你的支持。** 加入 Discord 服务器 —— <https://discord.gg/QzbzxfKYyh> —— 获取帮助、提交
+> **我们需要你的支持。** 加入 Discord 服务器 —— <[AMDNR](https://discord.gg/AMDNR)> —— 获取帮助、提交
 > 问题、领取测试版；每一份带日志的反馈都会让下一个版本更好。
 
 DLSS 5 神经渲染（Neural Rendering）在 AMD 显卡上运行，内置于 OptiScaler，因此 OptiScaler 能挂钩的
@@ -10,7 +10,7 @@ DLSS 5 神经渲染（Neural Rendering）在 AMD 显卡上运行，内置于 Opt
 残差合成（residual composition）、解锁至 6X 的 XeSS 帧生成，以及面向使用 DLSS 光线重建游戏的
 FSR Ray Regeneration。
 
-**Discord：<https://discord.gg/QzbzxfKYyh>** —— 支持、问题反馈（`#bug-report`）、测试版。如果你
+**Discord：https://discord.gg/AMDNR** —— 支持、问题反馈（`#bug-report`）、测试版。如果你
 需要 N 的 `nvn`，可以在那里获取；它不在本压缩包中，AMD 路径也不需要它。
 
 **支持本项目：<https://ko-fi.com/3zinr>**

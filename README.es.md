@@ -1,4 +1,4 @@
-# AMDNR — DLSS 5 Neural Rendering en AMD (build de OptiScaler) — v0.3.2
+# FSRNR — DLSS 5 Neural Rendering en AMD (build de OptiScaler) — v0.3.2
 
 [English](README.md) | [中文](README.zh-CN.md) | [Português](README.pt-BR.md) | **Español**
 
@@ -18,7 +18,7 @@ estos archivos y la ruta AMD no lo necesita.
 
 ---
 
-## AMDNR - Guía de instalación de OptiScaler
+## FSRNR - Guía de instalación de OptiScaler
 
 La instalación es bastante sencilla.
 
@@ -26,7 +26,7 @@ La instalación es bastante sencilla.
 
 Descarga estos dos archivos desde GitHub:
 
-* `AMDNR-vX.X.X.zip`
+* `FSRNR-vX.X.X.zip`
 * `Runtime.zip`
 
 ### 2. Extrae ambos archivos
@@ -35,7 +35,7 @@ Extrae el contenido de los dos archivos `.zip`.
 
 ### 3. Copia todo a la carpeta del juego
 
-Primero, copia todos los archivos de `AMDNR-vX.X.X` a la carpeta raíz del juego — la misma carpeta
+Primero, copia todos los archivos de `FSRNR-vX.X.X` a la carpeta raíz del juego — la misma carpeta
 donde está el `.exe` del juego.
 
 Después, haz lo mismo con todos los archivos de `Runtime`.
@@ -72,7 +72,7 @@ Inicia el juego normalmente y pulsa:
 
 `INSERT`
 
-Esto abre el menú de OptiScaler / AMDNR, donde puedes configurar el mod como prefieras.
+Esto abre el menú de OptiScaler / FSRNR, donde puedes configurar el mod como prefieras.
 
 ### Si no funciona
 
@@ -95,7 +95,7 @@ Un segundo runtime neural (licencia MIT, de lmxxf) puede ejecutar el pase en lug
 danielblnc. Solo RDNA 4. Necesita dos cosas junto al juego:
 
 1. `LmxxfNrRuntime.dll` - en este archivo, junto a `OptiScaler.dll` (se copia con el resto).
-2. `LmxxfNrRuntime.pak` (382 MB, incluido en el zip de AMDNR) junto a `LmxxfNrRuntime.dll` - los
+2. `LmxxfNrRuntime.pak` (382 MB, incluido en el zip de FSRNR) junto a `LmxxfNrRuntime.dll` - los
    pesos, módulos HIP y HLSL de lmxxf en un solo archivo cifrado y autenticado. El runtime lo abre
    en memoria; nada se desempaqueta en disco. La distribución antigua en carpeta sigue funcionando
    en lugar del pak: `DLSS5-AMD\native-game-tiled-assets\` (unos 575 MB), de las releases del propio
@@ -247,7 +247,7 @@ Notas completas de esta versión: `RELEASE-NOTES.md` en el repositorio.
   Neural passes reales, el modelador de la edición, la posición después de Ray Regeneration,
   diagnósticos por título y autorreparación. Muchas gracias a TheAutomatic, sobre cuyo trabajo en
   el proyecto DLSS 5 AMD se construye esta integración.
-- **0.4.0** — el AMDNR Launcher (instalación en un clic de los runtimes y el pak, actualizaciones) y
+- **0.4.0** — el FSRNR Launcher (instalación en un clic de los runtimes y el pak, actualizaciones) y
   soporte para títulos sin upscaler propio (clase Stray), donde OptiScaler aporta el upscaler y el
   pase neural juntos.
 

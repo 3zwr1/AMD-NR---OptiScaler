@@ -10,7 +10,7 @@ Direct3D 12 game OptiScaler already hooks. On top of the neural pass: model inte
 large frame-rate gain, residual composition, XeSS frame generation unlocked up to 6X, and FSR
 Ray Regeneration for games that use DLSS Ray Reconstruction.
 
-**Discord: <https://discord.gg/QzbzxfKYyh>** — support, bug reports (`#bug-report`), test
+**Discord: https://discord.gg/AMDNR** — support, bug reports (`#bug-report`), test
 builds. If you need NVI's `nvn.dll` for anything, it is available there; it is not
 in these archives and the AMD path does not need it.
 

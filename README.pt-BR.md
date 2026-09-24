@@ -1,4 +1,4 @@
-# FSRNR — DLSS 5 Neural Rendering em GPUs AMD (build OptiScaler) — v0.3.2
+# AMDNR — DLSS 5 Neural Rendering em GPUs AMD (build OptiScaler) — v0.3.2
 
 [English](README.md) | [中文](README.zh-CN.md) | **Português** | [Español](README.es.md)
 
@@ -18,7 +18,7 @@ lá; não está nestes arquivos e o caminho AMD não precisa dele.
 
 ---
 
-## FSRNR - Guia de instalação do OptiScaler
+## AMDNR - Guia de instalação do OptiScaler
 
 A instalação é bem simples.
 
@@ -26,7 +26,7 @@ A instalação é bem simples.
 
 Baixe estes dois arquivos do GitHub:
 
-* `FSRNR-vX.X.X.zip`
+* `AMDNR-vX.X.X.zip`
 * `Runtime.zip`
 
 ### 2. Extraia os dois arquivos
@@ -35,7 +35,7 @@ Extraia o conteúdo dos dois arquivos `.zip`.
 
 ### 3. Copie tudo para a pasta do jogo
 
-Primeiro, copie todos os arquivos de `FSRNR-vX.X.X` para a pasta raiz do jogo — a mesma pasta onde
+Primeiro, copie todos os arquivos de `AMDNR-vX.X.X` para a pasta raiz do jogo — a mesma pasta onde
 fica o `.exe` do jogo.
 
 Depois, faça o mesmo com todos os arquivos de `Runtime`.
@@ -72,7 +72,7 @@ Inicie o jogo normalmente e pressione:
 
 `INSERT`
 
-Isso abre o menu do OptiScaler / FSRNR, onde você configura o mod como quiser.
+Isso abre o menu do OptiScaler / AMDNR, onde você configura o mod como quiser.
 
 ### Se não funcionar
 
@@ -94,7 +94,7 @@ Um segundo runtime neural (licença MIT, do lmxxf) pode executar o passo no luga
 danielblnc. Somente RDNA 4. Ele precisa de duas coisas ao lado do jogo:
 
 1. `LmxxfNrRuntime.dll` — neste arquivo, ao lado de `OptiScaler.dll` (é copiado junto com o resto).
-2. `LmxxfNrRuntime.pak` (382 MB, incluído no zip do FSRNR) ao lado de `LmxxfNrRuntime.dll` — os
+2. `LmxxfNrRuntime.pak` (382 MB, incluído no zip do AMDNR) ao lado de `LmxxfNrRuntime.dll` — os
    pesos, os módulos HIP e os shaders do lmxxf em um único arquivo criptografado e autenticado,
    aberto em memória.
 
@@ -238,7 +238,7 @@ Notas completas desta versão: `RELEASE-NOTES.md` no repositório.
   history, Neural passes reais, o edit shaper, a posição depois do Ray Regeneration, diagnóstico por
   jogo e autocorreção. Muito obrigado ao TheAutomatic, em cujo trabalho no DLSS 5 AMD project esta
   integração se apoia.
-- **0.4.0** — o FSRNR Launcher (instalação em um clique dos runtimes e do pak, atualizações) e
+- **0.4.0** — o AMDNR Launcher (instalação em um clique dos runtimes e do pak, atualizações) e
   suporte a jogos sem upscaler próprio (classe Stray), em que o OptiScaler fornece o upscaler e o
   passo neural juntos.
 

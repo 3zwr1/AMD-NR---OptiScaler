@@ -1,4 +1,4 @@
-# AMDNR — AMD 显卡上的 DLSS 5 神经渲染（OptiScaler 构建版）— v0.3.2
+# FSRNR — AMD 显卡上的 DLSS 5 神经渲染（OptiScaler 构建版）— v0.3.2
 
 [English](README.md) | **中文** | [Português](README.pt-BR.md) | [Español](README.es.md)
 
@@ -17,7 +17,7 @@ FSR Ray Regeneration。
 
 ---
 
-## AMDNR - OptiScaler 安装指南
+## FSRNR - OptiScaler 安装指南
 
 安装非常简单。
 
@@ -25,7 +25,7 @@ FSR Ray Regeneration。
 
 从 GitHub 下载这两个文件：
 
-* `AMDNR-vX.X.X.zip`
+* `FSRNR-vX.X.X.zip`
 * `Runtime.zip`
 
 ### 2. 解压两个文件
@@ -34,7 +34,7 @@ FSR Ray Regeneration。
 
 ### 3. 把所有文件复制到游戏目录
 
-先把 `AMDNR-vX.X.X` 里的全部文件复制到游戏根目录 —— 也就是游戏 `.exe` 所在的文件夹。
+先把 `FSRNR-vX.X.X` 里的全部文件复制到游戏根目录 —— 也就是游戏 `.exe` 所在的文件夹。
 
 然后把 `Runtime` 里的全部文件同样复制过去。
 
@@ -70,7 +70,7 @@ Neural 选项卡中 Enable 复选框旁边、或 Interface > Keybinds 下重新�
 
 `INSERT`
 
-这会打开 OptiScaler / AMDNR 菜单，你可以在里面随意配置模组。
+这会打开 OptiScaler / FSRNR 菜单，你可以在里面随意配置模组。
 
 ### 如果不起作用
 
@@ -91,7 +91,7 @@ Neural 选项卡中 Enable 复选框旁边、或 Interface > Keybinds 下重新�
 它需要游戏目录旁的两个东西：
 
 1. `LmxxfNrRuntime.dll` —— 在本压缩包中，与 `OptiScaler.dll` 并列（会随其余文件一起复制）。
-2. `LmxxfNrRuntime.pak`（382 MB，已包含在 AMDNR 压缩包中），放在 `LmxxfNrRuntime.dll` 旁边 —— lmxxf 的
+2. `LmxxfNrRuntime.pak`（382 MB，已包含在 FSRNR 压缩包中），放在 `LmxxfNrRuntime.dll` 旁边 —— lmxxf 的
    权重文件、HIP 模块和 HLSL 打包成一个加密并带完整性校验的文件。运行时在内存中打开它，不会向磁盘
 
 

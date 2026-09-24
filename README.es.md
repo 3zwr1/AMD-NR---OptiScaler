@@ -2,7 +2,7 @@
 
 [English](README.md) | [中文](README.zh-CN.md) | [Português](README.pt-BR.md) | **Español**
 
-> **Necesitamos tu apoyo.** Únete al servidor de Discord — <https://discord.gg/QzbzxfKYyh> — para
+> **Necesitamos tu apoyo.** Únete al servidor de Discord — https://discord.gg/AMDNR — para
 > ayuda, reportes de errores y builds de prueba; cada reporte con un log hace mejor la siguiente build.
 
 DLSS 5 Neural Rendering funcionando en GPUs AMD, integrado en OptiScaler para que funcione en
@@ -10,7 +10,7 @@ cualquier juego Direct3D 12 que OptiScaler ya engancha. Sobre el pase neural: mo
 una gran ganancia de fotogramas, composición residual, generación de fotogramas XeSS desbloqueada
 hasta 6X, y FSR Ray Regeneration para los juegos que usan DLSS Ray Reconstruction.
 
-**Discord: <https://discord.gg/QzbzxfKYyh>** — soporte, reportes de errores (`#bug-report`), builds
+**Discord: https://discord.gg/AMDNR** — soporte, reportes de errores (`#bug-report`), builds
 de prueba. Si necesitas el `nvn.dll` de  para algo, está disponible allí; no viene en
 estos archivos y la ruta AMD no lo necesita.
 

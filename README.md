@@ -2,7 +2,7 @@
 
 **English** | [中文](README.zh-CN.md) | [Português](README.pt-BR.md) | [Español](README.es.md)
 
-> **We need your support.** Join the Discord server — <https://discord.gg/QzbzxfKYyh> — for
+> **We need your support.** Join the Discord server — <[AMDNR](https://discord.gg/AMDNR)> — for
 > help, bug reports and test builds; every report with a log makes the next build better.
 
 DLSS 5 Neural Rendering running on AMD GPUs, built into OptiScaler so it works in any

@@ -258,8 +258,6 @@ upstream.
 - **DLSS 5 AMD project** — *TheAutomatic* — <https://github.com/TheAutomatic/dlss-5-amd-project>
   Groundwork and reference for DLSS 5 Neural Rendering on AMD hardware; the lmxxf runtime
   integration shipped in 0.3.0 follows his work. Many thanks.
-- **Matheus / dlss-5-amd** — <https://github.com/MatheusGViana/dlss-5-amd-project>
-  The AMD pre-SR bridge this tree descends from.
 - **lmxxf / dlss5-on-amd-9070xt-porting** — <https://github.com/lmxxf/dlss5-on-amd-9070xt-porting>
   Open-source HIP neural rendering runtime (MIT); the difference-gated temporal mode here follows
   his `native_output_smooth`.

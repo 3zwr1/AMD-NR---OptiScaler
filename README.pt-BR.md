@@ -1,4 +1,4 @@
-# AMDNR — DLSS 5 Neural Rendering em GPUs AMD (build OptiScaler) — v0.3.3
+# AMDNR — DLSS 5 Neural Rendering em GPUs AMD (build OptiScaler) — v0.3.3.1
 
 [English](README.md) | [中文](README.zh-CN.md) | **Português** | [Español](README.es.md)
 
@@ -14,6 +14,12 @@ grande ganho de taxa de quadros, composição residual, geração de quadros XeS
 teste.
 
 **Apoie o projeto: <https://ko-fi.com/3zinr>**
+
+> **O runtime do danielblnc é trabalho de Daniel Blanco.** O runtime neural AMD em `Runtime.zip`
+> (`dlssnr_amd_pass1..3.dll`) é o **DLSS-NR on AMD de Daniel Blanco (danielblnc)** -
+> <https://github.com/danielblnc/DLSS-NR-on-AMD>. Copyright (c) 2026 Daniel Blanco, todos os direitos reservados.
+> O AMDNR o distribui sem modificações, com a permissão dele; não é trabalho do AMDNR. Por favor, apoie o projeto dele.
+> Os créditos completos de todos os outros estão no fim desta página.
 
 ---
 
@@ -291,6 +297,8 @@ Notas completas de cada versão: `CHANGELOG.md` (no zip e no repositório).
   alinhadas às do danielblnc (auto-exposição), o combo de runtime, status e ajuste do Ray Reconstruction;
   o dlssg-to-fsr3 do Nukem9 no zip para geração de quadros em Vulkan.
 - **0.3.1** — correções dos primeiros relatos do 0.3.0 (lmxxf sozinho nunca rodava, NR
+  silencioso no Where Winds Meet, crash ao trocar a qualidade do DLSS, GTA V Legacy) e presets de
+  estilo do NR com três slots personalizados.
 - **0.3.0** — o runtime neural HIP **lmxxf** (RDNA 4) como runtime selecionável ao
   lado do do danielblnc, distribuído como `LmxxfNrRuntime.dll` + `LmxxfNrRuntime.pak`: histórico
   da rede, Neural passes reais, o modelador da edição, a posição depois do Ray Regeneration, diagnóstico por

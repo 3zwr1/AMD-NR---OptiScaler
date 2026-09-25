@@ -3,6 +3,33 @@
 Many thanks to **TheAutomatic** (DLSS 5 AMD project) — the releases, the HIP toolchain and the asset
 layout that the lmxxf runtime integration in 0.3.0 builds on.
 
+## 0.3.3.1 — 2026-09-25
+
+Hotfix: danielblnc's new runtime 0.3.3 is supported (and 0.4.0 / 0.4.1 ahead of their release), and FSR Ray Regeneration's path-traced profile is
+opt-in again (it corrupted the picture in Resident Evil Requiem). Only `OptiScaler.dll` and the ini changed;
+`LmxxfNrRuntime.dll` and `LmxxfNrRuntime.pak` are the same as in 0.3.3.
+
+### Added
+- **danielblnc 0.3.3 is supported (new, not yet tested in a game).** AMDNR now drives danielblnc's 0.3.3
+  runtime (pass DLL 7,607,296 bytes, SHA256 907b30a6...) as well as 0.2.17, 0.3.0, 0.3.1 and 0.3.2. In
+  0.3.3 every address AMDNR uses moved (its data section moved and grew). They were worked out twice,
+  independently, from the file, and both results agreed. The build has not run on a GPU yet. The existing
+  `dlssnr_on_amd_weights.bin` works with it unchanged. The release has a new `v0.3.3-Runtime.zip`
+  (danielblnc's 0.3.3 runtime, unmodified, with his permission, plus the weights); `Runtime.zip` (0.3.1) and
+  `v0.3.2-Runtime.zip` still work.
+- **danielblnc 0.4.0 and 0.4.1 are supported ahead of their release.** Daniel shared them early so that
+  AMDNR works with them on the day they come out: drop his new runtime in and this build drives it, with no
+  AMDNR update needed. Both were derived twice, independently, and both results agreed for each; the host
+  contract is unchanged from 0.3.3. Not yet run on a GPU. The existing weights file works with both.
+
+### Fixed
+- **FSR Ray Regeneration in Resident Evil Requiem and PRAGMATA: the path-traced profile is opt-in again.**
+  In 0.3.3 it turned on by itself in these two games. A tester's report from Resident Evil Requiem (RX 9070 XT)
+  shows that it cleared most of the grain on faces but badly corrupted the rest of the picture. It is now off
+  unless you tick *FSR Ray Regeneration: path-traced profile* (Neural > Quality) or set
+  `[FSR-RR] FfxDenoiserPathTracedProfile=true`, so by default these games look as they did in 0.3.2. The
+  profile itself is unchanged. The cause is being investigated for 0.3.4.
+
 ## 0.3.3 — 2026-09-24
 
 lmxxf on RDNA 3 (RX 7000), an optional RenoDX colour composition on both runtimes, the real fix for lmxxf
@@ -104,8 +131,8 @@ link in this release point to it; the old invite still works.
   off for the session (logged) if the swapchain's waitable object is not what it expects. Not yet tested in
   a game.
 - **FSR Ray Regeneration: bias mask routing, a debug view and skin smoothing (experimental)** (Neural >
-  Quality > Ray Regeneration, all live; `[FSR-RR] FfxDenoiser`, `FfxDenoiser`,
-  `FfxDenoiser*`). Bias mask strength decides whether the pixels a game flags in its DLSS bias
+  Quality > Ray Regeneration, all live; `[FSR-RR] FfxDenoiserBiasMaskStrength`, `FfxDenoiserDebugMode`,
+  `FfxDenoiserSkinSmoothing*`). Bias mask strength decides whether the pixels a game flags in its DLSS bias
   mask go around Ray Regeneration or through it; the RR debug view picks one of RR's internal images by
   name, to see where face grain comes from; skin smoothing (AMDNR, off by default) evens out the
   low-frequency blotches on faces in games that publish an SSS guide (Resident Evil Requiem), changing only
@@ -146,7 +173,7 @@ link in this release point to it; the old invite still works.
   - Its "HIP runtime 0" reads 0 on every machine under OptiScaler.
   - Leave dlssnr_on_amd.ini as it is: AMDNR runs this runtime inline, and async mode would pass the colour
     through untouched.
-  - With `AmdVkLateWait` on (below), the amd_bridge.log line says the key is on and leaves out the
+  - With `AmdVkLateCopyWait` on (below), the amd_bridge.log line says the key is on and leaves out the
     "5 s" first-frame pause and "NOT seen" sentences, as the note in the Neural tab does.
 - **A Vulkan gap line for both runtimes (diagnostic).** When more than a second passes between two NR
   frames on a Vulkan title, the log says "AMD vk: no Record for N ms - either the game did not reach

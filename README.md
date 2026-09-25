@@ -1,4 +1,4 @@
-# AMDNR — DLSS 5 Neural Rendering on AMD (OptiScaler build) — v0.3.3
+# AMDNR — DLSS 5 Neural Rendering on AMD (OptiScaler build) — v0.3.3.1
 
 **English** | [中文](README.zh-CN.md) | [Português](README.pt-BR.md) | [Español](README.es.md)
 
@@ -14,6 +14,12 @@ opt-in in D3D12 games), and FSR Ray Regeneration for games that use DLSS Ray Rec
 builds.
 
 **Support the project: <https://ko-fi.com/3zinr>**
+
+> **The danielblnc runtime is Daniel Blanco's work.** The AMD neural runtime in `Runtime.zip`
+> (`dlssnr_amd_pass1..3.dll`) is **DLSS-NR on AMD by Daniel Blanco (danielblnc)** -
+> <https://github.com/danielblnc/DLSS-NR-on-AMD>. Copyright (c) 2026 Daniel Blanco, all rights reserved.
+> AMDNR ships it unmodified, with his permission; it is not AMDNR's work. Please support his project.
+> Full credits for everyone else are at the end of this page.
 
 ---
 
@@ -131,7 +137,7 @@ brightness change, and a fade of the edit across depth edges) and **Output smoot
 (upstream's output-side pass, needs Network history). Neural passes, Residual strength/limit,
 sharpening, Debug view 1 and the Appearance filter apply under both runtimes.
 
-**Full network** (Neural > Performance, `[DlssNr] LmxxfNetwrok``, lmxxf only) runs all 71 of the
+**Full network** (Neural > Performance, `[DlssNr] LmxxfFullNetwork`, lmxxf only) runs all 71 of the
 network's blocks instead of skipping 42, 43 and 46: slightly more faithful, about 0.5 ms slower at 1080p
 (16.6 -> 17.1 ms on an RX 9070 XT). Off by default.
 
@@ -287,6 +293,9 @@ Full notes for every version: `CHANGELOG.md` (in the zip and in the repository).
   matched to danielblnc's (auto-exposure), the runtime combo, Ray Reconstruction status and tuning;
   Nukem9's dlssg-to-fsr3 in the zip for frame generation on Vulkan.
 - **0.3.1** — fixes from the first 0.3.0 reports (lmxxf alone never ran, Where Winds
+  Meet's silent NR, the crash on a DLSS-quality change) and NR style presets with
+  Meet's silent NR, the crash on a DLSS-quality change) and NR style presets with
+  three custom slots.
 - **0.3.0** — the **lmxxf** HIP neural runtime (RDNA 4) as a selectable runtime
   beside danielblnc's, shipped as `LmxxfNrRuntime.dll` + `LmxxfNrRuntime.pak`: network history,
   real Neural passes, the edit shaper, the after-Ray-Regeneration placement, per-title

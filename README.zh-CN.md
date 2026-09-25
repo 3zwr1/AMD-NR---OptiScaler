@@ -1,4 +1,4 @@
-# AMDNR — AMD 显卡上的 DLSS 5 神经渲染（OptiScaler 构建版）— v0.3.3
+# AMDNR — AMD 显卡上的 DLSS 5 神经渲染（OptiScaler 构建版）— v0.3.3.1
 
 [English](README.md) | **中文** | [Português](README.pt-BR.md) | [Español](README.es.md)
 
@@ -13,6 +13,11 @@ DLSS 光线重建游戏的 FSR Ray Regeneration。
 **Discord：<https://discord.gg/AMDNR>** —— 支持、问题反馈（`#bug-report`）、测试版。
 
 **支持本项目：<https://ko-fi.com/3zinr>**
+
+> **danielblnc 运行时是 Daniel Blanco 的作品。** `Runtime.zip` 中的 AMD 神经运行时（`dlssnr_amd_pass1..3.dll`）是
+> **Daniel Blanco（danielblnc）的 DLSS-NR on AMD** —— <https://github.com/danielblnc/DLSS-NR-on-AMD>。
+> Copyright (c) 2026 Daniel Blanco，保留所有权利。AMDNR 经他许可，未经修改地分发它；它不是 AMDNR 的作品。
+> 请支持他的项目。其他所有人的完整致谢见本页末尾。
 
 ---
 
@@ -250,7 +255,8 @@ OptiScaler 问题：把游戏目录中的 `sl.common.dll` 重命名为 `sl.commo
   Regeneration 路径追踪配置与皮肤平滑；UE5 健壮性改进。
 - **0.3.2** —— 0.3.1 的反馈：Vulkan 游戏可启动并可运行 lmxxf、lmxxf 色彩与 danielblnc 对齐（自动曝光）、
   运行时下拉框、光线重建状态与调节；zip 内附 Nukem9 的 dlssg-to-fsr3，用于 Vulkan 帧生成。
-- **0.3.1** —— 
+- **0.3.1** —— 修复 0.3.0 首批反馈的问题（仅安装 lmxxf 时从不运行、燕云十六声（Where Winds Meet）NR 无效、切换 DLSS
+  画质时崩溃、GTA V Legacy），并新增 NR 风格预设与三个自定义槽位。
 - **0.3.0** —— **lmxxf** HIP 神经运行时（RDNA 4）作为可选运行时与 danielblnc 的并列，以
   `LmxxfNrRuntime.dll` + `LmxxfNrRuntime.pak` 发布：网络历史、真实的 Neural passes、编辑整形器、光线
   重建之后的位置、逐游戏诊断与自我修复。特别感谢 TheAutomatic，本次集成建立在他的 DLSS 5 AMD

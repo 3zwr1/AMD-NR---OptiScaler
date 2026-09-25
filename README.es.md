@@ -1,18 +1,18 @@
-# AMDNR — DLSS 5 Neural Rendering en AMD (build de OptiScaler) — v0.3.2
+# AMDNR — DLSS 5 Neural Rendering en AMD (build de OptiScaler) — v0.3.3
 
 [English](README.md) | [中文](README.zh-CN.md) | [Português](README.pt-BR.md) | **Español**
 
-> **Necesitamos tu apoyo.** Únete al servidor de Discord — https://discord.gg/AMDNR — para
+> **Necesitamos tu apoyo.** Únete al servidor de Discord — <https://discord.gg/AMDNR> — para
 > ayuda, reportes de errores y builds de prueba; cada reporte con un log hace mejor la siguiente build.
 
 DLSS 5 Neural Rendering funcionando en GPUs AMD, integrado en OptiScaler para que funcione en
 cualquier juego Direct3D 12 que OptiScaler ya engancha. Sobre el pase neural: model interleave para
 una gran ganancia de fotogramas, composición residual, generación de fotogramas XeSS desbloqueada
-hasta 6X, y FSR Ray Regeneration para los juegos que usan DLSS Ray Reconstruction.
+hasta 6X (hasta 10X opcional en juegos D3D12), y FSR Ray Regeneration para los juegos que usan DLSS
+Ray Reconstruction.
 
-**Discord: https://discord.gg/AMDNR** — soporte, reportes de errores (`#bug-report`), builds
-de prueba. Si necesitas el `nvn.dll` de  para algo, está disponible allí; no viene en
-estos archivos y la ruta AMD no lo necesita.
+**Discord: <https://discord.gg/AMDNR>** — soporte, reportes de errores (`#bug-report`), builds
+de prueba.
 
 **Apoya el proyecto: <https://ko-fi.com/3zinr>**
 
@@ -24,7 +24,7 @@ La instalación es bastante sencilla.
 
 ### 1. Descarga los archivos
 
-Descarga estos dos archivos desde GitHub:
+Descarga estos dos archivos desde GitHub (<https://github.com/3zwr1/AMD-NR---OptiScaler/releases>):
 
 * `AMDNR-vX.X.X.zip`
 * `Runtime.zip`
@@ -85,27 +85,26 @@ raíz del juego.
 Esos logs son muy importantes y nos ayudan a identificar el problema mucho más rápido.
 
 > El `.exe` normalmente no está donde apunta el acceso directo. Los juegos Unreal lo guardan en
-> `<Juego>\Binaries\Win64\`.
+> `<Game>\Binaries\Win64\`.
 
 ---
 
 ### El runtime lmxxf (0.3.0, opcional)
 
 Un segundo runtime neural (licencia MIT, de lmxxf) puede ejecutar el pase en lugar del de
-danielblnc. Solo RDNA 4. Necesita dos cosas junto al juego:
+danielblnc. RDNA 4, y RDNA 3 (RX 7000, Strix Halo) mediante el backend RDNA 3 de AMDNR - más lento
+ahí: empieza con NR resolution al 67%. Necesita dos cosas junto al juego:
 
 1. `LmxxfNrRuntime.dll` - en este archivo, junto a `OptiScaler.dll` (se copia con el resto).
-2. `LmxxfNrRuntime.pak` (382 MB, incluido en el zip de AMDNR) junto a `LmxxfNrRuntime.dll` - los
+2. `LmxxfNrRuntime.pak` (416 MB, incluido en el zip de AMDNR) junto a `LmxxfNrRuntime.dll` - los
    pesos, módulos HIP y HLSL de lmxxf en un solo archivo cifrado y autenticado. El runtime lo abre
-   en memoria; nada se desempaqueta en disco. La distribución antigua en carpeta sigue funcionando
-   en lugar del pak: `DLSS5-AMD\native-game-tiled-assets\` (unos 575 MB), de las releases del propio
-
+   en memoria; nada se desempaqueta en disco.
 
 En el primer inicio que encuentra un runtime instalado y ninguna elección hecha, el menú pregunta
 cuál usar (`[DlssNr] NrBackend = daniel | lmxxf` en el ini lo registra; Neural > Neural runtime lo
 cambia, en el siguiente inicio del juego). La edición de lmxxf se aplica un fotograma después,
-transportada por los vectores de movimiento, así que el fotograma nunca espera a la red (unos 30 ms
-a 1080p, 15 ms a 720p en una RX 9070 XT). Su log es `lmxxf_backend.log` junto al juego.
+transportada por los vectores de movimiento, así que el fotograma nunca espera a la red (unos 17 ms
+a 1080p en una RX 9070 XT). Su log es `lmxxf_backend.log` junto al juego.
 
 **Compatibilidad (lmxxf).** El runtime solo ve lo que ve DLSS, así que lo que varía por título es
 una lista corta: formato de color y HDR, vectores de movimiento y su escala, profundidad y su
@@ -117,8 +116,8 @@ pase (antes de Super Resolution, o después de Ray Reconstruction). Probado hast
 | Silent Hill 2 | D3D12, antes de SR | título de referencia; manejada la asignación de color con relleno de Unreal |
 | Forza Horizon 6 | D3D12, antes de SR | |
 | Stray | D3D11 a través del puente D3D12, antes de SR | |
-| GTA V Enhanced | D3D12, antes de SR, HDR, máscara reactiva de un canal | corregido en esta build: la máscara se leía como "todo reactivo" y la edición nunca llegaba |
-| Cualquier título con Ray Reconstruction | D3D12, después de RR (escrita de vuelta en la salida) | soportado desde esta build; aún no confirmado en un juego |
+| GTA V Enhanced | D3D12, antes de SR, HDR, máscara reactiva de un canal | corregido en 0.3.0: la máscara se leía como "todo reactivo" y la edición nunca llegaba |
+| Cualquier título con Ray Reconstruction | D3D12, después de RR (escrita de vuelta en la salida) | soportado desde 0.3.0; aún no confirmado en un juego |
 
 Si un título no muestra efecto: `lmxxf_backend.log` tiene una línea `lmxxf inputs:` (formatos,
 tamaños, escala de movimiento, dirección de profundidad, máscara, exposición) y una línea
@@ -132,15 +131,18 @@ Edit colour, Edge guard: ganancia sobre la parte fina de la edición del modelo,
 cambio de brillo, y un desvanecimiento de la edición en los bordes de profundidad) y **Output
 smoothing** (el pase de salida de upstream, necesita Network history). Neural passes, Residual
 strength/limit, el enfoque, Debug view 1 y el filtro Appearance se aplican en ambos runtimes.
-Claves del ini: `AmdLmxxfHistory`, `AmdLmxxfEditDetail`, `AmdLmxxfEditSaturation`,
-`AmdLmxxfEdgeGuard`, `AmdLmxxfOutputSmooth` en `[DlssNr]`.
+
+**Full network** (Neural > Performance, `[DlssNr] LmxxfFullNetwork`, solo lmxxf) ejecuta los 71
+bloques de la red en lugar de saltarse el 42, el 43 y el 46: algo más fiel, unos 0,5 ms más lento a
+1080p (16,6 -> 17,1 ms en una RX 9070 XT). Desactivado por defecto.
 
 ## Requisitos
 
 - Una GPU AMD con un controlador actual. El runtime neural usa HIP a través del controlador; no
   hace falta el SDK de HIP ni el modo desarrollador. Qué chips: RX 9000 (RDNA 4) ejecuta ambos
-  runtimes; RX 7000 (RDNA 3, escritorio y portátil) solo el de danielblnc; las APU de consolas
-  portátiles (Z1 Extreme / 780M, Z2 Extreme / 890M) y RDNA 2 (RX 6000, Steam Deck) aún no están
+  runtimes; RX 7000 (RDNA 3, escritorio y portátil) también ambos - lmxxf mediante el backend RDNA 3 de
+  AMDNR, más lento que en RDNA 4; Strix Halo (8060S / 8050S) ejecuta lmxxf; las APU de consolas
+  portátiles (Z1 Extreme / 780M, Z2 Extreme / 890M) y RDNA 2 (RX 6000, Steam Deck) no están
   soportadas por ninguno. La pestaña Neural dice qué puede ejecutar tu GPU.
 - Un juego Direct3D 12, Direct3D 11 o Vulkan. La ruta neural de AMD es D3D12; los títulos D3D11 y
   Vulkan la alcanzan a través del puente D3D12 de OptiScaler, lo que significa que el upscaler debe
@@ -156,17 +158,17 @@ Claves del ini: `AmdLmxxfHistory`, `AmdLmxxfEditDetail`, `AmdLmxxfEditSaturation
 |---|---|
 | `OptiScaler.dll` | OptiScaler con el backend AMD de DLSS-NR. Renómbralo como dice la guía. |
 | `OptiScaler.ini` | Ajustes. Neural Rendering está activado; el registro está encendido para que un reporte tenga algo que adjuntar. |
-| `LmxxfNrRuntime.dll` | El runtime neural lmxxf (0.3.0). Se usa solo cuando se elige; lee `LmxxfNrRuntime.pak` junto a él, ver "El runtime lmxxf". |
-| `LmxxfNrRuntime.pak` | Los pesos, módulos HIP y shaders del runtime lmxxf en un archivo cifrado (382 MB). Solo lo lee el runtime lmxxf; es inofensivo mantenerlo con el runtime de danielblnc. |
+| `LmxxfNrRuntime.dll` | El runtime neural lmxxf (kernels de lmxxf 0.29). Se usa solo cuando se elige; lee `LmxxfNrRuntime.pak` junto a él, ver "El runtime lmxxf". |
+| `LmxxfNrRuntime.pak` | Los pesos, módulos HIP y shaders del runtime lmxxf en un archivo cifrado (416 MB). Solo lo lee el runtime lmxxf; es inofensivo mantenerlo con el runtime de danielblnc. |
 | `OptiScaler\` | FSR, XeSS, el denoiser FidelityFX y el D3D12 Agility SDK que usa OptiScaler. |
-| `Licenses\`, `LICENSE` | Licencias de terceros y la licencia GPL-3.0 de esta build. |
+| `OptiScaler/amdnr_dlssg_fsr3.dll` | El dlssg-to-fsr3 de Nukem9, sin modificar y renombrado: las llamadas de DLSS Frame Generation del juego servidas por la generación de fotogramas de FSR 3, también en Vulkan (`FGNvngxReplacement=Nukems`). GPLv3, ver `Licenses/`. |
+| `Licenses\`, `LICENSE` | Licencias de terceros, el aviso de AMDNR (`AMDNR_NOTICE.txt`) y la licencia GPL-3.0 de esta build. |
 | `SHA256SUMS.txt` | Sumas de verificación de cada archivo distribuido, de ambos archivos. |
 
 **Runtime.zip**
 
 | Archivo | Qué es |
 |---|---|
-| `OptiScaler/amdnr_dlssg_fsr3.dll` | El dlssg-to-fsr3 de Nukem9, sin modificar y renombrado: las llamadas de DLSS Frame Generation del juego servidas por el frame generation de FSR 3, también en Vulkan (`FGNvngxReplacement=Nukems`). GPLv3, ver `Licenses/`. |
 | `dlssnr_amd_pass1..3.dll` | El runtime neural AMD, v0.3.1 de danielblnc, sin modificar. Tres copias para que el multipase tenga una por pase. |
 | `dlssnr_on_amd_weights.bin` | Los pesos de la red que carga el runtime. |
 
@@ -178,7 +180,8 @@ que el primer movimiento útil es cambiar una cosa a la vez.
 - **NR resolution** — la palanca principal de calidad/coste. Por debajo del 100% el modelo trabaja
   sobre una imagen más pequeña y solo su *corrección* se lleva de vuelta al fotograma a resolución
   completa, así que el fotograma conserva su propio detalle. Por encima del 100% el coste crece con
-  el cuadrado (150% es 2,25x).
+  el cuadrado (150% es 2,25x). El control se mueve en pasos del 5%: cada tamaño de NR nuevo puede
+  retener VRAM hasta que reinicies el juego, así que reinícialo tras muchos cambios.
 - **Residual strength** — cuánto de la edición del modelo se aplica; por encima de 1 amplifica. Es
   el control que más cambia la imagen.
 - **Residual limit** — un techo a cuánto puede moverse un píxel. ¿Manchas por zonas? **Bájalo**.
@@ -190,6 +193,13 @@ que el primer movimiento útil es cambiar una cosa a la vez.
   la imagen está quieta.
 - **Neural passes** — 2 y 3 apilan el modelo, con rendimientos decrecientes. Bajo lmxxf, la
   historia de la red sigue siendo su primer pase; los pases extra son solo refinamiento espacial.
+  danielblnc ejecuta 1 pase en los títulos Vulkan (un aviso bajo el control lo indica).
+- **Colour composition** (Neural > Image look, en ambos runtimes) — *Classic* (predeterminado) es
+  la imagen que ya tenías. *RenoDX (experimental)* ejecuta la composición de color de RenoDX después
+  del modelo, como hace la ruta NVIDIA: Composition detail y colour, un **Highlight guard** en ambos
+  sentidos (2x por defecto) que acota la respuesta del modelo frente al original, y controles
+  opcionales de piel / entorno. En un fotograma display-referred (SDR) vuelve a Classic, con un
+  aviso en el menú. Los estilos y presets de NR no lo tocan.
 - **La generación de fotogramas está apagada en un ini nuevo.** Pestaña Frame Gen: elige el FG
   Input (p. ej. "DLSSG via Streamline" en un juego con generación de fotogramas DLSS) y el FG
   Output (XeFG), luego marca **Active** en la sección Frame Generation (XeFG) y pulsa Save
@@ -197,32 +207,69 @@ que el primer movimiento útil es cambiar una cosa a la vez.
 - **Generación multifotograma XeFG** — 3X a 6X viene integrada y activada por defecto
   (`XeFG\UnlockMFG`), para la copia de OptiScaler y la del propio juego. **Borra `XeFGUnlock.asi`**
   de `OptiScaler\plugins` si aún lo tienes: dos copias del mismo parche hacen que el juego se cierre.
+  **Hasta 10X es opcional** (solo juegos D3D12): elige *XeFG ceiling (restart)* bajo FG Output en la
+  pestaña Frame Gen (4X, 6X por defecto, 8X o 10X; `[XeFG] MaxInterpolatedFrames`), reinicia y luego
+  elige el multiplicador en el desplegable MFG. Por encima de 6X necesita el proveedor XeFG propio de
+  OptiScaler con Extra pacing activado; la copia de XeSS 3 del propio juego se queda en 6X como
+  máximo. 10X necesita una pantalla de 360 Hz o más y un límite de fotogramas a refresco / 10; la
+  latencia es alta y el proveedor reserva unos 128 MiB más de VRAM a 4K. 7X-10X aún no está
+  confirmado en un juego: si lo pruebas, envía `OptiScaler.log`.
 - **FSR Ray Regeneration** — solo en juegos que usan DLSS Ray Reconstruction (Cyberpunk 2077,
   Alan Wake 2), con el juego ejecutando DLSS (spoofing activado), trazado de rayos y Ray
   Reconstruction activados en sus propios ajustes. Neural Rendering se ejecuta entonces después,
-  sobre su salida, lo que cuesta más: baja la NR resolution si caen los fotogramas.
+  sobre su salida, lo que cuesta más: baja la NR resolution si caen los fotogramas. Sus controles
+  (Neural > Quality > Ray Regeneration) solo aparecen mientras el juego usa Ray Reconstruction.
+  Resident Evil Requiem y PRAGMATA activan solos el **perfil path-traced** (menos grano en las caras
+  con path tracing). En el mismo lugar están la intensidad de la bias mask, una vista de depuración de
+  RR y el **suavizado de piel** (experimental, desactivado por defecto; para juegos que publican una
+  guía SSS, como Resident Evil Requiem).
 
 ## Si algo sale mal
 
 `OptiScaler.log` aparece en la carpeta del juego. Adjúntalo en `#bug-report`, y di qué juego y qué
 GPU. El backend AMD también escribe `amd_presr.log` y `amd_bridge.log`, que son los útiles cuando
-lo que falla es específicamente el pase neural.
+lo que falla es específicamente el pase neural. El log de la sesión anterior se conserva como
+`OptiScaler.previous.<exe>.log`; tras un cierre inesperado, adjúntalo también (el log nuevo dice
+entonces "no clean exit recorded").
 
 **¿NR frames 0/s, el desplegable del runtime muestra `pass1?` y `amd_presr.log` dice que la DLL del pase
 es una build que este OptiScaler no maneja?** Tus `dlssnr_amd_pass1..3.dll` no son la 0.3.1 de danielblnc
-(se ha visto circular un juego 0.2.16). Usa el `Runtime.zip` de esta release: `dlssnr_amd_pass1.dll` tiene
+(se ha visto circular un conjunto 0.2.16). Usa el `Runtime.zip` de esta release: `dlssnr_amd_pass1.dll` tiene
 7.304.192 bytes y su SHA256 empieza por `b108d640`. Builds soportadas: 0.2.17, 0.3.0, 0.3.1.
 
 **¿Un juego Vulkan (Indiana Jones and the Great Circle) se detiene al arrancar con "Could not create the
-Vulkan device (VK_ERROR_EXTENSION_NOT_PRESENT)"?** Corregido en esta build: la ruta neural heredada de
-NVIDIA pedía al driver AMD dos extensiones de dispositivo exclusivas de NVIDIA. Ten en cuenta que el pase
-neural aún no tiene ruta Vulkan (los dos runtimes AMD son D3D12), así que los títulos Vulkan arrancan y
-funcionan sin NR.
+Vulkan device (VK_ERROR_EXTENSION_NOT_PRESENT)"?** Corregido en 0.3.2: la ruta neural heredada de
+NVIDIA pedía al driver AMD dos extensiones de dispositivo exclusivas de NVIDIA. Los títulos Vulkan llegan
+al pase neural por el puente D3D12 de OptiScaler (ver Requisitos).
+
+**¿lmxxf congelaba un juego Vulkan en el primer fotograma de NR?** Corregido en 0.3.3; espera una pausa
+única de unos 1 s cuando arranca NR. Si una sesión Vulkan se detiene antes de la primera respuesta de lmxxf,
+el siguiente inicio usa el runtime de danielblnc y la pestaña Neural dice por qué; pulsa ahí **Retry lmxxf**
+(borra `lmxxf_vk_launch.pending` junto a `OptiScaler.dll`) para volver a probar lmxxf.
+
+**¿danielblnc se pausaba varios segundos y luego detenía NR en un juego Vulkan (Indiana Jones) con 2-3
+Neural passes?** Corregido en 0.3.3: en los títulos Vulkan ejecuta 1 pase, y su espera de 80 ms tras el
+envío ha desaparecido. El primer fotograma de NR de una sesión aún se pausa unos 5 s; un aviso bajo la
+elección de runtime explica sus líneas de log. Testers: `[DlssNr] AmdVkLateCopyWait=true` (experimental,
+desactivado por defecto, aún sin probar en un juego) debería eliminar esa pausa; envía `OptiScaler.log`,
+`amd_presr.log` y `dlssnr_on_amd.log`.
+
+**¿El uso de RAM de lmxxf subía mientras NR estaba activo?** Corregido en 0.3.3 (eran unos 45 GB por
+hora a 60 fotogramas de NR por segundo). Lo que queda: bajo lmxxf, cada cambio de NR resolution o de
+modo DLSS retiene unos 97 MB de VRAM y otro tanto de RAM en el nivel de 1080 (una fuga del driver de AMD;
+la corrección está prevista para 0.3.4), y danielblnc retiene VRAM por cada tamaño de NR nuevo por encima
+de unos 1 MP. Reinicia el juego tras muchos cambios.
+
+**¿Un juego con Streamline falla al arrancar con el error 0x18 de slInit (visto con NBA 2K27 en AMD)?**
+0.3.3 cierra una forma en que los hooks de plugins de Streamline de OptiScaler podían causarlo, pero no
+está confirmado que sea la causa en NBA 2K27. `OptiScaler.log` ahora registra líneas `slInit returned ...`
+y `[SLINIT]`: envía el log con el reporte.
 
 **¿El Ray Reconstruction del juego está activado pero la pestaña Neural dice "Ray Regeneration is off in
 this title"?** El juego no publica lo que FSR Ray Regeneration necesita (Satisfactory: sin matrices de
 cámara). El escalado FSR corre en su lugar y NR toma su posición habitual antes del SR; nada en el ini
 cambia esto.
+
 **¿Un juego de Ubisoft Anvil (AC Black Flag Resynced, Shadows, Mirage) muestra "DX12 Error 0x80070057"?**
 Esos juegos llevan su propia generación de fotogramas XeSS. Esta build se la deja a ellos (la salida
 XeFG de OptiScaler se retira ahí y la pestaña Frame Gen lo indica); usa la opción XeSS FG del propio
@@ -233,15 +280,21 @@ con el log.
 juego, un problema conocido de OptiScaler: renombra `sl.common.dll` en la carpeta del juego a
 `sl.common.dll.bak` y elige **FSR 3.1** en los ajustes del juego en lugar de DLSS.
 
-Notas completas de esta versión: `RELEASE-NOTES.md` en el repositorio.
+Notas completas de cada versión: `CHANGELOG.md` (en el zip y en el repositorio).
 
 ## Hoja de ruta
 
-- **0.3.2** (esta build) — los reportes de 0.3.1: los títulos Vulkan arrancan y funcionan con lmxxf, colores
+- **0.3.3** (esta build) — lmxxf en RDNA 3 (RX 7000; backend propio de AMDNR); composición de color
+  RenoDX (experimental, opcional) en ambos runtimes; lmxxf: opción Full network, fuga de RAM
+  corregida, títulos Vulkan corregidos (carga diferida de pesos dentro del puente Vulkan), kernels de
+  0.29 (idénticos bit a bit, más rápidos); danielblnc en títulos Vulkan: 1 Neural pass, mensajes más
+  claros, una espera de copia tardía opcional; XeFG hasta 10X (opcional, D3D12); inicio de
+  Streamline reforzado y diagnósticos; perfil path-traced y suavizado de piel de FSR Ray
+  Regeneration; robustez en UE5.
+- **0.3.2** — los reportes de 0.3.1: los títulos Vulkan arrancan y funcionan con lmxxf, colores
   de lmxxf alineados con danielblnc (autoexposición), el desplegable del runtime, estado y ajuste de Ray
-  Reconstruction; el dlssg-to-fsr3 de Nukem9 en el zip para frame generation en Vulkan.
-- **0.3.1** — correcciones de los primeros reportes de 0.3.0 (lmxxf solo nunca
-
+  Reconstruction; el dlssg-to-fsr3 de Nukem9 en el zip para la generación de fotogramas en Vulkan.
+- **0.3.1** —.
 - **0.3.0** — el runtime neural HIP **lmxxf** (RDNA 4) como runtime seleccionable junto al de
   danielblnc, distribuido como `LmxxfNrRuntime.dll` + `LmxxfNrRuntime.pak`: historia de la red,
   Neural passes reales, el modelador de la edición, la posición después de Ray Regeneration,
@@ -258,24 +311,29 @@ Notas completas de esta versión: `RELEASE-NOTES.md` en el repositorio.
 Esta build es un trabajo de cableado sobre el trabajo de otras personas. Si te resulta útil, el
 agradecimiento pertenece a upstream.
 
-- **DLSS-NR on AMD** — *danielblnc* — <https://github.com/danielblnc/DLSS-NR-on-AMD>
-  El runtime neural AMD y los pesos en `Runtime.zip` son su release v0.3.1, redistribuida sin
-  modificar. Todo lo que la red realmente calcula es suyo.
-- **DLSS 5 AMD project** — *TheAutomatic* — <https://github.com/TheAutomatic/dlss-5-amd-project>
-  Base y referencia para DLSS 5 Neural Rendering en hardware AMD; la integración del runtime lmxxf
-  distribuida en 0.3.0 sigue su trabajo. Muchas gracias.
-- **Matheus / dlss-5-amd** — <https://github.com/MatheusGViana/dlss-5-amd-project>
-  El puente AMD pre-SR del que desciende este árbol.
-- **lmxxf / dlss5-on-amd-9070xt-porting** — <https://github.com/lmxxf/dlss5-on-amd-9070xt-porting>
-  Runtime de renderizado neural HIP de código abierto (MIT); el modo temporal con umbral de
-  diferencia de aquí sigue su `native_output_smooth`.
-- **OptiScaler** — *Overclockers* y colaboradores — <https://github.com/Overclockers/OptiScaler-Releases>
-  El framework en el que esto se integra: el hooking, la fontanería de FSR/XeSS/generación de
-  fotogramas, el menú y la compatibilidad con juegos que hace que algo de esto sea alcanzable.
+- **TheAutomatic** — DLSS 5 AMD project — https://github.com/TheAutomatic/dlss-5-amd-project
+- **danielblnc** — DLSS-NR on AMD — https://github.com/danielblnc/DLSS-NR-on-AMD (`Runtime.zip`, sin modificar)
+- **lmxxf** — https://github.com/lmxxf/dlss5-on-amd-9070xt-porting (el runtime HIP, MIT)
+- **Matheus / dlss-5-amd** — https://github.com/MatheusGViana/dlss-5-amd-project
+- **Nukem9** — dlssg-to-fsr3 — https://github.com/Nukem9/dlssg-to-fsr3 (GPLv3, sin modificar)
+- **RenoDX** — clshortfuse — https://github.com/clshortfuse/renodx (matemática de la composición de color, MIT)
+- **Coldwood1026** — XeFGUnlock (GPL-3.0), la base del desbloqueo multifotograma de XeFG integrado y de su ritmo
+- **burak113** — el preprocesador de FSR Ray Regeneration (rama de OptiScaler ffx-denoise-experimental, GPL-3.0)
+- **OptiScaler** — Overclockers — https://github.com/Overclockers/OptiScaler-Releases
 
-Linaje del código: OptiScaler → Dagherbou / OptiScaler_DLSSNR → wilsjo2 / OptiScaler-DLSSNR-PreSR-Multipass
-→ Matheus / dlss-5-amd → esta build. El desbloqueo y el ritmo de XeFG están portados del XeFGUnlock
-de Coldwood1026 (GPL-3.0); el manejo de gama `CubeScale` es de *hhkbble*.
+## Copyright / Licencia
+
+AMDNR es Copyright (c) 2026 3zwr1 (AMDNR). Es un fork de OptiScaler, distribuido bajo la licencia
+GPL-3.0 en `LICENSE`.
+
+El trabajo propio de AMDNR lleva un término adicional según la sección 7(b) de la GPL-3.0 (ver
+`Licenses/AMDNR_NOTICE.txt`): toda copia, fork u obra derivada que lo use debe conservar sus avisos y
+acreditar **AMDNR by 3zwr1** (<https://github.com/3zwr1/AMD-NR---OptiScaler>).
+
+El trabajo de upstream acreditado arriba sigue siendo de sus autores, bajo sus propias licencias;
+AMDNR no reclama copyright sobre él.
+
+El código fuente se publicará con AMDNR 0.5.0.
 
 ## Legal
 
@@ -284,3 +342,6 @@ terceros están en `Licenses\`. El runtime neural AMD y sus pesos se redistribuy
 original tal como se acredita arriba, solo por comodidad, sin reclamar propiedad y sin ofrecer
 garantía.
 
+El `nvngx_dlssnr.dll` de NVIDIA no está en estos archivos. Nada de esto está respaldado, afiliado ni
+soportado por NVIDIA, AMD ni ningún editor de juegos. Maneja directamente una función no documentada.
+Úsalo bajo tu propio riesgo.

@@ -7,28 +7,61 @@ Source:   https://github.com/clshortfuse/renodx
 What is derived from it
 -----------------------
 
-The colour composition in OptiScaler/shaders/dlssnr/precompile/dlssnr.hlsl is taken
-from RenoDX's DLSS 5 Neural Rendering addon. Specifically:
+Three places in this build use RenoDX's maths: two compose the neural model's answer,
+and one decodes it:
+
+  * OptiScaler/shaders/dlssnr/precompile/dlssnr.hlsl -- the NVIDIA path.
+
+  * OptiScaler/dlssnr/amd/NrCompose.h -- the AMD path's "RenoDX (experimental)"
+    colour composition ([DlssNr] AmdComposition = 1), one shared pass used by
+    both AMD runtimes, danielblnc's and lmxxf's. It is a port of the tail of
+    dlssnr.hlsl's composition; its helpers are copied from that file.
+
+  * OptiScaler/dlssnr/amd/AmdPreSr.cpp, ProxyShader -- the decode of the
+    danielblnc runtime's Highlight proxy ([DlssNr] AmdHighlightProxy = 1). It
+    divides the model's answer by the encode's scale recomputed from the
+    ORIGINAL pixel: the principle of RenoDX's DLSS addon N2 colour bridge
+    (n2 = Neutwo(peak)/peak from the original, decoded g/n2). The principle
+    only; no RenoDX code is used there.
+
+Specifically, from RenoDX:
 
   * UpgradeToneMap -- the two-branch luminance ratio: below the proxy's luminance
     the original's own luminance is the target, and above it the difference is
     treated as headroom the proxy could not represent and handed back on top of
-    the model's answer.
+    the model's answer. The source is RenoDX's shader library,
+    renodx::tonemap::config::UpgradeToneMap in src/shaders/tonemap.hlsl, which
+    computes that ratio, then renodx::color::correct::Hue, then a lerp by the
+    post-process strength. Our port differs in three small ways: it returns the
+    original where the model's luminance is at or below 1e-5 (RenoDX uses a
+    ratio of 0 where the graded luminance is not positive), it leaves out
+    RenoDX's auto-correction term (0 by default there), and it floors the
+    proxy's luminance at 1e-6.
 
-  * The OkLab hue correction applied to the rescaled result, which takes the hue
-    and chroma direction from the model's own output and only the chroma
-    magnitude from the scaled colour.
+  * The OkLab hue correction applied to the rescaled result
+    (renodx::color::correct::Hue), which takes the hue and chroma direction from
+    the model's own output and only the chroma magnitude from the scaled colour.
 
-  * The final blend between a luminance-only result (the original's hue, the
-    model's light) and the fully upgraded colour.
+  * The reversible neutral-axis gamut compression, from RenoDX's DLSS 5 Neural
+    Rendering addon (the same constants): the D65 adaptation state carried in a
+    Hunt-Pointer-Estevez LMS basis, the largest scale toward the neutral colour
+    of equal luminance that leaves no channel negative, and the compression
+    itself. Ours previously clamped per channel in AP1, which bends the hue of
+    exactly the saturated pixels most likely to breach; theirs scales the whole
+    colour by one factor so only saturation gives way, and is the identity when
+    nothing is out of gamut. In both shaders the function keeps its historical
+    name, ClampAp1; nothing in it clamps in AP1 any more.
 
-  * The reversible neutral-axis gamut compression: the D65 adaptation state
-    carried in a Hunt-Pointer-Estevez LMS basis, the largest scale toward the
-    neutral colour of equal luminance that leaves no channel negative, and the
-    compression itself. Ours previously clamped per channel in AP1, which bends
-    the hue of exactly the saturated pixels most likely to breach; theirs scales
-    the whole colour by one factor so only saturation gives way, and is the
-    identity when nothing is out of gamut.
+  * The Neutwo reversible proxy in dlssnr.hlsl ("Reversible proxy
+    (experimental)" on the NVIDIA path), from RenoDX's Sep-2 DLSS 5 addon: an
+    unclipped, hue-preserving encode, x / sqrt(x^2 + 1) applied as one scalar on
+    the peak channel.
+
+On the AMD path the two-branch ratio and the hue step run where the proxy
+exists. On lmxxf's runtime the same two steps run inside lmxxf's codec, against
+the exact proxy the network saw; on danielblnc's closed runtime the runtime
+composes its own answer. NrCompose.h then runs the rest on both: detail, the
+guard, the colour blend, the gamut compression and the skin / environment edit.
 
 This is their design. It was reimplemented here with different names and
 comments, which does not make it original work, and it is credited as theirs.
@@ -36,9 +69,33 @@ comments, which does not make it original work, and it is credited as theirs.
 What is not derived from it
 ---------------------------
 
-The OkLab conversion matrices are Bjorn Ottosson's published constants. The AP1
-gamut matrices, the sRGB transfer functions and the SMPTE ST.2084 (PQ) transfer
-are standard colour science and are not specific to RenoDX.
+  * The final blend between a luminance-only result (the original's hue at the
+    model's light) and the fully upgraded colour -- the Colour strength control
+    -- was not found in RenoDX. It is part of NVIDIA's "mode 1" codec as
+    reconstructed by lmxxf (https://github.com/lmxxf/dlss5-on-amd-9070xt-porting,
+    MIT; native_codec_decode.hlsl), and is credited to that reconstruction.
+    Earlier versions of this file listed it under RenoDX. lmxxf's licence is in
+    lmxxf_LICENSE.txt in the release's Licenses folder.
+
+  * The 1/512 ratio floor, the power amplification above strength 1, the
+    two-sided highlight guard and the OkLab chroma boost above strength 1 come
+    from the dlssnr.hlsl lineage this build descends from: OptiScaler ->
+    Dagherbou / OptiScaler_DLSSNR -> wilsjo2 / OptiScaler-DLSSNR-PreSR-Multipass.
+    The skin-colour selection (SkinColourWeight) with its separate skin and
+    environment controls is wilsjo2's.
+
+  * The OkLab conversion matrices are Bjorn Ottosson's published constants. The
+    sRGB transfer functions and the BT.709 luminance weights are standard colour
+    science and are not specific to RenoDX.
+
+  * AMDNR (3zwr1) wrote only the AMD integration: the shared pass in
+    NrCompose.h and its use on both runtimes, the white-point handling, and
+    lmxxf's matched lift. The RDNA 3 backend is also AMDNR's and has nothing to
+    do with RenoDX.
+
+  * The danielblnc Highlight proxy's curve (a shifted Reinhard knee, not
+    Neutwo), its knee, the hand-over low in the curve to the model's own answer
+    decoded through the curve, and the 3x3 bound are AMDNR's (3zwr1).
 
 Licence
 -------

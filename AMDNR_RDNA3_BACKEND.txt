@@ -1,0 +1,62 @@
+AMDNR - lmxxf RDNA 3 backend
+============================
+
+Copyright (c) 2026 3zwr1 (AMDNR)
+Project:  https://github.com/3zwr1/AMD-NR---OptiScaler
+Credit:   AMDNR - lmxxf RDNA 3 backend by 3zwr1 - https://github.com/3zwr1/AMD-NR---OptiScaler
+
+What this covers
+----------------
+
+The RDNA 3 (gfx11) backend for lmxxf's network: lmxxf's HIP kernels built for RDNA 3
+with lmxxf_gfx11_compat.h, which carries their RDNA 4 FP8 matrix work on RDNA 3's F16
+matrix units (verified against the RDNA 4 result), and the RDNA 3 HIP modules built
+from it - HIP/gfx1100, HIP/gfx1101, HIP/gfx1102 and HIP/gfx1151 inside
+LmxxfNrRuntime.pak.
+
+Where the credit lives
+----------------------
+
+  * Every RDNA 3 module embeds the credit line above; LmxxfNrRuntime.dll refuses an
+    RDNA 3 module that does not carry it.
+  * LmxxfNrRuntime.pak (format v2) starts with a plaintext notice that names lmxxf and
+    this backend. The notice is authenticated with the pack's table: a pack whose
+    notice was edited or removed is refused by the runtime.
+  * LmxxfNrRuntime.dll's version resource (Properties > Details) carries the copyright.
+
+What this does NOT cover
+------------------------
+
+lmxxf's network, weights and kernels are lmxxf's work, Copyright (c) 2026 Kien, under
+the MIT licence in lmxxf_LICENSE.txt:
+  https://github.com/lmxxf/dlss5-on-amd-9070xt-porting
+That notice is unchanged; this file adds to it and does not replace it.
+
+Licence
+-------
+
+MIT License
+
+Copyright (c) 2026 3zwr1 (AMDNR)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+In short: you may use, change and redistribute the RDNA 3 backend, including inside
+LmxxfNrRuntime.pak, as long as this copyright line and notice stay with it. Shipping it
+without them - for example to present it as someone else's work - breaks that condition.

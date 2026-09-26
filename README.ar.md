@@ -203,10 +203,11 @@ Reconstruction). ما تم اختباره حتى الآن:
 - **حد التعديل المتبقي (Residual limit)** — سقف لمقدار ما يمكن أن يتغير به البكسل الواحد. إذا ظهرت
   بقع غير متجانسة: **اخفضه**.
 - **تناوب النموذج (Model interleave)** — يشغّل النموذج مرة كل إطارين لزيادة كبيرة في معدل الإطارات.
-  أما الإطارات المتخطاة فيملؤها **Interleave preset**؛ والخيار *Guided fill v2* هو الافتراضي وهو الذي
-  يجري العمل عليه حاليًا. ضبط توقيت نوعي الإطارات (pacing) تلقائي، ويعمل **Adaptive interleave**
-  (مفعّل افتراضيًا) على تشغيل النموذج في كل إطار ما دامت الصورة تتحرك، بحيث لا يحدث التخطي - وما
-  يرافقه من تشوهات بصرية - إلا عندما تكون الصورة ثابتة.
+  أما الإطارات المتخطاة فيملؤها **Interleave preset**؛ والافتراضي هو *Edit accumulation* (الإعداد 10،
+  في بيئتَي التشغيل كلتيهما): كل إطار هو صورة ذلك الإطار نفسه مضافًا إليها التصحيح الذي يحمله النموذج،
+  فلا تُستبقى أي صورة من إطار سابق. وتُعدّ *Guided fill v2* (الإعداد 6، danielblnc) و*Classic carry*
+  (lmxxf) طريقتَي الملء الأقدم. ضبط توقيت نوعي الإطارات (pacing) تلقائي. وAdaptive interleave معطّل
+  في هذا الإصدار.
 - **التمريرات العصبية (Neural passes)** — القيمتان 2 و3 تكدّسان النموذج فوق نفسه، مع عائد متناقص.
   مع lmxxf يبقى سجل الشبكة (history) في تمريرتها الأولى؛ والتمريرات الإضافية مجرد تحسين مكاني.
   أما danielblnc فيشغّل تمريرة واحدة في ألعاب Vulkan (وتوضح ذلك ملاحظة أسفل شريط التمرير).
@@ -254,7 +255,7 @@ recorded").
 اسم الملف وإصداره ويخبرك بما عليك فعله. استخدم `v0.4.0-Runtime.zip` (الأحدث) أو `Runtime.zip` (0.3.1)
 من هذا الإصدار، على أن تكون ملفات DLL الثلاثة كلها من ملف zip نفسه: حجم `dlssnr_amd_pass1.dll` الموجود
 في `v0.4.0-Runtime.zip` هو 10,027,008 بايت، وبصمة SHA256 الخاصة به تبدأ بـ `d62be3d8`. النسخ المدعومة:
-0.2.17، 0.3.0، 0.3.1، 0.3.2، 0.3.3، 0.4.0، و0.4.1 / 0.4.2 قبل صدورهما. لا تثبّت برنامج الإعداد الخاص
+0.2.17، 0.3.0، 0.3.1، 0.3.2، 0.3.3، 0.4.0، و0.4.x قبل صدورهما. لا تثبّت برنامج الإعداد الخاص
 بـ danielblnc ولا ملفاته `dxgi.dll` / `version.dll` / `winhttp.dll` بجانب AMDNR: فـ AMDNR يشغّل بيئة
 التشغيل الخاصة به بالفعل.
 
@@ -266,6 +267,20 @@ recorded").
 `dxgi.dll`) و`LmxxfNrRuntime.dll` بملفات الإصدار 0.3.3.2. لم يُختبر هذا بعد على جهاز كهذا: إذا ظل
 lmxxf يتوقف، فتبويب Neural يخبرك الآن بالسبب؛ أرسل `lmxxf_backend.log` و`amd_bridge.log` (فهو يسرد
 أجهزة HIP).
+
+**هل يعرض سطر حالة lmxxf القيمة `c32w=off:nofile` على RX 9070 / 9070 XT؟** يوجد مجلد قديم
+`DLSS5-AMD\native-game-tiled-assets` بجانب ملف `.exe` الخاص باللعبة (متبقٍّ من إعداد سابق لـ lmxxf)، وهو
+يُستخدم بدلًا من `LmxxfNrRuntime.pak`. لا يحتوي هذا المجلد على c32w kernels، لذا يعمل lmxxf بالسرعة
+القديمة. احذف مجلد `DLSS5-AMD` أو غيّر اسمه: فملف pak يضم كل ما يحتاجه lmxxf. ويظهر الوضع نفسه مع ملف
+`LmxxfNrRuntime.pak` أقدم من 0.3.3.2؛ استبدله بالملف الموجود في هذا الإصدار.
+
+**هل ما زال نمط NR في danielblnc يتغير عندما تبتعد NR resolution عن 100%؟** مشكلة معروفة لم تُصلح في
+0.3.3.2 (والإصلاح مخطط له في 0.3.4). يُصلح 0.3.3.2 القفزة عند NR resolution بنسبة 100% فقط: هناك صارت
+قيمة Residual strength البالغة 0.99 تعطي 99% من 1.00، وصارت أنماط NR تبدو كما تقول قوتها. أما بعيدًا عن
+100% (وكذلك في خطوات Dynamic NR والإعدادين المسبقين Balanced / Performance) فما زالت strength وlimit
+وedge fade تؤثر في النتيجة كلها، لذا قد يتغير المظهر. الخيار `[DlssNr] AmdEditShaper=true` يطبّقها على
+تعديل النموذج نفسه بدلًا من ذلك، لكنه معطّل افتراضيًا: فقد جعل المناطق الساطعة باهتة في اختبار
+(Forza Horizon 6، Classic، دقة NR بنسبة 115%). ولا يتأثر lmxxf بذلك.
 
 **هل تتوقف لعبة Vulkan (Indiana Jones and the Great Circle) عند البدء برسالة "Could not create the Vulkan
 device (VK_ERROR_EXTENSION_NOT_PRESENT)"؟** أُصلح في 0.3.2: كان المسار العصبي الموروث من NVIDIA يطلب من
@@ -314,7 +329,7 @@ device (VK_ERROR_EXTENSION_NOT_PRESENT)"؟** أُصلح في 0.3.2: كان ال�
 
 ## خارطة الطريق
 
-- **0.3.3** (هذه النسخة) — lmxxf على RDNA 3 (RX 7000؛ عبر واجهة AMDNR الخلفية الخاصة)؛ تركيب الألوان
+- **0.3.3.x** (هذه النسخة) — lmxxf على RDNA 3 (RX 7000؛ عبر واجهة AMDNR الخلفية الخاصة)؛ تركيب الألوان
   RenoDX (تجريبي، اختياري) في كلتا بيئتي التشغيل؛ lmxxf: خيار Full network، وإصلاح تسريب RAM، وإصلاح
   ألعاب Vulkan (رفع كسول للأوزان (lazy weight upload) داخل جسر Vulkan)، وkernels الإصدار 0.29 (مطابقة
   بتًا ببت (bit-exact)، وأسرع)؛ danielblnc في ألعاب Vulkan: تمريرة Neural واحدة، ورسائل أوضح، وانتظار
@@ -346,6 +361,8 @@ device (VK_ERROR_EXTENSION_NOT_PRESENT)"؟** أُصلح في 0.3.2: كان ال�
 - **lmxxf** — https://github.com/lmxxf/dlss5-on-amd-9070xt-porting (بيئة تشغيل HIP، برخصة MIT)
 - **c32w kernels** (0.3.3.2) — kernels خاصة بـ AMDNR تعمل بموجة واحدة (one-wave) على RDNA 4 لشبكة lmxxf، Copyright (c) 2026 3zwr1 (AMDNR)؛ والأفكار مستقاة من وثائق AMD العامة عن WMMA في RDNA 4 (GPUOpen، وأداة ROCm matrix instruction calculator)
 - **Matheus / dlss-5-amd** — https://github.com/MatheusGViana/dlss-5-amd-project
+- **Dagherbou / OptiScaler_DLSSNR** — https://github.com/Dagherbou/OptiScaler_DLSSNR
+- **wilsjo2 / OptiScaler-DLSSNR-PreSR-Multipass** — https://github.com/wilsjo2/OptiScaler-DLSSNR-PreSR-Multipass
 - **Nukem9** — dlssg-to-fsr3 — https://github.com/Nukem9/dlssg-to-fsr3 (GPLv3، دون تعديل)
 - **RenoDX** — clshortfuse — https://github.com/clshortfuse/renodx (رياضيات تركيب الألوان، برخصة MIT)
 - **Coldwood1026** — XeFGUnlock (GPL-3.0)، وهو الأساس الذي بُني عليه فتح توليد الإطارات المتعددة المدمج في XeFG وضبط توقيته (pacing)

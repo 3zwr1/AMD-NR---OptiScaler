@@ -180,8 +180,9 @@ keep、反应遮罩均值、向量长度与被拒比例）。反馈时附上日�
 - **Residual strength** —— 模型编辑应用的比例；大于 1 会放大。这是改变画面最大的控制项。
 - **Residual limit** —— 单个像素可移动的上限。出现斑块：**调低**它。
 - **Model interleave** —— 每隔一帧运行模型，大幅提升帧率。跳过的帧由 **Interleave preset** 填补；
-  *Guided fill v2* 是默认值，也是正在持续打磨的一项。两类帧的节拍自动处理，**Adaptive interleave**
-  （默认开启）在画面运动时每帧都运行模型，因此跳帧 —— 及其瑕疵 —— 只在画面静止时发生。
+  默认是 *Edit accumulation*（预设 10，两个运行时都有）：每一帧都是该帧自身的画面加上模型携带的修正，
+  因此不会沿用任何旧画面。*Guided fill v2*（预设 6，danielblnc）和 *Classic carry*（lmxxf）是较早的
+  填补方式。两类帧的节拍自动处理。Adaptive interleave 在本版本中已关闭。
 - **Neural passes** —— 2 和 3 会叠加模型，收益递减。在 lmxxf 下网络的历史保持为第一遍；额外的遍
   只是空间上的精修。danielblnc 在 Vulkan 游戏中只运行 1 遍（滑块下方会有提示）。
 - **Colour composition**（Neural > Image look，两个运行时都有）—— *Classic*（默认）就是你之前的画面。
@@ -217,7 +218,7 @@ keep、反应遮罩均值、向量长度与被拒比例）。反馈时附上日�
 自 0.3.3.2 起，Neural 选项卡会写出文件名和版本，并说明该怎么做。请使用本发布页的 `v0.4.0-Runtime.zip`（最新）或
 `Runtime.zip`（0.3.1），三个 pass DLL 须来自同一个压缩包：`v0.4.0-Runtime.zip` 中的 `dlssnr_amd_pass1.dll` 为
 10,027,008 字节，SHA256 以 `d62be3d8` 开头。支持的版本：0.2.17、0.3.0、0.3.1、0.3.2、0.3.3、0.4.0，以及尚未发布的
-0.4.1 / 0.4.2。不要在 AMDNR 旁边安装 danielblnc 自己的安装程序或它的 `dxgi.dll` / `version.dll` / `winhttp.dll`：
+0.4.x。不要在 AMDNR 旁边安装 danielblnc 自己的安装程序或它的 `dxgi.dll` / `version.dll` / `winhttp.dll`：
 AMDNR 已经在运行他的运行时。
 
 **在带集成显卡的电脑上，lmxxf 没有任何效果，或一开始就停止？** 0.3.3.2 已修复。在开启了集成显卡的 Ryzen 台式机、
@@ -226,6 +227,17 @@ AMDNR 已经在运行他的运行时。
 保持关闭。请把 `OptiScaler.dll`（即你重命名后的文件，例如 `dxgi.dll`）和 `LmxxfNrRuntime.dll` 都替换为 0.3.3.2 的
 版本。尚未在这类电脑上测试：如果 lmxxf 仍然停止，Neural 选项卡现在会说明原因；请发送 `lmxxf_backend.log` 和
 `amd_bridge.log`（其中列出了各个 HIP 设备）。
+
+**在 RX 9070 / 9070 XT 上，lmxxf 的状态行显示 `c32w=off:nofile`？** 游戏 `.exe` 旁边有一个旧的
+`DLSS5-AMD\native-game-tiled-assets` 文件夹（以前安装 lmxxf 时留下的），它会代替 `LmxxfNrRuntime.pak`
+被使用。该文件夹里没有 c32w 内核，所以 lmxxf 仍以旧的速度运行。请删除 `DLSS5-AMD` 文件夹或给它改名：pak
+已包含 lmxxf 需要的一切。早于 0.3.3.2 的 `LmxxfNrRuntime.pak` 也会显示同样的状态；请换成本次发布中的那个。
+
+**danielblnc：NR resolution 离开 100% 时，NR 风格仍会变化？** 这是已知问题，0.3.3.2 未修复（计划在 0.3.4
+修复）。0.3.3.2 只修复了 NR resolution 为 100% 时的跳变：此时 Residual strength 0.99 会给出 1.00 的 99%，
+各 NR 风格也与其强度相符。离开 100% 时（包括 Dynamic NR 的各档和 Balanced / Performance 预设），strength、
+limit 和 edge fade 仍作用于整个结果，所以观感可能变化。`[DlssNr] AmdEditShaper=true` 会改为只作用于模型自身
+的编辑，但默认关闭：它在一次测试中让高光发白（Forza Horizon 6，Classic，115% NR）。lmxxf 不受影响。
 
 **Vulkan 游戏（Indiana Jones and the Great Circle）一启动就报 "Could not create the Vulkan device
 (VK_ERROR_EXTENSION_NOT_PRESENT)"？** 0.3.2 已修复：继承自 NVIDIA 神经路径的代码向 AMD 驱动请求了两个
@@ -266,7 +278,7 @@ OptiScaler 问题：把游戏目录中的 `sl.common.dll` 重命名为 `sl.commo
 
 ## 路线图
 
-- **0.3.3**（本构建版）—— lmxxf 支持 RDNA 3（RX 7000；AMDNR 自己的后端）；两个运行时都可用的 RenoDX
+- **0.3.3.x**（本构建版）—— lmxxf 支持 RDNA 3（RX 7000；AMDNR 自己的后端）；两个运行时都可用的 RenoDX
   色彩合成（实验性，需手动开启）；lmxxf：Full network 选项、修复内存泄漏、修复 Vulkan 游戏的问题（在 Vulkan
   桥接内延迟上传权重）、0.29 内核（逐位一致、更快）；danielblnc 在 Vulkan 游戏中：1 个 Neural pass、更清楚的
   提示信息、可选的延迟复制等待；XeFG 最高 10X（需手动开启，D3D12）；Streamline 启动加固与诊断；FSR Ray
@@ -293,6 +305,8 @@ OptiScaler 问题：把游戏目录中的 `sl.common.dll` 重命名为 `sl.commo
 - **lmxxf** —— https://github.com/lmxxf/dlss5-on-amd-9070xt-porting （HIP 运行时，MIT）
 - **c32w 内核**（0.3.3.2）—— AMDNR 自有的 RDNA 4 单 wave 内核，用于 lmxxf 的网络，Copyright (c) 2026 3zwr1 (AMDNR)；思路参考 AMD 公开的 RDNA 4 WMMA 文档（GPUOpen、ROCm matrix instruction calculator）
 - **Matheus / dlss-5-amd** —— https://github.com/MatheusGViana/dlss-5-amd-project
+- **Dagherbou / OptiScaler_DLSSNR** —— https://github.com/Dagherbou/OptiScaler_DLSSNR
+- **wilsjo2 / OptiScaler-DLSSNR-PreSR-Multipass** —— https://github.com/wilsjo2/OptiScaler-DLSSNR-PreSR-Multipass
 - **Nukem9** —— dlssg-to-fsr3 —— https://github.com/Nukem9/dlssg-to-fsr3 （GPLv3，未经修改）
 - **RenoDX** —— clshortfuse —— https://github.com/clshortfuse/renodx （色彩合成算法，MIT）
 - **Coldwood1026** —— XeFGUnlock（GPL-3.0），内置 XeFG 多帧解锁及其节拍的基础

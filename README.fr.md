@@ -197,10 +197,11 @@ réflexe utile est de changer une seule chose à la fois.
   le réglage qui change le plus l'image.
 - **Residual limit** — un plafond qui limite jusqu'où un pixel peut bouger. Plaques ou taches à l'image : **baissez-le**.
 - **Model interleave** — exécute le modèle une image sur deux pour un gros gain de framerate. Les
-  images sautées sont remplies par l'**Interleave preset** ; *Guided fill v2* est le preset par défaut et
-  celui qui est activement développé. Le pacing des deux types d'image est automatique, et **Adaptive
-  interleave** (activé par défaut) exécute le modèle à chaque image tant que la scène bouge, de sorte que
-  les sauts - et leurs artefacts - ne se produisent que lorsque la scène est immobile.
+  images sautées sont remplies par l'**Interleave preset** ; *Edit accumulation* (preset 10, les deux
+  runtimes) est le preset par défaut : chaque image est le rendu de cette image-là plus la correction
+  portée par le modèle, si bien qu'aucune image précédente n'est conservée. *Guided fill v2* (preset 6,
+  danielblnc) et *Classic carry* (lmxxf) sont les remplissages plus anciens. Le pacing des deux types
+  d'image est automatique. Adaptive interleave est désactivé dans cette build.
 - **Neural passes** — 2 et 3 empilent le modèle, avec des gains décroissants. Sous lmxxf, l'historique
   du réseau reste celui de sa première passe ; les passes supplémentaires ne font que de l'affinage spatial.
   danielblnc exécute 1 passe sur les titres Vulkan (une note sous le curseur l'indique).
@@ -247,7 +248,7 @@ a été vu en circulation), ou l'une des trois est manquante. Depuis 0.3.3.2, l'
 version, et indique la marche à suivre. Utilisez `v0.4.0-Runtime.zip` (le plus récent) ou `Runtime.zip` (0.3.1) de cette release,
 en prenant les trois DLL de passe dans le même zip : la `dlssnr_amd_pass1.dll` de `v0.4.0-Runtime.zip` fait 10,027,008
 octets, avec un SHA256 qui commence par `d62be3d8`. Builds pris en charge : 0.2.17, 0.3.0, 0.3.1, 0.3.2, 0.3.3, 0.4.0,
-ainsi que 0.4.1 / 0.4.2 avant même leur sortie. N'installez pas le setup de danielblnc, ni ses
+ainsi que 0.4.x avant même leur sortie. N'installez pas le setup de danielblnc, ni ses
 `dxgi.dll` / `version.dll` / `winhttp.dll`, à côté d'AMDNR : AMDNR fait déjà tourner son runtime.
 
 **lmxxf ne fait rien, ou s'arrête aussitôt, sur un PC avec une puce graphique intégrée ?** Corrigé en 0.3.3.2. Sur un
@@ -257,6 +258,20 @@ GPU AMD, le GPU du jeu n'est souvent pas le périphérique HIP 0. lmxxf échouai
 à la fois `OptiScaler.dll` (le fichier que vous avez renommé, p. ex. `dxgi.dll`) et `LmxxfNrRuntime.dll` par les
 fichiers de la 0.3.3.2. Pas encore testé sur un tel PC : si lmxxf s'arrête encore, l'onglet Neural indique désormais
 pourquoi ; envoyez `lmxxf_backend.log` et `amd_bridge.log` (ce dernier liste les périphériques HIP).
+
+**La ligne d'état de lmxxf affiche `c32w=off:nofile` sur une RX 9070 / 9070 XT ?** Un ancien dossier
+`DLSS5-AMD\native-game-tiled-assets` à côté du `.exe` du jeu (reste d'une ancienne installation de lmxxf) est
+utilisé à la place de `LmxxfNrRuntime.pak`. Il ne contient pas les kernels c32w, donc lmxxf tourne à l'ancienne
+vitesse. Supprimez ou renommez le dossier `DLSS5-AMD` : le pak contient tout ce dont lmxxf a besoin. Un
+`LmxxfNrRuntime.pak` antérieur à la 0.3.3.2 donne le même état ; remplacez-le par celui de cette version.
+
+**danielblnc : le style NR change encore quand la NR resolution quitte 100 % ?** Connu, non corrigé dans la
+0.3.3.2 (un correctif est prévu pour la 0.3.4). La 0.3.3.2 corrige uniquement le saut à 100 % de NR resolution :
+là, Residual strength 0.99 donne désormais 99 % de 1.00, et les styles NR ont le rendu qu'indique leur intensité.
+En dehors de 100 % (y compris les paliers de Dynamic NR et les presets Balanced / Performance), strength, limit
+et edge fade agissent toujours sur le résultat entier, donc le rendu peut changer. `[DlssNr] AmdEditShaper=true`
+les applique plutôt à la retouche du modèle elle-même, mais il est désactivé par défaut : lors d'un test, il a
+délavé les hautes lumières (Forza Horizon 6, Classic, NR à 115 %). lmxxf n'est pas concerné.
 
 **Un jeu Vulkan (Indiana Jones and the Great Circle) s'arrête au démarrage avec « Could not create the Vulkan
 device (VK_ERROR_EXTENSION_NOT_PRESENT) » ?** Corrigé en 0.3.2 : le chemin neuronal NVIDIA hérité demandait au
@@ -304,7 +319,7 @@ Notes complètes pour chaque version : `CHANGELOG.md` (dans le zip et dans le d
 
 ## Feuille de route
 
-- **0.3.3** (ce build) — lmxxf sur RDNA 3 (RX 7000 ; backend propre à AMDNR) ; composition des couleurs
+- **0.3.3.x** (ce build) — lmxxf sur RDNA 3 (RX 7000 ; backend propre à AMDNR) ; composition des couleurs
   RenoDX (expérimentale, en option) sur les deux runtimes ; lmxxf : option Full network, fuite de RAM
   corrigée, titres Vulkan corrigés (upload différé des poids dans le pont Vulkan), kernels 0.29 (identiques au bit
   près, plus rapides) ; danielblnc sur les titres Vulkan : 1 Neural pass, messages plus clairs, une attente de copie
@@ -337,6 +352,8 @@ reviennent aux projets d'origine (upstream).
 - **lmxxf** — https://github.com/lmxxf/dlss5-on-amd-9070xt-porting (le runtime HIP, MIT)
 - **c32w kernels** (0.3.3.2) — les kernels RDNA 4 à une seule wave propres à AMDNR pour le réseau de lmxxf, Copyright (c) 2026 3zwr1 (AMDNR) ; idées tirées de la documentation publique d'AMD sur WMMA pour RDNA 4 (GPUOpen, ROCm matrix instruction calculator)
 - **Matheus / dlss-5-amd** — https://github.com/MatheusGViana/dlss-5-amd-project
+- **Dagherbou / OptiScaler_DLSSNR** — https://github.com/Dagherbou/OptiScaler_DLSSNR
+- **wilsjo2 / OptiScaler-DLSSNR-PreSR-Multipass** — https://github.com/wilsjo2/OptiScaler-DLSSNR-PreSR-Multipass
 - **Nukem9** — dlssg-to-fsr3 — https://github.com/Nukem9/dlssg-to-fsr3 (GPLv3, non modifié)
 - **RenoDX** — clshortfuse — https://github.com/clshortfuse/renodx (calculs de la composition des couleurs, MIT)
 - **Coldwood1026** — XeFGUnlock (GPL-3.0), la base du déblocage multi-images XeFG intégré et de son pacing

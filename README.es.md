@@ -1,6 +1,6 @@
-# AMDNR — DLSS 5 Neural Rendering en AMD (build de OptiScaler) — v0.3.3.1
+# AMDNR — DLSS 5 Neural Rendering en AMD (build de OptiScaler) — v0.3.3.2
 
-[English](README.md) | [中文](README.zh-CN.md) | [Português](README.pt-BR.md) | **Español**
+[English](README.md) | [中文](README.zh-CN.md) | [Português](README.pt-BR.md) | **Español** | [العربية](README.ar.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Русский](README.ru.md) | [Polski](README.pl.md)
 
 > **Necesitamos tu apoyo.** Únete al servidor de Discord — <https://discord.gg/AMDNR> — para
 > ayuda, reportes de errores y builds de prueba; cada reporte con un log hace mejor la siguiente build.
@@ -17,8 +17,8 @@ de prueba.
 **Apoya el proyecto: <https://ko-fi.com/3zinr>**
 
 > **El runtime de danielblnc es obra de Daniel Blanco.** El runtime neural AMD de `Runtime.zip`
-> (`dlssnr_amd_pass1..3.dll`) es **DLSS-NR on AMD de Daniel Blanco (danielblnc)** -
-> <https://github.com/danielblnc/DLSS-NR-on-AMD>. Copyright (c) 2026 Daniel Blanco, todos los derechos reservados.
+> (`dlssnr_amd_pass1..3.dll`) es **DLSS-NR on AMD by Daniel Blanco (danielblnc)** -
+> <https://github.com/danielblnc/DLSS-NR-on-AMD>. Copyright (c) 2026 Daniel Blanco, all rights reserved.
 > AMDNR lo distribuye sin modificar, con su permiso; no es obra de AMDNR. Por favor, apoya su proyecto.
 > Los créditos completos de todos los demás están al final de esta página.
 
@@ -66,6 +66,12 @@ Si el juego no arranca o el mod no carga, prueba renombrar `OptiScaler.dll` a un
 * `dbghelp.dll`
 
 Prueba un nombre a la vez. No crees varias copias de `OptiScaler.dll`.
+
+> **Resident Evil Requiem (y su demo) necesita REFramework.** Es un requisito conocido, no un error de AMDNR: OptiScaler depende de él
+> para saltarse el anti-tamper de Capcom ([wiki de OptiScaler](https://github.com/optiscaler/OptiScaler/wiki/Resident-Evil-9-Requiem)). Sin él, el juego se cierra
+> 15-60 s después de arrancar ("An unhandled exception occurred"). Copia `dinput8.dll` de `REFramework.zip`, del último nightly
+> (<https://github.com/praydog/REFramework-nightly/releases>), junto a `dxgi.dll`, y cambia la tecla del menú de REFramework (p. ej. a Supr / Delete): también es Insert.
+> Tras una actualización del juego habrá cierres hasta que se actualice REFramework. Probablemente PRAGMATA, Monster Hunter Wilds y Onimusha también lo necesitan (sin confirmar).
 
 ### 5. Inicia el juego
 
@@ -139,8 +145,8 @@ smoothing** (el pase de salida de upstream, necesita Network history). Neural pa
 strength/limit, el enfoque, Debug view 1 y el filtro Appearance se aplican en ambos runtimes.
 
 **Full network** (Neural > Performance, `[DlssNr] LmxxfFullNetwork`, solo lmxxf) ejecuta los 71
-bloques de la red en lugar de saltarse el 42, el 43 y el 46: algo más fiel, unos 0,5 ms más lento a
-1080p (16,6 -> 17,1 ms en una RX 9070 XT). Desactivado por defecto.
+bloques de la red en lugar de saltarse el 42, el 43 y el 46: algo más fiel, unos 0.5 ms más lento a
+1080p (16.6 -> 17.1 ms en una RX 9070 XT). Desactivado por defecto.
 
 ## Requisitos
 
@@ -186,7 +192,7 @@ que el primer movimiento útil es cambiar una cosa a la vez.
 - **NR resolution** — la palanca principal de calidad/coste. Por debajo del 100% el modelo trabaja
   sobre una imagen más pequeña y solo su *corrección* se lleva de vuelta al fotograma a resolución
   completa, así que el fotograma conserva su propio detalle. Por encima del 100% el coste crece con
-  el cuadrado (150% es 2,25x). El control se mueve en pasos del 5%: cada tamaño de NR nuevo puede
+  el cuadrado (150% es 2.25x). El control se mueve en pasos del 5%: cada tamaño de NR nuevo puede
   retener VRAM hasta que reinicies el juego, así que reinícialo tras muchos cambios.
 - **Residual strength** — cuánto de la edición del modelo se aplica; por encima de 1 amplifica. Es
   el control que más cambia la imagen.
@@ -220,15 +226,16 @@ que el primer movimiento útil es cambiar una cosa a la vez.
   máximo. 10X necesita una pantalla de 360 Hz o más y un límite de fotogramas a refresco / 10; la
   latencia es alta y el proveedor reserva unos 128 MiB más de VRAM a 4K. 7X-10X aún no está
   confirmado en un juego: si lo pruebas, envía `OptiScaler.log`.
-- **FSR Ray Regeneration** — solo en juegos que usan DLSS Ray Reconstruction (Cyberpunk 2077,
+- **FSR Ray Regeneration** — solo RDNA 4 (RX 9000) por defecto; solo en juegos que usan DLSS Ray Reconstruction (Cyberpunk 2077,
   Alan Wake 2), con el juego ejecutando DLSS (spoofing activado), trazado de rayos y Ray
   Reconstruction activados en sus propios ajustes. Neural Rendering se ejecuta entonces después,
   sobre su salida, lo que cuesta más: baja la NR resolution si caen los fotogramas. Sus controles
   (Neural > Quality > Ray Regeneration) solo aparecen mientras el juego usa Ray Reconstruction.
-  Resident Evil Requiem y PRAGMATA activan solos el **perfil path-traced** (menos grano en las caras
-  con path tracing). En el mismo lugar están la intensidad de la bias mask, una vista de depuración de
-  RR y el **suavizado de piel** (experimental, desactivado por defecto; para juegos que publican una
-  guía SSS, como Resident Evil Requiem).
+  El **perfil path-traced** (menos grano en las caras con path tracing) es opcional desde 0.3.3.1:
+  márcalo ahí para probarlo en Resident Evil Requiem o PRAGMATA. En el mismo lugar están la intensidad
+  de la bias mask, una vista de depuración de RR y el **suavizado de piel** (experimental, para juegos
+  que publican una guía SSS; desactivado por defecto, pero activado por defecto en Resident Evil
+  Requiem desde 0.3.3.2).
 
 ## Si algo sale mal
 
@@ -238,10 +245,22 @@ lo que falla es específicamente el pase neural. El log de la sesión anterior s
 `OptiScaler.previous.<exe>.log`; tras un cierre inesperado, adjúntalo también (el log nuevo dice
 entonces "no clean exit recorded").
 
-**¿NR frames 0/s, el desplegable del runtime muestra `pass1?` y `amd_presr.log` dice que la DLL del pase
-es una build que este OptiScaler no maneja?** Tus `dlssnr_amd_pass1..3.dll` no son la 0.3.1 de danielblnc
-(se ha visto circular un conjunto 0.2.16). Usa el `Runtime.zip` de esta release: `dlssnr_amd_pass1.dll` tiene
-7.304.192 bytes y su SHA256 empieza por `b108d640`. Builds soportadas: 0.2.17, 0.3.0, 0.3.1.
+**¿NR frames 0/s, y la pestaña Neural o `amd_presr.log` dicen que la DLL del pase es una build que este
+AMDNR no maneja?** Tus `dlssnr_amd_pass1..3.dll` son una build de danielblnc que este AMDNR no conoce (se ha
+visto circular un conjunto 0.2.16), o falta una de las tres. Desde 0.3.3.2 la pestaña Neural nombra el
+archivo y su versión y dice qué hacer. Usa `v0.4.0-Runtime.zip` (la más nueva) o `Runtime.zip` (0.3.1) de
+esta release, las tres DLL de pase del mismo zip: la `dlssnr_amd_pass1.dll` de `v0.4.0-Runtime.zip` tiene
+10,027,008 bytes y su SHA256 empieza por `d62be3d8`. Builds soportadas: 0.2.17, 0.3.0, 0.3.1, 0.3.2, 0.3.3,
+0.4.0, y 0.4.1 / 0.4.2 antes de su publicación. No instales el instalador propio de danielblnc ni su
+`dxgi.dll` / `version.dll` / `winhttp.dll` junto a AMDNR: AMDNR ya ejecuta su runtime.
+
+**¿lmxxf no hace nada, o se detiene enseguida, en un PC con gráficos integrados?** Corregido en 0.3.3.2. En
+un Ryzen de escritorio con los gráficos integrados activados, un portátil con APU AMD y una Radeon, o un PC
+con dos GPU AMD, la GPU del juego a menudo no es el dispositivo HIP 0. lmxxf fallaba entonces en su primer
+fotograma (`hipErrorInvalidHandle (400)`, y luego "session is poisoned" en `lmxxf_backend.log`) y se quedaba
+apagado. Reemplaza tanto `OptiScaler.dll` (el archivo que renombraste, p. ej. `dxgi.dll`) como
+`LmxxfNrRuntime.dll` por los de 0.3.3.2. Aún sin probar en un PC así: si lmxxf sigue deteniéndose, la
+pestaña Neural ahora dice por qué; envía `lmxxf_backend.log` y `amd_bridge.log` (lista los dispositivos HIP).
 
 **¿Un juego Vulkan (Indiana Jones and the Great Circle) se detiene al arrancar con "Could not create the
 Vulkan device (VK_ERROR_EXTENSION_NOT_PRESENT)"?** Corregido en 0.3.2: la ruta neural heredada de
@@ -261,10 +280,11 @@ desactivado por defecto, aún sin probar en un juego) debería eliminar esa paus
 `amd_presr.log` y `dlssnr_on_amd.log`.
 
 **¿El uso de RAM de lmxxf subía mientras NR estaba activo?** Corregido en 0.3.3 (eran unos 45 GB por
-hora a 60 fotogramas de NR por segundo). Lo que queda: bajo lmxxf, cada cambio de NR resolution o de
-modo DLSS retiene unos 97 MB de VRAM y otro tanto de RAM en el nivel de 1080 (una fuga del driver de AMD;
-la corrección está prevista para 0.3.4), y danielblnc retiene VRAM por cada tamaño de NR nuevo por encima
-de unos 1 MP. Reinicia el juego tras muchos cambios.
+hora a 60 fotogramas de NR por segundo). Lo que queda: danielblnc retiene VRAM por cada tamaño de NR
+nuevo por encima de unos 1 MP (desde 0.3.3.2 sus tamaños se redondean a 64 px fuera del 100%, así que son
+pocos); reinicia el juego tras muchos cambios con danielblnc. Desde 0.3.3.2, lmxxf ya no retiene unos 97 MB
+por cada cambio de NR resolution o de modo DLSS: crea sus búferes de red una vez por tamaño de red y los
+reutiliza (queda un resto pequeño de unos 10-25 MB de VRAM por cambio).
 
 **¿Un juego con Streamline falla al arrancar con el error 0x18 de slInit (visto con NBA 2K27 en AMD)?**
 0.3.3 cierra una forma en que los hooks de plugins de Streamline de OptiScaler podían causarlo, pero no
@@ -322,6 +342,7 @@ agradecimiento pertenece a upstream.
 - **TheAutomatic** — DLSS 5 AMD project — https://github.com/TheAutomatic/dlss-5-amd-project
 - **danielblnc** — DLSS-NR on AMD — https://github.com/danielblnc/DLSS-NR-on-AMD (`Runtime.zip`, sin modificar)
 - **lmxxf** — https://github.com/lmxxf/dlss5-on-amd-9070xt-porting (el runtime HIP, MIT)
+- **kernels c32w** (0.3.3.2) — kernels RDNA 4 de una wave propios de AMDNR para la red de lmxxf, Copyright (c) 2026 3zwr1 (AMDNR); ideas de la documentación pública de WMMA de RDNA 4 de AMD (GPUOpen, ROCm matrix instruction calculator)
 - **Matheus / dlss-5-amd** — https://github.com/MatheusGViana/dlss-5-amd-project
 - **Nukem9** — dlssg-to-fsr3 — https://github.com/Nukem9/dlssg-to-fsr3 (GPLv3, sin modificar)
 - **RenoDX** — clshortfuse — https://github.com/clshortfuse/renodx (matemática de la composición de color, MIT)
@@ -337,6 +358,8 @@ GPL-3.0 en `LICENSE`.
 El trabajo propio de AMDNR lleva un término adicional según la sección 7(b) de la GPL-3.0 (ver
 `Licenses/AMDNR_NOTICE.txt`): toda copia, fork u obra derivada que lo use debe conservar sus avisos y
 acreditar **AMDNR by 3zwr1** (<https://github.com/3zwr1/AMD-NR---OptiScaler>).
+
+**Copyright del menú de AMDNR.** El menú de AMDNR — su disposición, su diseño, sus textos y el código que AMDNR añadió para él — es Copyright (c) 2026 3zwr1 (AMDNR). Forma parte de este fork bajo GPL-3.0, con estos términos adicionales (GPL-3.0 section 7): (b) quien reutilice cualquier parte de él debe conservar esta línea de copyright y acreditar de forma visible a AMDNR by 3zwr1, en el menú y en el README; (c) no puedes presentarlo, ni presentar una copia modificada, como obra tuya; las versiones modificadas deben indicar claramente que han sido modificadas; (e) no se concede ningún derecho sobre el nombre ni el logotipo de AMDNR; otros proyectos no pueden usarlos.
 
 El trabajo de upstream acreditado arriba sigue siendo de sus autores, bajo sus propias licencias;
 AMDNR no reclama copyright sobre él.

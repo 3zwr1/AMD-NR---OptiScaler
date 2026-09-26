@@ -3,9 +3,231 @@
 Many thanks to **TheAutomatic** (DLSS 5 AMD project) — the releases, the HIP toolchain and the asset
 layout that the lmxxf runtime integration in 0.3.0 builds on.
 
+## 0.3.3.2 — 2026-09-26
+
+Hotfix: lmxxf now runs on PCs with more than one AMD GPU (for example a Ryzen with its integrated graphics on) and is
+faster on RX 9070 / 9070 XT (network 17.8 -> 15.3 ms at 1080p, same image), Ray Reconstruction is offered on RX 9000
+(RDNA 4) only by default so RX 7000 keeps the game's own denoiser, danielblnc's Residual strength no longer jumps at
+100% NR resolution or away from it, lmxxf no longer keeps about 100 MB of VRAM on every NR resolution change, Model
+interleave no longer ghosts (new default: Edit accumulation), and Resident Evil Requiem warns when REFramework is
+missing and gets a skin mask that leaves streets and walls alone. Replace `OptiScaler.dll`, `LmxxfNrRuntime.dll` and
+`LmxxfNrRuntime.pak`: all three changed.
+
+### Fixed
+- **lmxxf did nothing, or stopped at once, on PCs where the game's GPU is not HIP device 0.** This hits a Ryzen
+  desktop with its integrated graphics on, a laptop with an AMD APU and a Radeon, and PCs with two AMD GPUs, on
+  RX 7000 and RX 9000 alike (reported on an RX 7900 XTX). HIP keeps its current GPU per thread. lmxxf built its
+  network on the right GPU, but the game's submit thread still pointed at device 0, the integrated GPU. The first
+  frame failed with `hipErrorInvalidHandle (400)`, and lmxxf stayed off for the whole session ("session is
+  poisoned" in `lmxxf_backend.log`). `LmxxfNrRuntime.dll` 0.3.3.2 now selects the network's GPU on every call and
+  gives the thread its old GPU back afterwards. On our single-GPU PC its output is identical to 0.3.3.1's, also
+  when frames are sent from a second thread. Not yet tested on a PC with two AMD GPUs.
+- **Ray Reconstruction on RX 7000 (RDNA 3) and older: no longer offered by default.** AMD ships Ray Regeneration
+  for RDNA 4 only; the driver refused it on an RX 7800 XT in Resident Evil Requiem, and the game, having switched
+  its own denoiser off for Ray Reconstruction, then showed an undenoised picture. AMDNR now answers "Ray
+  Reconstruction supported" on RDNA 4 (RX 9000) only, so on other cards the game keeps its own denoiser.
+  `[FSR-RR] FfxDenoiserAllowPreRdna4=true` offers it anyway; if the driver refuses it, AMDNR falls back to FSR 4
+  INT8 / FSR 3.1 (not FSR 2.1.2), warns once and stops retrying for the session, and the ray-traced lighting is not
+  denoised. Not yet tested in a game on RX 7000.
+- **A Ray Reconstruction fallback was saved as your upscaler.** After that fallback, the next Save Settings (or a
+  Neural runtime change) wrote `Dx12Upscaler=fsr21` into `OptiScaler.ini`, so every later start ran FSR 2.1.2,
+  even on cards with FSR 4. That no longer happens. An ini that already says `Dx12Upscaler=fsr21` is not changed:
+  if you did not choose FSR 2.1.2 yourself, set it to `auto` under `[Upscalers]`.
+- **danielblnc: Residual strength jumped at 100% NR resolution, and the style changed when NR resolution left
+  100%.** Moving strength from 1.00 to 0.99 switched on a hidden Residual limit over the whole look (RenoDX
+  composition, look, stability and sharpening), so one step changed the style. Every NR style other than Default
+  did the same. At 100% NR resolution the limit and the edge fade are now off: 0.99 gives 99% of 1.00, and the NR
+  styles look the way their strength says. Below and above 100% NR resolution (also Dynamic NR steps and the
+  Balanced / Performance presets) Residual strength and limit now act only on the model's own edit, before the
+  look, temporal stability and sharpening, as lmxxf always has, so changing NR resolution no longer clips the look.
+  With the default limit the model's edit stays capped there (not at 100%). Default is unchanged at 100%, bit for
+  bit. lmxxf was not affected. `[DlssNr] AmdEditShaper=false` brings back the first 0.3.3.2 behaviour away from
+  100%. Not yet tested in a game.
+- **Dynamic NR resolution bounced between two steps.** It now steps down after 1.5 s over the target and back up
+  only after 5 s of headroom, and waits a minute after a step up that could not hold. Its frame timer was too
+  coarse above about 64 FPS and could push it to 50% at high targets; it now uses a precise timer, so at high
+  targets you may see a higher NR resolution and a lower frame rate than before. With an older
+  `LmxxfNrRuntime.dll` (no buffer reuse, below) it stops changing after 12 changes per session. Not yet tested in a
+  game.
+- **lmxxf: each NR resolution, DLSS mode or resolution change kept about 100 MB of VRAM and as much RAM until the
+  game restarted.** An AMD HIP driver never gives back a D3D12 buffer that was imported and mapped, so
+  `LmxxfNrRuntime.dll` now makes these buffers once per network size and reuses them (`lmxxf_backend.log`:
+  `hip buffers ... imports N, reuses M`). A smaller rest of about 10-25 MB of VRAM per change remains (the first
+  0.3.3.2 runtime has it too; its cause is not known yet), so after very many changes a restart still helps. With an
+  older `LmxxfNrRuntime.dll` the menu says so. Verified with the leak probe (40 changes: about +0.4 GB instead of
+  +1.8 GB); not yet tested in a game.
+- **FPS limit with frame generation above 2X.** OptiScaler's own frame limiter (used when Reflex / Anti-Lag / XeLL
+  does not limit) assumed 2X, so XeFG 4X with a 120 FPS limit ran at 240. The limit is the displayed frame rate at
+  every multiplier now (4X: the game runs at 30). 2X and FSR FG are unchanged; if you set a limit for 3X or more
+  before, it now binds as labelled.
+- **lmxxf could stay off for a whole session** when the game never submitted the list of the first neural frame,
+  or submitted it through a wrapper. It now watches a newer frame's list after 8 frames, matches by COM identity
+  after 16, and logs why. After a dropped list lmxxf's temporal history restarts instead of carrying on from a job
+  that never ran. Found by reading the code; not seen in a game.
+- **A neural command list the game throws away** (reset or released without running it) left danielblnc waiting
+  for it for the rest of the session ("previous Record still awaits submission"), and could let lmxxf start a job
+  on inputs that were never copied. AMDNR now notices such a list (it watches `Reset` on the one list NR last
+  recorded into; OptiScaler's own D3D11 / Vulkan bridges report a list they did not run): danielblnc finishes the
+  lost job without it and NR comes back after about 4 s, and lmxxf drops the job as a lost frame.
+  `[DlssNr] AmdNeuralListRecovery=false` turns this off. Not yet tested in a game: nothing reproduces a dropped list
+  on demand.
+- **Quitting the game while NR runs.** NR stops the moment the game starts to exit, and AMDNR now waits at most about
+  2 s for its runtime (lmxxf could wait up to 30 s for its queue before), also when the exit comes from a crash
+  handler on the rendering thread. lmxxf over the Vulkan bridge: a clean quit during lmxxf's warm-up no longer
+  turns lmxxf off at the next start. Not yet tested in a game.
+- **lmxxf when the GPU is removed** (a driver reset or crash): lmxxf now stops at once and says so in
+  `lmxxf_backend.log` (nothing is released or waited for), as danielblnc already did.
+- **XeSS, FSR 2.2 and FSR 2.1.2 changed the resource state of AMDNR's NR output** (in Unreal Engine titles a wrong
+  transition in and out). They now leave NR's output alone, as the FSR 4 / FSR 3.1 path already did
+  (`[DlssNr] AmdNrColourGuard=false` restores the old behaviour). Not yet tested in a game.
+- **NR after Ray Regeneration ran again on a frame the upscaler skipped** (its first frames, a backend change, the
+  FSR 2.1.2 fallback), editing the previous output a second time. Such frames now get no neural pass and NR history
+  restarts (`[DlssNr] AmdSkipUnwrittenFrames=false` restores the old behaviour).
+- **Smaller resource-state fixes:** FSR 4's auto-exposure padding workaround left the game's colour in the wrong
+  state; FSR Ray Regeneration issued a transition to the state a resource was already in; OptiScaler's Vulkan
+  bridge in Unreal Engine titles transitioned its own copy of the colour from the wrong state.
+- **Two neural streams in one frame** (split screen, a scope or picture-in-picture view, a second upscaler context)
+  restarted or mixed each other's NR history. When AMDNR measures more than one NR entry per presented frame, NR
+  runs on the largest one and the others pass through untouched (`[DlssNr] AmdOneStreamPerFrame=false` turns this
+  off). Games with one entry per frame are not affected. Not yet tested in a game.
+- **A frame from another D3D12 device** (a second GPU, or a game that re-creates its device) could reach NR
+  resources that belong to the first device. It now goes to the upscaler untouched and is logged once
+  (`[DlssNr] AmdDeviceGate=false` turns the check off). Not yet tested on a PC with two GPUs.
+- **Linux / Proton (DXVK): Vulkan instances and devices OptiScaler creates for itself** were taken for the game's,
+  which could overwrite the game's Vulkan instance and its Anti-Lag 2 state. They are now told apart
+  (`[Hooks] SkipOwnVulkanObjects=false` restores the upstream behaviour). Not yet tested on Proton.
+- **Model interleave: ghosting and 30 Hz grain**, see Changed (Edit accumulation). Also fixed for every preset: the
+  "Model-frame ghost" meter and the Self-tuning totals never showed a value; a model call the runtime refused was
+  treated as a model frame; and a wrong barrier state in interleave's motion accumulation on titles whose motion
+  vectors are not in NON_PIXEL_SHADER_RESOURCE.
+- **Neverness to Everness: the game's crash reporter loaded OptiScaler and wiped the game's log.** OptiScaler now
+  skips `CrashClientReporter.exe`, `UnrealCefSubProcess.exe` and danielblnc's installer (`dlssnr_on_amd_setup.exe`),
+  so they no longer load it or replace the game's `OptiScaler.log`.
+- **`OptiScaler.log` was emptied while another process still wrote to it.** When another running process holds
+  the log, the new session now appends to it instead.
+- **Save Settings dropped a value you set when it equalled the default** (the FSR-RR path-traced profile keys, skin
+  smoothing on/off, radius and guide thresholds, the skin classifier keys, and RR bias mask strength). It was saved
+  as `auto`, which follows the game's default, so skin smoothing turned off in Resident Evil Requiem would have come
+  back on. Save Settings now keeps the value.
+- **Neural tab: the orange Streamline (slInit) message stayed up while NR ran** (The Last of Us Part I, where NR
+  runs on the game's FSR 3.1). It now goes away once NR receives frames, and it says "DLSS is not available in
+  this game" instead of "the game switched DLSS off".
+- **The HOME notice said "On" while the neural runtime was stopped.** It now says "On - but the neural runtime is
+  stopped (see the Neural tab)" when danielblnc was refused or failed, or lmxxf failed.
+- **Ray Regeneration's log said "GPU is RDNA 4" on RX 7000**, and its version query wrote a warning on every menu
+  frame. Both are fixed.
+- **The update notice pointed at upstream OptiScaler**, which has no neural rendering, and could tell AMDNR players
+  to "update" to it. It now checks AMDNR's own GitHub releases and compares against the AMDNR version
+  (`[Hotfix] CheckForUpdate=false` turns it off).
+
+### Added
+- **lmxxf is faster on RX 9070 / RX 9070 XT (RDNA 4): network 17.8 -> 15.3 ms at 1080p on an RX 9070 XT (720p 8.0
+  -> 6.9 ms), the same image bit for bit.** New "c32w" one-wave kernels for the network's C32 layers ship in
+  `LmxxfNrRuntime.pak`. `LmxxfNrRuntime.dll` checks their SHA-256 before it loads them and runs the old kernels if
+  they do not match. lmxxf's status line and `lmxxf_backend.log` show `c32w=on` when they run (`c32w=off:<reason>`
+  otherwise). With the old `LmxxfNrRuntime.pak` everything works as before, at the old speed (`c32w=off:nofile`).
+  RX 9060 XT keeps the old kernels for now (the environment variable `AMDNR_C32W=1` turns them on there, untested);
+  `AMDNR_C32W=0` turns them off everywhere. RX 7000 is not affected. The c32w kernels are AMDNR's own work
+  (Copyright (c) 2026 3zwr1 (AMDNR)); they run lmxxf's network (Kien, MIT). Acknowledgement: AMD's public RDNA 4
+  WMMA documentation (AMD GPUOpen, the ROCm matrix instruction calculator), used for ideas only.
+- **Resident Evil Requiem / PRAGMATA without REFramework: a warning.** When re9.exe, re9demo.exe or pragmata.exe
+  runs without REFramework's dinput8.dll (none in the game folder, or Windows' own dinput8.dll was loaded),
+  OptiScaler.log gets a warning, a notice shows for 20 s and the menu shows an orange line with the download link.
+  Without REFramework, Resident Evil Requiem crashes 15-60 s after launch.
+- **Resident Evil Requiem skin smoothing: a Robust skin classifier (the new default).** The SSS guide alone marked
+  25-39% of a night street as skin (walls, coats, umbrellas); the Robust classifier also asks how much the game's
+  SSS pass moved the pixel, whether the surface around it agrees (held from the previous frame, so faces do not
+  flicker) and whether the albedo is skin-toned: 0.5-2.3% of the frame in the same scenes, with faces and hands
+  still covered. Neural > Quality > Ray Regeneration > Skin classifier; "Guide only (0.3.3)" is the old mask.
+  Keys `[FSR-RR] FfxDenoiserSkinSmoothingClassifier` (1 Robust, 0 guide only), `...MovedLow` / `...MovedHigh`
+  (0.05 / 0.12) and `...ShowCues`.
+- **Still-surface steadiness** (Neural > Quality, `[DlssNr] AmdStabilityStaticRelax`, both runtimes): steadies
+  shadows and flat areas that pulse while nothing moves; only pixels that provably did not move are affected. Off by
+  default in this release; try 0.5 if shadows flicker on still walls. Not used while Model interleave is on
+  (Edit accumulation, the default) or at Temporal stability 0.
+- **DLSS Enabler options say where the DLL comes from.** AMDNR does not ship `dlss-enabler-headless.dll`; the Frame
+  Gen options that need it now show how to get it (DLSS Enabler 4.9.0 or newer by Artur Graniszewski, its
+  `version.dll` renamed) with a link, and the log says the same.
+- **danielblnc 0.4.2 is supported, ahead of its release** (not yet tested in a game). This build drives danielblnc
+  0.2.17, 0.3.0, 0.3.1, 0.3.2, 0.3.3, 0.4.0, 0.4.1 and 0.4.2. The newest public build is 0.4.0: get it in
+  `v0.4.0-Runtime.zip`.
+- **Clearer message when your danielblnc files are not a build this AMDNR drives.** The Neural tab and
+  `amd_presr.log` name the file and its version, say whether it is newer, older, a re-published copy or missing,
+  and what to do (usually: use `v0.4.0-Runtime.zip` from the AMDNR release, all three pass DLLs from one zip). The
+  long line now wraps. The runtime combo reads "danielblnc (0.3.x / 0.4.x)".
+- **Warning when danielblnc's standalone DLSS-NR on AMD is installed next to AMDNR** (his `version.dll`,
+  `winhttp.dll` or `dxgi.dll`, or `dlssnr_on_amd_setup.exe`). AMDNR already runs his runtime as
+  `dlssnr_amd_pass1..3.dll`. The standalone copy hooks the game on its own, shares `dlssnr_on_amd.ini` and
+  `dlssnr_on_amd.log`, and its End / Enter overlay only switches itself, so toggling there changes nothing. Remove
+  it. The warning shows in orange in the Neural tab and in the logs.
+- **lmxxf says why it stopped:** the Neural tab shows "lmxxf stopped after an error: ...". `amd_bridge.log` lists
+  every HIP device and marks the game's GPU, and lmxxf's status line names the HIP device it uses. While lmxxf's
+  runtime is not up yet, its status line says so.
+- **Resident Evil Requiem, FSR Ray Regeneration:**
+  - **Texture route for the path-traced profile** (`[FSR-RR] FfxDenoiserProfileTextureRoute`, default 1.0; slider
+    under the profile checkbox). With the profile on, textured and very dark surfaces (brick, tiles, fabric,
+    signs) go back to the normal routing, and flat surfaces such as faces keep the profile. It is meant to remove
+    the etched look the profile gave textures in 0.3.3; 0 is the profile as in 0.3.3. The profile itself stays
+    opt-in (off by default). Not yet confirmed in the game. New RR debug view *ProfileTextureRoute*.
+  - **Skin smoothing is on by default in Resident Evil Requiem**, with the settings that tested well there:
+    strength 1.0, radius 16, guide thresholds 0.0265 / 0.0414. It reduces flicker on faces. A value you set
+    yourself wins; `FfxDenoiserSkinSmoothing=false` turns it off. Other games keep it off by default.
+- **Upscaling tab hints:** "Not applied yet - press Change Upscaler" when the combo shows a choice that is not
+  running, and a hint when FSR 2.1.2 runs on a card that has FSR 4.
+- **Logs for bug reports:** NR on/off from the hotkey and from the Neural tab checkbox is logged. `amd_bridge.log`
+  and `amd_presr.log` start with a session header (time, process, AMDNR version). `dlssnr_on_amd.log` marks the
+  copy AMDNR hosts. `amd_presr.log` lists the `dlssnr_on_amd.ini` keys AMDNR does not set, and warns about ones
+  that change the picture. On PCs with two GPUs the GPU line names the adapter NR runs on.
+- **Cost hints:** danielblnc on RX 7000 (about 27 ms per frame even at 320x180, about 52 ms at 1280x720; 0.4.0 on
+  an RX 7900 XTX), and danielblnc with an NR input of 1440p or more (about 45 ms per frame; 0.3.1 on an RX 9070
+  XT): lower the game's render resolution, or set NR resolution to 67-85%.
+
+### Changed
+- **Model interleave: new default preset "Edit accumulation"** (`[DlssNr] AmdInterleavePreset=10`, both runtimes;
+  lmxxf runs it as 11). No picture is carried over any more: every frame, model frame and skipped frame alike, is
+  this frame's raw picture plus the model's carried correction, checked raw against raw on every frame; where it
+  does not fit, both frame types show the model's overall tone curve, so nothing pulses. This removes the held
+  picture's one-frame ghost and its 30 Hz grain, and costs no more than Guided fill v2. On danielblnc the model
+  frames show the fitted correction too, not the model's exact picture: for that, pick "Guided fill v2"
+  (Neural > Performance > Interleave preset, or `AmdInterleavePreset=6`); on lmxxf "Classic carry" is the old
+  fill. Not yet tested in a game.
+- **danielblnc: away from 100% NR resolution, working sizes above about 1 MP are rounded to 64-pixel steps**, so
+  dynamic resolution, DLSS modes and Dynamic NR reuse a few sizes instead of keeping 75-350 MB of VRAM per pass for
+  every new one (`[DlssNr] AmdNrSizeStep`, 0 = exact sizes as before). 100% is unchanged.
+- **Resident Evil Requiem, FSR Ray Regeneration: RR bias mask strength 0 by default.** Pixels the game flags in its
+  DLSS bias mask are now denoised like the rest (a tester saw less blotching and grain at 0; not yet confirmed from a
+  log that the game publishes the mask - if it does not, this changes nothing). A value you set in
+  `[FSR-RR] FfxDenoiserBiasMaskStrength` wins, also 1; Save Settings now keeps an explicit 1 in every game.
+- **Menu Scale:** the menu window, its sliders and combos now follow the Menu Scale (a smaller scale shrinks the
+  window, not only the text); long notes (Frame Gen, XeFG 6X, native XeSS FG) wrap instead of running off the
+  right edge; the FrameTime graph ends with "fps" again; and a window you dragged is pulled back on screen when it
+  grows (a larger scale or a taller tab).
+- **Version:** `OptiScaler.dll` reports AMD-NR v0.3.3.2. `LmxxfNrRuntime.dll` is 0.3.3.2 r2 (Properties >
+  Details; the first 0.3.3.2 runtime said 0.3.3.2), and the runtime combo reads "lmxxf (0.3.3.2)". It works with
+  the old `LmxxfNrRuntime.pak` too, without the speed-up.
+- **danielblnc Residual notes:** the notes under the Residual sliders say what strength, limit and edge fade do at
+  100% and away from it, and the Edge fade slider is greyed out only at exactly 100% with Dynamic NR off. The NR
+  resolution tooltip and the note while you drag it say what a new NR size keeps with each runtime.
+- **Logs:** the Resident Evil Requiem crash-triage `[Probe]` log lines are gone; the default-off `[Hotfix] Diag*`
+  switches stay for testers.
+- **`OptiScaler.ini`:** `[FSR-RR]` documents the texture route and the Resident Evil Requiem defaults, and
+  `NrBackend` names danielblnc 0.3.x / 0.4.x. With your own ini, the new keys use their defaults.
+
+### Notes
+- **Resident Evil Requiem (and its demo) needs REFramework: a known requirement, not an AMDNR bug.** OptiScaler relies on it
+  to get past Capcom's anti-tamper (<https://github.com/optiscaler/OptiScaler/wiki/Resident-Evil-9-Requiem>). Without it the game crashes 15-60 s after
+  launch ("An unhandled exception occurred", `re9.exe+0x9fb347e`). Put `dinput8.dll` from `REFramework.zip` in the latest
+  nightly (<https://github.com/praydog/REFramework-nightly/releases>) next to `dxgi.dll`, and change REFramework's menu key (e.g. to Delete):
+  it is also Insert. After a game update, expect crashes until REFramework is updated. PRAGMATA, Monster Hunter Wilds and Onimusha probably need it too (not confirmed).
+  Since this release AMDNR warns when it is missing (Added).
+- **Not yet tested in a game** (built and checked on the desk only): recovery from a dropped neural list, the
+  device gate on PCs with two GPUs, one stream per frame, the Proton / DXVK Vulkan change, the bounded exit, the
+  still-surface slider, and Ray Reconstruction on RX 7000 with `FfxDenoiserAllowPreRdna4=true`. Each has an ini
+  switch to turn it off (see above).
+
 ## 0.3.3.1 — 2026-09-25
 
-Hotfix: danielblnc's new runtime 0.3.3 is supported (and 0.4.0 / 0.4.1 ahead of their release), and FSR Ray Regeneration's path-traced profile is
+Hotfix: danielblnc's runtimes 0.3.3 and 0.4.0 are supported (and 0.4.1 ahead of its release), and FSR Ray Regeneration's path-traced profile is
 opt-in again (it corrupted the picture in Resident Evil Requiem). Only `OptiScaler.dll` and the ini changed;
 `LmxxfNrRuntime.dll` and `LmxxfNrRuntime.pak` are the same as in 0.3.3.
 
@@ -17,10 +239,13 @@ opt-in again (it corrupted the picture in Resident Evil Requiem). Only `OptiScal
   `dlssnr_on_amd_weights.bin` works with it unchanged. The release has a new `v0.3.3-Runtime.zip`
   (danielblnc's 0.3.3 runtime, unmodified, with his permission, plus the weights); `Runtime.zip` (0.3.1) and
   `v0.3.2-Runtime.zip` still work.
-- **danielblnc 0.4.0 and 0.4.1 are supported ahead of their release.** Daniel shared them early so that
-  AMDNR works with them on the day they come out: drop his new runtime in and this build drives it, with no
-  AMDNR update needed. Both were derived twice, independently, and both results agreed for each; the host
-  contract is unchanged from 0.3.3. Not yet run on a GPU. The existing weights file works with both.
+- **danielblnc 0.4.0 is supported, and 0.4.1 ahead of its release.** Daniel shared both early, so AMDNR
+  drove 0.4.0 the day he published it (2026-09-25; the public build is byte-identical to the one we mapped):
+  the release has a new `v0.4.0-Runtime.zip` (his 0.4.0 runtime, unmodified, with his permission, plus the
+  weights). His release notes claim 42% more speed than 0.3.3; its new fast kernels run on RX 9000 only.
+  0.4.1 will work the day it comes out, with no AMDNR update needed. Each build was derived twice,
+  independently, and both results agreed; the host contract is unchanged from 0.3.3. Not yet run on a GPU.
+  The existing weights file works with both.
 
 ### Fixed
 - **FSR Ray Regeneration in Resident Evil Requiem and PRAGMATA: the path-traced profile is opt-in again.**
@@ -28,7 +253,7 @@ opt-in again (it corrupted the picture in Resident Evil Requiem). Only `OptiScal
   shows that it cleared most of the grain on faces but badly corrupted the rest of the picture. It is now off
   unless you tick *FSR Ray Regeneration: path-traced profile* (Neural > Quality) or set
   `[FSR-RR] FfxDenoiserPathTracedProfile=true`, so by default these games look as they did in 0.3.2. The
-  profile itself is unchanged. The cause is being investigated for 0.3.4.
+  profile itself is unchanged. The cause was found later; 0.3.3.2 adds a texture route for it.
 
 ## 0.3.3 — 2026-09-24
 
@@ -458,13 +683,14 @@ link in this release point to it; the old invite still works.
   in this zip; upstream notices are kept.
 
 ### Known issues
-- lmxxf: changing NR resolution or DLSS mode many times raises VRAM until the game restarts (an AMD HIP driver leak on imported D3D12 buffers; a reuse fix is planned for 0.3.4).
+- lmxxf: changing NR resolution or DLSS mode many times raises VRAM until the game restarts (an AMD HIP driver leak on imported D3D12 buffers; 0.3.3.2 reuses these buffers, see there).
   Each change at the 1080 tier keeps about 97 MB of VRAM and as much RAM; restart the game after many
   changes.
 - danielblnc: each new NR working size above about 1 MP keeps about 75-350 MB of VRAM per Neural pass
   until the game restarts (the closed runtime pools its interop buffers and never frees them; a size used
   before costs nothing). Read from the runtime's code and an RE Requiem log, not yet measured in a game.
   The slider's 5% steps (Changed) keep the number of sizes down; restart the game after many changes.
+  0.3.3.2 rounds these sizes to 64 px away from 100%.
 
 ## 0.3.2 — 2026-09-23
 
@@ -578,6 +804,10 @@ Fixes from the first 0.3.0 reports, plus one request.
   upscaler's parameters). The log and the status line now name the build found, its size and digest,
   the supported builds (0.2.17, 0.3.0, 0.3.1) and what to install. Check the `Runtime.zip` you
   downloaded: `dlssnr_amd_pass1.dll` must be 7,304,192 bytes (SHA256 `b108d640...`).
+- **GTA V (Legacy): `ERR_GFX_D3D_NOFEATURELEVEL_1` at start with OptiScaler loaded.** The D3D11 hook
+  elevated the game's requested feature level 11_0 to 11_1 and the game refused the device. `gta5.exe`
+  now keeps its own level (quirk `SkipD3D11FeatureLevelElevation`). Note: `GTA5.exe` never loads a
+  local `dxgi.dll`; use `OptiScaler.asi` (ASI loader) or `winmm.dll` / `version.dll`.
 
 ### Notes
 - Final image mode (games with FSR 1 or no upscaler at all) stays off in this release. The code
@@ -676,4 +906,6 @@ Fixes from the first 0.3.0 reports, plus one request.
 
 Credits: TheAutomatic (DLSS 5 AMD project) · danielblnc (DLSS-NR on AMD) · lmxxf
 (dlss5-on-amd-9070xt-porting) · Matheus (dlss-5-amd) · OptiScaler (Overclockers). Licence GPL-3.0;
-third-party licences in `Licenses\`.
+third-party licences in `Licenses\`. The "c32w" RDNA 4 kernels (0.3.3.2) are AMDNR's own work, Copyright (c)
+2026 3zwr1 (AMDNR); they run lmxxf's network (Kien, MIT), with thanks to AMD's public RDNA 4 WMMA documentation
+(AMD GPUOpen, ROCm matrix instruction calculator) for ideas.

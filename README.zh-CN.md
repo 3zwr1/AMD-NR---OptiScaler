@@ -1,6 +1,6 @@
-# AMDNR — AMD 显卡上的 DLSS 5 神经渲染（OptiScaler 构建版）— v0.3.3.1
+# AMDNR — AMD 显卡上的 DLSS 5 神经渲染（OptiScaler 构建版）— v0.3.3.2
 
-[English](README.md) | **中文** | [Português](README.pt-BR.md) | [Español](README.es.md)
+[English](README.md) | **中文** | [Português](README.pt-BR.md) | [Español](README.es.md) | [العربية](README.ar.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Русский](README.ru.md) | [Polski](README.pl.md)
 
 > **我们需要你的支持。** 加入 Discord 服务器 —— <https://discord.gg/AMDNR> —— 获取帮助、提交
 > 问题、领取测试版；每一份带日志的反馈都会让下一个版本更好。
@@ -15,8 +15,8 @@ DLSS 光线重建游戏的 FSR Ray Regeneration。
 **支持本项目：<https://ko-fi.com/3zinr>**
 
 > **danielblnc 运行时是 Daniel Blanco 的作品。** `Runtime.zip` 中的 AMD 神经运行时（`dlssnr_amd_pass1..3.dll`）是
-> **Daniel Blanco（danielblnc）的 DLSS-NR on AMD** —— <https://github.com/danielblnc/DLSS-NR-on-AMD>。
-> Copyright (c) 2026 Daniel Blanco，保留所有权利。AMDNR 经他许可，未经修改地分发它；它不是 AMDNR 的作品。
+> **DLSS-NR on AMD by Daniel Blanco (danielblnc)** —— <https://github.com/danielblnc/DLSS-NR-on-AMD>。
+> Copyright (c) 2026 Daniel Blanco, all rights reserved. AMDNR 经他许可，未经修改地分发它；它不是 AMDNR 的作品。
 > 请支持他的项目。其他所有人的完整致谢见本页末尾。
 
 ---
@@ -62,6 +62,12 @@ DLSS 光线重建游戏的 FSR Ray Regeneration。
 * `dbghelp.dll`
 
 一次只试一个名字。不要同时保留多份 `OptiScaler.dll` 的副本。
+
+> **Resident Evil Requiem（含试玩版）需要 REFramework。** 这是已知的前置要求，不是 AMDNR 的问题：OptiScaler 依赖 REFramework 绕过
+> Capcom 的反篡改保护（[OptiScaler wiki](https://github.com/optiscaler/OptiScaler/wiki/Resident-Evil-9-Requiem)）。没有它，游戏会在启动后 15-60 秒崩溃
+> （"An unhandled exception occurred"）。请从最新的 REFramework nightly（<https://github.com/praydog/REFramework-nightly/releases>）下载 `REFramework.zip`，
+> 把其中的 `dinput8.dll` 放到 `dxgi.dll` 旁边，并把 REFramework 的菜单键改成别的键（例如 Delete）：它默认也是 Insert。
+> 游戏更新后，在 REFramework 跟进更新之前出现崩溃属于预期情况。PRAGMATA、Monster Hunter Wilds、Onimusha 可能也需要它（未确认）。
 
 ### 5. 启动游戏
 
@@ -193,12 +199,12 @@ keep、反应遮罩均值、向量长度与被拒比例）。反馈时附上日�
   高于 6X 需要 OptiScaler 自带的 XeFG 提供程序并开启 Extra pacing；游戏自带的 XeSS 3 副本最多 6X。
   10X 需要 360 Hz 及以上的显示器，并把帧率上限设为刷新率 / 10；延迟较高，且提供程序在 4K 下多占用约
   128 MiB 显存。7X-10X 尚未在游戏中确认：测试者请发送 `OptiScaler.log`。
-- **FSR Ray Regeneration** —— 仅在使用 DLSS 光线重建的游戏中（Cyberpunk 2077、Alan Wake 2），且游戏
+- **FSR Ray Regeneration** —— 默认仅限 RDNA 4（RX 9000）；仅在使用 DLSS 光线重建的游戏中（Cyberpunk 2077、Alan Wake 2），且游戏
   运行 DLSS（开启伪装）、光线追踪和光线重建都在游戏自身设置中启用。此时神经渲染在它之后、对它的
   输出运行，开销更大：帧率下降时调低 NR resolution。它的控件（Neural > Quality > Ray Regeneration）
-  只在游戏实际运行光线重建时显示。Resident Evil Requiem 和 PRAGMATA 会自动启用**路径追踪配置**
-  （路径追踪下脸部噪点更少）。同一位置还有 bias mask 强度、RR 调试视图和**皮肤平滑**（实验性，默认
-  关闭；用于提供 SSS 引导的游戏，例如 Resident Evil Requiem）。
+  只在游戏实际运行光线重建时显示。**路径追踪配置**（路径追踪下脸部噪点更少）自 0.3.3.1 起需手动开启：
+  想在 Resident Evil Requiem 或 PRAGMATA 中试用，请在那里勾选。同一位置还有 bias mask 强度、RR 调试视图和
+  **皮肤平滑**（实验性，用于提供 SSS 引导的游戏；默认关闭，但自 0.3.3.2 起在 Resident Evil Requiem 中默认开启）。
 
 ## 出了问题怎么办
 
@@ -206,9 +212,20 @@ keep、反应遮罩均值、向量长度与被拒比例）。反馈时附上日�
 写出 `amd_presr.log` 和 `amd_bridge.log`，当神经渲染这一步出问题时它们最有用。上一次会话的日志会保留为
 `OptiScaler.previous.<exe>.log`；崩溃后请一并附上（新日志中会写明 "no clean exit recorded"）。
 
-**NR frames 0/s、运行时下拉框显示 `pass1?`，且 `amd_presr.log` 说该 pass DLL 是本 OptiScaler 不支持的版本？**
-你的 `dlssnr_amd_pass1..3.dll` 不是 danielblnc 的 0.3.1（外面流传着一套 0.2.16）。请使用本发布页的
-`Runtime.zip`：`dlssnr_amd_pass1.dll` 为 7,304,192 字节，SHA256 以 `b108d640` 开头。支持的版本：0.2.17、0.3.0、0.3.1。
+**NR frames 0/s，且 Neural 选项卡或 `amd_presr.log` 说该 pass DLL 是本 AMDNR 不支持的版本？**
+你的 `dlssnr_amd_pass1..3.dll` 是本 AMDNR 不认识的 danielblnc 版本（外面流传着一套 0.2.16），或三个文件中缺了一个。
+自 0.3.3.2 起，Neural 选项卡会写出文件名和版本，并说明该怎么做。请使用本发布页的 `v0.4.0-Runtime.zip`（最新）或
+`Runtime.zip`（0.3.1），三个 pass DLL 须来自同一个压缩包：`v0.4.0-Runtime.zip` 中的 `dlssnr_amd_pass1.dll` 为
+10,027,008 字节，SHA256 以 `d62be3d8` 开头。支持的版本：0.2.17、0.3.0、0.3.1、0.3.2、0.3.3、0.4.0，以及尚未发布的
+0.4.1 / 0.4.2。不要在 AMDNR 旁边安装 danielblnc 自己的安装程序或它的 `dxgi.dll` / `version.dll` / `winhttp.dll`：
+AMDNR 已经在运行他的运行时。
+
+**在带集成显卡的电脑上，lmxxf 没有任何效果，或一开始就停止？** 0.3.3.2 已修复。在开启了集成显卡的 Ryzen 台式机、
+带 AMD APU 和 Radeon 独显的笔记本，或装有两块 AMD 显卡的电脑上，游戏所用的显卡往往不是 HIP 设备 0。lmxxf 因此在
+第一帧就失败（`hipErrorInvalidHandle (400)`，随后 `lmxxf_backend.log` 中出现 "session is poisoned"），并在整个会话中
+保持关闭。请把 `OptiScaler.dll`（即你重命名后的文件，例如 `dxgi.dll`）和 `LmxxfNrRuntime.dll` 都替换为 0.3.3.2 的
+版本。尚未在这类电脑上测试：如果 lmxxf 仍然停止，Neural 选项卡现在会说明原因；请发送 `lmxxf_backend.log` 和
+`amd_bridge.log`（其中列出了各个 HIP 设备）。
 
 **Vulkan 游戏（Indiana Jones and the Great Circle）一启动就报 "Could not create the Vulkan device
 (VK_ERROR_EXTENSION_NOT_PRESENT)"？** 0.3.2 已修复：继承自 NVIDIA 神经路径的代码向 AMD 驱动请求了两个
@@ -224,8 +241,9 @@ keep、反应遮罩均值、向量长度与被拒比例）。反馈时附上日�
 游戏中测试）预计可消除这次停顿；请发送 `OptiScaler.log`、`amd_presr.log` 和 `dlssnr_on_amd.log`。
 
 **NR 运行期间 lmxxf 的内存占用一直上涨？** 0.3.3 已修复（此前在 60 NR fps 下每小时约 45 GB）。仍然存在的：
-在 lmxxf 下（1080 档）每次更改 NR resolution 或 DLSS 模式会占住约 97 MB 显存和同样多的内存（AMD 驱动的泄漏，修复计划
-在 0.3.4），danielblnc 在每个超过约 1 MP 的新 NR 尺寸上也会占住显存。多次调整后请重启游戏。
+danielblnc 在每个超过约 1 MP 的新 NR 尺寸上仍会占住显存（自 0.3.3.2 起，非 100% 时其尺寸按 64 像素取整，因此只会出现少数几种尺寸）；
+使用 danielblnc 多次调整后请重启游戏。自 0.3.3.2 起，lmxxf 每次更改 NR resolution 或 DLSS 模式不再占住约 97 MB：
+它为每种网络尺寸只创建一次网络缓冲区并重复使用（每次更改仍会留下约 10-25 MB 的少量显存）。
 
 **Streamline 游戏启动时报 slInit 错误 0x18（在 AMD 上的 NBA 2K27 中出现）？** 0.3.3 堵住了 OptiScaler 的
 Streamline 插件钩子可能引发该错误的一条途径，但尚未确认这就是 NBA 2K27 的原因。`OptiScaler.log` 现在会记录
@@ -273,6 +291,7 @@ OptiScaler 问题：把游戏目录中的 `sl.common.dll` 重命名为 `sl.commo
 - **TheAutomatic** —— DLSS 5 AMD project —— https://github.com/TheAutomatic/dlss-5-amd-project
 - **danielblnc** —— DLSS-NR on AMD —— https://github.com/danielblnc/DLSS-NR-on-AMD （`Runtime.zip`，未经修改）
 - **lmxxf** —— https://github.com/lmxxf/dlss5-on-amd-9070xt-porting （HIP 运行时，MIT）
+- **c32w 内核**（0.3.3.2）—— AMDNR 自有的 RDNA 4 单 wave 内核，用于 lmxxf 的网络，Copyright (c) 2026 3zwr1 (AMDNR)；思路参考 AMD 公开的 RDNA 4 WMMA 文档（GPUOpen、ROCm matrix instruction calculator）
 - **Matheus / dlss-5-amd** —— https://github.com/MatheusGViana/dlss-5-amd-project
 - **Nukem9** —— dlssg-to-fsr3 —— https://github.com/Nukem9/dlssg-to-fsr3 （GPLv3，未经修改）
 - **RenoDX** —— clshortfuse —— https://github.com/clshortfuse/renodx （色彩合成算法，MIT）
@@ -287,6 +306,8 @@ GPL-3.0 许可证分发。
 
 AMDNR 自己的工作附带一条依据 GPL-3.0 第 7(b) 条的附加条款（见 `Licenses/AMDNR_NOTICE.txt`）：任何使用它的
 副本、分支或衍生作品都必须保留其声明，并注明 **AMDNR by 3zwr1**（<https://github.com/3zwr1/AMD-NR---OptiScaler>）。
+
+**AMDNR 菜单版权。** AMDNR 菜单——包括其布局、设计、文字以及 AMDNR 为其添加的代码——版权所有 Copyright (c) 2026 3zwr1 (AMDNR)。它是本 GPL-3.0 分支的一部分，并附带以下附加条款（GPL-3.0 section 7）：(b) 任何人复用其中任何部分，都必须保留这行版权声明，并在菜单和 README 中醒目地注明 AMDNR by 3zwr1；(c) 不得把它或其修改后的副本冒充为自己的作品；修改版本必须清楚标明已被修改；(e) 不授予对 AMDNR 名称或标志（logo）的任何权利；其他项目不得使用它们。
 
 上文致谢的上游工作仍归其作者所有，适用其各自的许可证；AMDNR 不对其主张任何版权。
 

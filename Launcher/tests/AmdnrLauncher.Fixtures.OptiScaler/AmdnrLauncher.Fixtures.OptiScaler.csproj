@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Builds nothing but a DLL whose version resource says OriginalFilename=OptiScaler.dll,
+       which is the one fact ProxySlotProbe reads out of a real OptiScaler build. The tests copy
+       it into a temp game folder under a proxy name, as someone installing by hand would. -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AssemblyName>OptiScaler</AssemblyName>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+</Project>

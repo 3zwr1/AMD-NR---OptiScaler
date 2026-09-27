@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
   "launcher": {
-    "version": "0.3.4",
-    "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.4/AMDNR-Launcher.exe",
-    "sha256": "7394a187f6e0d716492c293b2af7a2a0ab067aa684368846aae988fbde8fe8e0"
+    "version": "0.3.4.1",
+    "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.4.1/AMDNR-Launcher.exe",
+    "sha256": "9a1f28eaa069772f807f17b59c367175776848050f6ef2e3b1fb46b2e8bac090"
   },
   "sources": [
     {
       "id": "amdnr",
       "name": "AMDNR",
       "author": "3zwr1",
-      "summary": "OptiScaler with AMD Neural Rendering, the built-in lmxxf runtime for RX 7000 and RX 9000, and FSR frame generation.",
+      "summary": "AMDNR: our build of OptiScaler with AMD Neural Rendering. Its own lmxxf runtime built in for RX 7000 and RX 9000, the optional DLSSNR AMD files by danielblnc, FSR frame generation, our own engine fixes, the in-game menu, crash reports, and this launcher's Doctor and support.",
       "homepage": "https://github.com/3zwr1/AMD-NR---OptiScaler",
       "package": "amdnr",
       "forwarder": "forwarder",
@@ -35,7 +35,7 @@
       "id": "theautomatic",
       "name": "OptiScaler AMD pre-SR",
       "author": "TheAutomatic",
-      "summary": "TheAutomatic's multi-slot pre-SR build of OptiScaler for AMD.",
+      "summary": "OptiScaler AMD pre-SR: TheAutomatic's independent fork of the same family, offered for comparison. Downloaded unchanged from their GitHub releases; same danielblnc files, his own lmxxf backend and menu, his own fixes.",
       "homepage": "https://github.com/TheAutomatic/dlss-5-amd-project",
       "package": "theautomatic",
       "forwarder": null,
@@ -72,10 +72,10 @@
   "packages": [
     {
       "id": "amdnr",
-      "version": "0.3.4",
-      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.4/AMDNR-v0.3.4.zip",
-      "sha256": "c49aa4afb508e3ef84c1e6bb0e7dd7509b9bb33b583a8b14232097151ba6c4ce",
-      "size": 603436972,
+      "version": "0.3.4.1",
+      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.4.1/AMDNR-v0.3.4.1.zip",
+      "sha256": "de7a2a1749cc44a5885034821ea33a7412ee9596df276d9b9cefad0d7ff78e63",
+      "size": 603486024,
       "exclude": []
     },
     {
@@ -89,7 +89,7 @@
     {
       "id": "runtime-041",
       "version": "0.4.1",
-      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.4/v0.4.1-Runtime.zip",
+      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.4.1/v0.4.1-Runtime.zip",
       "sha256": "d6aa1ff24f4d1379b2914e31403c8027bf556d59f87ec265ea79502b60e4d492",
       "size": 112707880,
       "passSha256": [
@@ -123,7 +123,7 @@
     {
       "id": "runtime-040",
       "version": "0.4.0",
-      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.4/v0.4.0-Runtime.zip",
+      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.4.1/v0.4.0-Runtime.zip",
       "sha256": "15ebed60b7946f4eb616a8b89a6c8d8038886a2bfead2f9cf299175d0ec5b973",
       "size": 113039884,
       "passSha256": [

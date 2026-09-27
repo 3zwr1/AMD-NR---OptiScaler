@@ -19,11 +19,11 @@
       "runtimes": [
         {
           "package": "runtime-041",
-          "gpus": ["rdna4"]
+          "gpus": ["rdna4", "rdna3"]
         },
         {
           "package": "runtime-042",
-          "gpus": ["rdna4"]
+          "gpus": ["rdna4", "rdna3"]
         },
         {
           "package": "runtime-033",
@@ -31,7 +31,7 @@
         },
         {
           "package": "runtime-040",
-          "gpus": ["rdna4"]
+          "gpus": ["rdna4", "rdna3"]
         }
       ]
     },
@@ -60,11 +60,11 @@
       "runtimes": [
         {
           "package": "runtime-041",
-          "gpus": ["rdna4"]
+          "gpus": ["rdna4", "rdna3"]
         },
         {
           "package": "runtime-042",
-          "gpus": ["rdna4"]
+          "gpus": ["rdna4", "rdna3"]
         },
         {
           "package": "runtime-033",
@@ -72,7 +72,7 @@
         },
         {
           "package": "runtime-040",
-          "gpus": ["rdna4"]
+          "gpus": ["rdna4", "rdna3"]
         }
       ]
     }

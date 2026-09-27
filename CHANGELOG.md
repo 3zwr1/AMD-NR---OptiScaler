@@ -3,6 +3,81 @@
 Many thanks to **TheAutomatic** (DLSS 5 AMD project) — the releases, the HIP toolchain and the asset
 layout that the lmxxf runtime integration in 0.3.0 builds on.
 
+## 0.3.4.1 — 2026-09-27
+
+Hotfix: Ray Regeneration is less soft on Windows, Control Resonant no longer shows a false "Upscaler failed to run!"
+popup, and on Linux / Proton the menu works (confirmed by a player, also with frame generation on). **Neural
+Rendering is unchanged from 0.3.4 (same runtime and pak).** Coming from 0.3.4, replace `OptiScaler.dll` only (the
+file you renamed, e.g. `dxgi.dll`): `LmxxfNrRuntime.dll` and `LmxxfNrRuntime.pak` are the same files as in 0.3.4.
+Launcher users: it updates for you. AMDNR Launcher 0.3.4.1 ships on the same release (see below).
+
+### Fixed
+- **Ray Regeneration looked soft** in games that send no sharpness (Resident Evil Requiem sends 0). On Windows, with
+  FSR Ray Regeneration, when the game sends no NGX sharpness, AMDNR now sharpens by **0.25** after RR: FSR's own
+  sharpening, or OptiScaler's RCAS when RCAS is ticked (never both). A game that sends its own value keeps it; the
+  path-traced profile keeps 0; plain FSR without RR is unchanged; on Linux / Proton the default is 0 (see below).
+  Image > Sharpness shows the tag "RR default: the game sends none". **To turn it off:** Image > Sharpness, tick
+  Override, slider 0 (`[Sharpness] OverrideSharpness=true`, `Sharpness=0`). No new ini key.
+- **Control Resonant: no false "Upscaler failed to run!" popup.** At 1440p Quality the game renders one pixel wider
+  than the size it asked for, so FSR Ray Regeneration re-creates itself at the new size and skips that one frame.
+  That skip is now a warning in the log, not a popup (it was not a 0.3.4 regression). Streamline's tag diagnostics
+  (`[RR_TAG_DIAG]`) no longer log two lines every frame.
+
+### Linux / Proton
+- **The menu works.** The menu could bind to a helper window that was then destroyed, so it opened without mouse or
+  keyboard input, or not at all; it now binds to its swapchain's own window and falls back to the game window. If
+  the window is still lost, you get one warning, "Menu window lost", with the fix (a popup on Proton only), instead
+  of a "SetTargetWindow rejected" line every frame. Confirmed by a player on Steam Proton (RX 9070 XT, vkd3d-proton,
+  Resident Evil Requiem): the game boots, the menu opens and takes the mouse, and Save report works, also with frame
+  generation switched on.
+- Known issue: Ray Regeneration can show pink / magenta patches on Proton; the default sharpening is off there now, but if you still see them use plain FSR (FSR 4 on RX 9000) and send a Save report.
+  Under Wine / Proton, AMDNR adds no sharpening after Ray Regeneration when the game sends none (Windows keeps 0.25);
+  your own value (`[Sharpness] OverrideSharpness=true` with `Sharpness`) still applies there. Image > Sharpness then
+  shows "RR default 0 (off on Proton)", and the log has one "[RR_POST] Wine/Proton: no default RR sharpening" line.
+- **Frame generation** now turns on without crashing (the 0.3.4 crashes are gone in the player's tests), but fps
+  counters count the generated frames too: under a 60 fps cap or 60 Hz V-Sync that is 30 real frames, which looks
+  like 30. Leave it off on Proton for now (`[FrameGen] FGOutput=nofg`), or use it only when the game reaches about
+  60 fps without it, on a screen faster than 60 Hz.
+- **Save report** now says whether the game ran on vkd3d-proton or DXVK.
+- **Neural Rendering does not run on Linux** (Windows only). The AMDNR Launcher is a Windows program that can run
+  under Proton (experimental, not tested by us yet; see the launcher list below); installing by hand works as before
+  (README, "Linux / Proton").
+
+### AMDNR Launcher 0.3.4.1
+You asked, we built it: the first Discord feedback, in `AMDNR-Launcher.exe` on the Alpha0.3.4.1 release.
+- Nine languages: English, Arabic, Chinese (Simplified), French, Spanish, Portuguese, Italian, Russian and Polish.
+  The launcher follows your Windows language (else English); pick another under LANGUAGE or in SETTINGS, where it is
+  also offered on first start. Doctor findings, install messages and the COLLECT LOGS report stay in English so
+  support can read them.
+- Search the library.
+- Favourites: starred games come first.
+- Hide games (HIDDEN shows them again).
+- Rename a game.
+- CHOOSE GAME .EXE: pick the game's exe yourself when the launcher picked the wrong one or none.
+- REDengine: Cyberpunk 2077 and The Witcher 3 (its DX12 build) are found in the right folder.
+- PLAY and OPEN FOLDER on every game's page.
+- STORES: switch whole stores on and off.
+- Folders you add by hand stay listed, also while their drive is unplugged, until you remove them.
+- UNINSTALL asks first and removes everything the mod placed, including what it wrote while the game ran (logs,
+  caches, crash dumps, unfinished reports); it keeps finished Save report zips and a DLL under the proxy name that
+  is no longer an OptiScaler (the game's own).
+- COLLECT LOGS on any game, installed or not, with a scan report; one store that fails no longer stops the scan.
+- Handheld / APU recognition (ROG Ally Z1 Extreme and other Ryzen APUs), with a note that AMDNR on them is still in
+  testing.
+- Linux (experimental, not tested by us yet): the same Windows exe can run under Proton, shows a notice with what
+  to do there, and also looks for games in your Linux Steam library. Steps: README, "Linux / Proton". Tell us on
+  Discord if it works.
+
+### Other
+- Skin classifier: "Guide only" now carries the warning tag "can blur non-skin".
+- The log names the FSR upscaler in use and its version, once per feature creation (with Ray Regeneration: the one
+  that runs after it).
+- An FSR FG log warning that said "XeFG" now says "FSR FG".
+- README: a new **Linux / Proton** section (what works, Ray Regeneration and frame generation there, the AMDNR
+  Launcher under Proton (experimental), install by hand, the menu, HDR, reporting), which danielblnc runtime zip for
+  which GPU and on which release, and the AMDNR Launcher 0.3.4.1 list.
+- Not in this hotfix: the Assetto Corsa report (the mouse in the menu) is still being looked into.
+
 ## 0.3.4 — 2026-09-27
 
 A new menu: the Neural tab is rebuilt (runtime, status and Preset at the top, then Performance, Quality, Image

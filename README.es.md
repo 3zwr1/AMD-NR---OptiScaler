@@ -1,4 +1,4 @@
-# AMDNR — DLSS 5 Neural Rendering en AMD (build de OptiScaler) — v0.3.4
+# AMDNR — DLSS 5 Neural Rendering en AMD (build de OptiScaler) — v0.3.4.1
 
 [English](README.md) | [中文](README.zh-CN.md) | [Português](README.pt-BR.md) | **Español** | [العربية](README.ar.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Русский](README.ru.md) | [Polski](README.pl.md)
 
@@ -16,11 +16,20 @@ de prueba.
 
 **Apoya el proyecto: <https://ko-fi.com/3zinr>**
 
-> **El runtime de danielblnc es obra de Daniel Blanco.** El runtime neural AMD de `Runtime.zip`
+> **El runtime de danielblnc es obra de Daniel Blanco.** El runtime neural AMD de los archivos `*Runtime.zip`
 > (`dlssnr_amd_pass1..3.dll`) es **DLSS-NR on AMD by Daniel Blanco (danielblnc)** -
 > <https://github.com/danielblnc/DLSS-NR-on-AMD>. Copyright (c) 2026 Daniel Blanco, all rights reserved.
 > AMDNR lo distribuye sin modificar, con su permiso; no es obra de AMDNR. Por favor, apoya su proyecto.
 > Los créditos completos de todos los demás están al final de esta página.
+
+> **Novedades de 0.3.4.1 (hotfix):** Ray Regeneration es menos suave en Windows (enfoque de 0.25 cuando el juego no
+> envía ningún valor de nitidez; para desactivarlo: Image > Sharpness, marca Override, control deslizante a 0); ya
+> no aparece la falsa ventana emergente "Upscaler failed to run!" en Control Resonant; en Linux / Proton el menú
+> funciona (confirmado por un jugador, también con la generación de fotogramas activada) y Ray Regeneration no añade
+> ahí enfoque por defecto (ver "Linux / Proton"). **AMDNR Launcher 0.3.4.1**, hecho a partir de tus comentarios en
+> Discord: nueve idiomas, búsqueda, favoritos, ocultar, renombrar, CHOOSE GAME .EXE, PLAY, un UNINSTALL completo y
+> más (ver "AMDNR Launcher"). Neural Rendering no cambia respecto a 0.3.4 (mismo runtime y mismo pak): si vienes de
+> 0.3.4, reemplaza solo `OptiScaler.dll`; si usas el launcher, él lo actualiza por ti. Detalles: `CHANGELOG.md`.
 
 > **Novedades de 0.3.4:** un menú nuevo (la pestaña Neural rehecha, el mismo aspecto en todas las pestañas y un
 > botón **Save report** que comprime tus logs para un reporte); lmxxf es más rápido en RX 7000 (1440p FSR Quality:
@@ -34,14 +43,20 @@ de prueba.
 
 ## AMDNR - Guía de instalación de OptiScaler
 
-La instalación es bastante sencilla.
+La instalación es bastante sencilla. **En Windows, el AMDNR Launcher hace todo esto por ti** (ver "AMDNR Launcher"
+más abajo). A mano:
 
 ### 1. Descarga los archivos
 
-Descarga estos dos archivos desde GitHub (<https://github.com/3zwr1/AMD-NR---OptiScaler/releases>):
+Descarga estos archivos de la última release en GitHub (<https://github.com/3zwr1/AMD-NR---OptiScaler/releases>;
+0.3.4.1 es la etiqueta Alpha0.3.4.1):
 
-* `AMDNR-vX.X.X.zip`
-* `Runtime.zip`
+* `AMDNR-vX.X.X.zip` (para 0.3.4.1: `AMDNR-v0.3.4.1.zip`), con el runtime lmxxf completo.
+* Para el runtime de danielblnc, un zip de runtime según tu GPU: en **RX 9000**, `v0.4.1-Runtime.zip` (el más
+  nuevo) o `v0.4.0-Runtime.zip` de Alpha0.3.4.1; en **RX 7000**, `v0.3.3-Runtime.zip`, que sigue en la
+  [release Alpha0.3.4](https://github.com/3zwr1/AMD-NR---OptiScaler/releases/tag/Alpha0.3.4). El runtime lmxxf va
+  en `AMDNR-vX.X.X.zip` y no necesita ningún zip de runtime en RX 7000 y RX 9000; las APU de consolas portátiles
+  usan solo lmxxf. El AMDNR Launcher elige el zip adecuado para tu GPU. Ver "Qué hay en los archivos".
 
 ### 2. Extrae ambos archivos
 
@@ -52,12 +67,16 @@ Extrae el contenido de los dos archivos `.zip`.
 Primero, copia todos los archivos de `AMDNR-vX.X.X` a la carpeta raíz del juego — la misma carpeta
 donde está el `.exe` del juego.
 
-Después, haz lo mismo con todos los archivos de `Runtime`.
+Después, haz lo mismo con todos los archivos del zip de runtime (p. ej. `v0.4.1-Runtime` en RX 9000,
+`v0.3.3-Runtime` en RX 7000).
 
 > **¿Actualizas desde un AMDNR anterior?** Vuelve a copiarlo todo y sobrescribe. En 0.3.4 cambiaron tres archivos
 > a la vez: `OptiScaler.dll` (sustituye el archivo que renombraste, p. ej. `dxgi.dll`, por el nuevo renombrado igual),
-> `LmxxfNrRuntime.dll` y `LmxxfNrRuntime.pak` (440 MB, nuevo en esta versión). No los mezcles con copias
+> `LmxxfNrRuntime.dll` y `LmxxfNrRuntime.pak` (440 MB, nuevo en 0.3.4). No los mezcles con copias
 > anteriores. Puedes conservar tu `OptiScaler.ini`: los ajustes nuevos usan sus valores por defecto.
+> **De 0.3.4 a 0.3.4.1 solo cambió `OptiScaler.dll`:** reemplaza ese único archivo; `LmxxfNrRuntime.dll`,
+> `LmxxfNrRuntime.pak` y los archivos de tu zip de runtime se quedan como están. El AMDNR Launcher lo hace por ti:
+> pulsa REPAIR / UPDATE en un juego que muestre "Update available".
 
 ### 4. Renombra OptiScaler.dll
 
@@ -170,7 +189,7 @@ cambio reconstruye la red: una pausa de alrededor de 1 s).
 
 **Full network** (Neural > Performance, `[DlssNr] LmxxfFullNetwork`, solo lmxxf) ejecuta los 71
 bloques de la red en lugar de saltarse el 42, el 43 y el 46: algo más fiel, unos 0.5 ms más lento a
-1080p (16.6 -> 17.1 ms en una RX 9070 XT). Desactivado por defecto.
+1080p (16.6 -> 17.1 ms en una RX 9070 XT, medido en 0.3.3). Desactivado por defecto.
 
 **Fast mode** (Neural > Performance, `[DlssNr] AmdLmxxfFastMode`, lmxxf, opcional, desactivado por defecto) ejecuta
 la red un nivel de tamaño por debajo (1080 -> 900, 900 -> 720): alrededor de un 29% menos de tiempo de red a 1080p
@@ -244,15 +263,100 @@ la red al tamaño 360p, 110.9 ms a 576p; en un juego, la prueba de un tester (Sh
 - **Controlador:** usa el controlador Adrenalin propio de AMD. lmxxf necesita HIP (`amdhip64_7.dll`), que
   algunos controladores de fabricantes de portátiles omiten; `amd_bridge.log` dice entonces que HIP no está
   disponible.
-- **Usa juntos los tres archivos de 0.3.4:** solo el pak de 0.3.4 tiene los módulos para portátiles, y el
-  `LmxxfNrRuntime.dll` de 0.3.4 rechaza una portátil cuando `OptiScaler.dll` es anterior ("this handheld needs
-  OptiScaler.dll 0.3.4 or newer").
+- **Usa juntos los archivos de 0.3.4** (0.3.4.1 solo cambia `OptiScaler.dll`): solo el pak de 0.3.4 tiene los
+  módulos para portátiles, y el `LmxxfNrRuntime.dll` de 0.3.4 rechaza una portátil cuando `OptiScaler.dll` es
+  anterior a 0.3.4 ("this handheld needs OptiScaler.dll 0.3.4 or newer").
 - **Testers con una consola portátil:** pide en Discord el kit de prueba para portátiles (`handheld-test.zip`).
   Su `run_probe.bat` mide la red en tu dispositivo y escribe `handheld_result.txt` (tu nombre de usuario de
   Windows queda oculto).
 
+## Linux / Proton (Steam Deck, Linux de escritorio)
+
+AMDNR funciona bajo Proton y Wine como una build de OptiScaler. **Neural Rendering no funciona en Linux (solo
+Windows):** los dos runtimes de NR necesitan AMD HIP, y Proton y Wine no ofrecen HIP. Con NR activado bajo Proton, NR
+no se ejecuta, y la pestaña Neural no siempre dice por qué. Es lo esperado, no un cierre ni una instalación rota. El
+AMDNR Launcher es un programa de Windows que puede funcionar bajo Proton (experimental, aún no lo hemos probado, ver
+abajo); la instalación a mano funciona sin él.
+
+**Qué funciona:** los upscalers FSR (FSR 3.1, y FSR 4 en las GPU y controladores que lo soportan), el menú (`INSERT`)
+y **Save report**. Un jugador confirmó en Steam Proton (RX 9070 XT, vkd3d-proton, Resident Evil Requiem) que el juego
+arranca, el menú se abre y toma el control del ratón, y Save report funciona, también con la generación de fotogramas
+activada.
+
+**Ray Regeneration y generación de fotogramas:**
+- Problema conocido: Ray Regeneration puede mostrar manchas rosas / magenta en Proton; el enfoque por defecto ahora está desactivado ahí, pero si aún las ves usa FSR sin Ray Regeneration (FSR 4 en RX 9000) y envía un Save report.
+  En Proton, AMDNR no añade enfoque después de Ray Regeneration cuando el juego no envía ningún valor de nitidez (en
+  Windows añade 0.25): Image > Sharpness muestra "RR default 0 (off on Proton)", y Override sigue fijando tu propio
+  valor.
+- **La generación de fotogramas** ahora se activa sin cierres, pero los contadores de fps cuentan también los
+  fotogramas generados: con un límite de 60 fps o V-Sync a 60 Hz son 30 fotogramas reales, y se ve como 30. Déjala
+  desactivada en Proton por ahora (`[FrameGen] FGOutput=nofg`), o úsala solo cuando el juego llegue a unos 60 fps sin
+  ella, en una pantalla de más de 60 Hz.
+
+**Requisitos:** un Proton o Wine actual (probado: Proton 11, que es Wine 11), con el juego en vkd3d-proton (D3D12) o
+DXVK (D3D11), lo predeterminado en Proton. Las versiones anteriores no están probadas.
+
+**El AMDNR Launcher en Linux (experimental, aún no lo hemos probado).** El launcher es el mismo programa de Windows,
+`AMDNR-Launcher.exe` (autocontenido: no hay que instalar .NET ni ningún otro runtime). Bajo Wine / Proton detecta
+Wine y muestra un aviso con lo que hay que hacer. También busca tu biblioteca de Steam de Linux a través de la unidad
+`Z:` de Wine (`~/.steam/steam` y `~/.local/share/Steam`, y las carpetas de biblioteca de `libraryfolders.vdf`). Aún
+no lo hemos probado nosotros: si lo pruebas, cuéntanos en Discord si funciona. Para probarlo:
+
+1. En Steam, añade `AMDNR-Launcher.exe` como juego que no es de Steam (**Juegos > Añadir un juego que no es de Steam
+   a mi biblioteca**; en inglés: **Games > Add a Non-Steam Game to My Library**).
+2. En sus **Propiedades > Compatibilidad** (en inglés: **Properties > Compatibility**), fuerza una versión de Proton
+   (Proton Experimental) y luego inícialo desde Steam.
+3. Si el juego no está en **LIBRARY** (BIBLIOTECA), pulsa **ADD** (AÑADIR) y elige la carpeta del juego (tus
+   carpetas de Linux están en la unidad `Z:`); si el launcher elige un `.exe` equivocado, usa **CHOOSE GAME .EXE**
+   (ELEGIR EL .EXE DEL JUEGO).
+4. Selecciona el juego y pulsa **INSTALL** (INSTALAR).
+5. En **Propiedades > General > Opciones de lanzamiento** del juego (en inglés: **Properties > General > Launch
+   Options**), escribe `WINEDLLOVERRIDES="dxgi=n,b" %command%` (si el launcher usó otro nombre de DLL para el
+   juego, pon ese nombre en lugar de `dxgi`), y después sigue con los pasos 5 y 6 de la instalación a mano de abajo
+   (inicia el juego desde Steam; el botón **PLAY** del launcher está desactivado bajo Wine / Proton).
+
+**Instalación a mano** (sin el launcher):
+
+1. Descarga `AMDNR-vX.X.X.zip` de la página de releases (para 0.3.4.1: `AMDNR-v0.3.4.1.zip`). Los zips del runtime de
+   danielblnc (`v0.4.1-Runtime.zip` y los demás) solo los usa Neural Rendering, así que no los necesitas en Linux
+   (copiar uno no hace daño).
+2. Extrae el zip y copia todo en la carpeta del juego, junto al `.exe` del juego.
+3. Renombra `OptiScaler.dll` a `dxgi.dll`.
+4. En Steam, abre **Propiedades > General > Opciones de lanzamiento** del juego (en inglés: **Properties > General >
+   Launch Options**) y escribe:
+
+   ```
+   WINEDLLOVERRIDES="dxgi=n,b" %command%
+   ```
+
+   Esto le dice a Wine que cargue el `dxgi.dll` de la carpeta del juego en lugar del suyo; sin ello AMDNR no carga.
+   Si usaste otro nombre (por ejemplo `winmm.dll` o `version.dll`), pon ese nombre en lugar de `dxgi`, p. ej.
+   `WINEDLLOVERRIDES="winmm=n,b" %command%`. Lutris, Heroic y Bottles: añade el mismo override (`dxgi` =
+   `native,builtin`) en los DLL overrides o en las variables de entorno del runner.
+5. En `OptiScaler.ini`, pon `[FrameGen] FGOutput=nofg` (generación de fotogramas desactivada, ver arriba).
+6. Inicia el juego y pulsa `INSERT` para abrir el menú. Configura ahí el upscaler.
+
+**El menú.** En 0.3.4, con la generación de fotogramas activada, el menú podía abrirse sin recibir la entrada del
+ratón ni del teclado, o no abrirse. 0.3.4.1 vincula el menú a la ventana del juego; un jugador confirmó en Proton que
+el menú se abre y toma el control del ratón, también con la generación de fotogramas activada. Si aun así te pasa en
+tu equipo, AMDNR muestra el aviso "Menu window lost". Entonces, en `OptiScaler.ini`, pon `[FrameGen] FGOutput=nofg`;
+si el menú sigue sin responder, pon también `[Menu] OverlayMenu=false` (el menú clásico, que no depende de la ventana
+overlay).
+
+**HDR.** AMDNR no activa HDR bajo Proton. El HDR depende de tu configuración de Proton y del escritorio: una build de
+Proton con soporte HDR y una sesión que pueda mostrar HDR (por ejemplo gamescope, o un escritorio Wayland con HDR
+activado). Si el HDR funciona en el juego sin AMDNR, sigue funcionando con AMDNR; si la opción HDR del juego aparece
+en gris, el arreglo está en tu configuración de Proton o del escritorio.
+
+**Para reportar un problema en Linux:** usa el botón **Save report** del menú (deja `[Log] LogToFile=true`, el valor
+por defecto, para que el reporte tenga el log de esta sesión); el reporte muestra si el juego corrió bajo Wine/Proton,
+vkd3d-proton o DXVK. Por favor, añade tu distribución, GPU, versión de Mesa y versión de Proton.
+
 ## Requisitos
 
+- Windows 10 u 11 (64 bits) para Neural Rendering. El AMDNR Launcher es un programa de Windows que puede funcionar
+  bajo Proton (experimental, aún no lo hemos probado). Bajo Linux / Proton, AMDNR funciona como una build de
+  OptiScaler sin NR (ver "Linux / Proton").
 - Una GPU AMD con un controlador actual. El runtime neural usa HIP a través del controlador; no
   hace falta el SDK de HIP ni el modo desarrollador. Qué chips:
   - RX 9000 (RDNA 4): ambos runtimes.
@@ -261,7 +365,8 @@ la red al tamaño 360p, 110.9 ms a 576p; en un juego, la prueba de un tester (Sh
   - Strix Halo (Radeon 8060S / 8050S): lmxxf.
   - APU de consolas portátiles con 12+ unidades de cómputo (Z1 Extreme / Z2 / 780M, Z2 Extreme / 890M /
     880M): lmxxf, experimental y lento. Z1 (4 CU), 760M / 740M y 860M / 840M: no soportadas.
-  - RX 6000 (RDNA 2): aún no soportada, prevista para 0.4.0. Steam Deck y APU RDNA 2: no soportadas.
+  - RX 6000 (RDNA 2): aún no soportada, prevista para 0.4.0. Steam Deck y APU RDNA 2: no soportadas (para
+    Neural Rendering; para los upscalers bajo Proton, ver "Linux / Proton").
 
   La pestaña Neural dice qué puede ejecutar tu GPU (pasa el ratón por las entradas de runtime, o mira la
   línea GPU en Diagnostics).
@@ -271,27 +376,42 @@ la red al tamaño 360p, 110.9 ms a 576p; en un juego, la prueba de un tester (Sh
   esta build lo elige por ti cuando el renderizado neural está activo. Con Neural Rendering activado, la lista de Upscaling los nombra "... w/Dx12 - Neural".
 - Unos 2 GB de VRAM libre a resoluciones de renderizado de clase 1080p.
 
-## Qué hay en los dos archivos
+## Qué hay en los archivos
 
 **AMDNR-vX.X.X.zip**
 
 | Archivo | Qué es |
 |---|---|
-| `OptiScaler.dll` | OptiScaler con el backend AMD de DLSS-NR (AMDNR 0.3.4). Renómbralo como dice la guía. |
+| `OptiScaler.dll` | OptiScaler con el backend AMD de DLSS-NR (AMDNR 0.3.4.1). Renómbralo como dice la guía. |
 | `OptiScaler.ini` | Ajustes. Neural Rendering está activado; el registro está encendido para que un reporte tenga algo que adjuntar. |
-| `LmxxfNrRuntime.dll` | El runtime neural lmxxf (0.3.4: los kernels de lmxxf, incluidos los de lmxxf 0.31, los kernels c32w de AMDNR, los tamaños de red pequeños y la máscara de personajes nativa). Se usa solo cuando se elige; lee `LmxxfNrRuntime.pak` junto a él, ver "El runtime lmxxf". |
-| `LmxxfNrRuntime.pak` | Los pesos, módulos HIP y shaders del runtime lmxxf en un archivo cifrado (440 MB; nuevo en 0.3.4: los módulos para consolas portátiles y los kernels de lmxxf 0.31). Solo lo lee el runtime lmxxf; es inofensivo mantenerlo con el runtime de danielblnc. |
+| `LmxxfNrRuntime.dll` | El runtime neural lmxxf (0.3.4, sin cambios en 0.3.4.1: los kernels de lmxxf, incluidos los de lmxxf 0.31, los kernels c32w de AMDNR, los tamaños de red pequeños y la máscara de personajes nativa). Se usa solo cuando se elige; lee `LmxxfNrRuntime.pak` junto a él, ver "El runtime lmxxf". |
+| `LmxxfNrRuntime.pak` | Los pesos, módulos HIP y shaders del runtime lmxxf en un archivo cifrado (440 MB, sin cambios en 0.3.4.1; nuevo en 0.3.4: los módulos para consolas portátiles y los kernels de lmxxf 0.31). Solo lo lee el runtime lmxxf; es inofensivo mantenerlo con el runtime de danielblnc. |
 | `OptiScaler\` | FSR, XeSS, el denoiser FidelityFX y el D3D12 Agility SDK que usa OptiScaler. |
 | `OptiScaler/amdnr_dlssg_fsr3.dll` | El dlssg-to-fsr3 de Nukem9, sin modificar y renombrado: las llamadas de DLSS Frame Generation del juego servidas por la generación de fotogramas de FSR 3, también en Vulkan (`FGNvngxReplacement=Nukems`). GPLv3, ver `Licenses/`. |
 | `Licenses\`, `LICENSE` | Licencias de terceros, el aviso de AMDNR (`AMDNR_NOTICE.txt`) y la licencia GPL-3.0 de esta build. |
-| `SHA256SUMS.txt` | Sumas de verificación de cada archivo distribuido, de ambos archivos. |
+| `SHA256SUMS.txt` | Sumas de verificación de cada archivo de este zip, y de los archivos de los zips del runtime de danielblnc que figuran en él. |
 
-**Runtime.zip**
+**Los zips del runtime de danielblnc** (DLSS-NR on AMD by Daniel Blanco, sin modificar, con su permiso; usa uno)
+
+Cuál usar: en **RX 9000**, `v0.4.1-Runtime.zip` (o `v0.4.0-Runtime.zip`) de Alpha0.3.4.1; en **RX 7000**,
+`v0.3.3-Runtime.zip` de la
+[release Alpha0.3.4](https://github.com/3zwr1/AMD-NR---OptiScaler/releases/tag/Alpha0.3.4). El runtime lmxxf no
+necesita ningún zip de runtime en RX 7000 y RX 9000; las APU de consolas portátiles usan solo lmxxf.
+
+| Zip | Release | Runtime de danielblnc |
+|---|---|---|
+| `v0.4.1-Runtime.zip` | Alpha0.3.4.1 (y Alpha0.3.4) | 0.4.1, el más nuevo, para RX 9000. Network style, Tone curve, Black lift y Game exposure aparecen en gris con él |
+| `v0.4.0-Runtime.zip` | Alpha0.3.4.1 (y Alpha0.3.4) | 0.4.0, para RX 9000; los ajustes del runtime de danielblnc funcionan con él |
+| `v0.3.3-Runtime.zip` | [Alpha0.3.4](https://github.com/3zwr1/AMD-NR---OptiScaler/releases/tag/Alpha0.3.4) | 0.3.3, para RX 7000; los ajustes del runtime de danielblnc funcionan con él |
+| `Runtime.zip` | Alpha0.3.4 | 0.3.1; los ajustes del runtime de danielblnc aparecen en gris con él |
+
+Cada uno contiene:
 
 | Archivo | Qué es |
 |---|---|
-| `dlssnr_amd_pass1..3.dll` | El runtime neural AMD, v0.3.1 de danielblnc, sin modificar. Tres copias para que el multipase tenga una por pase. |
+| `dlssnr_amd_pass1..3.dll` | El runtime neural AMD, sin modificar. Tres copias para que el multipase tenga una por pase. |
 | `dlssnr_on_amd_weights.bin` | Los pesos de la red que carga el runtime. |
+| `danielblnc_ATTRIBUTION.txt` | El crédito de Daniel Blanco y los términos bajo los que AMDNR distribuye su runtime. |
 
 ## El menú (nuevo en 0.3.4)
 
@@ -389,7 +509,7 @@ que el primer movimiento útil es cambiar una cosa a la vez.
   máximo. 10X necesita una pantalla de 360 Hz o más y un límite de fotogramas a refresco / 10; la
   latencia es alta y el proveedor reserva unos 128 MiB más de VRAM a 4K. 7X-10X aún no está
   confirmado en un juego: si lo pruebas, envía `OptiScaler.log`.
-- **FSR Ray Regeneration** — solo RDNA 4 (RX 9000) por defecto; solo en juegos que usan DLSS Ray Reconstruction (Cyberpunk 2077,
+- **FSR Ray Regeneration** — RX 9000 y RX 7000 (RDNA 4 y RDNA 3) por defecto; solo en juegos que usan DLSS Ray Reconstruction (Cyberpunk 2077,
   Alan Wake 2), con el juego ejecutando DLSS (spoofing activado), trazado de rayos y Ray
   Reconstruction activados en sus propios ajustes. Neural Rendering se ejecuta entonces después,
   sobre su salida, lo que cuesta más: baja la NR resolution si caen los fotogramas. Sus controles
@@ -402,7 +522,9 @@ que el primer movimiento útil es cambiar una cosa a la vez.
   Diagnostics. En RX 7000 (RDNA 3) FSR Ray Regeneration vuelve a ofrecerse por defecto (0.3.3.2 lo ofrecía solo en
   RDNA 4). AMD lo publica solo para RDNA 4: si el controlador lo rechaza, el juego recibe FSR sin el eliminador de
   ruido. `[FSR-RR] FfxDenoiserAllowPreRdna4=false` lo limita a RDNA 4; RX 6000 y anteriores lo reciben solo con `true`
-  (pestaña Upscaling: **Offer FSR Ray Regeneration on this GPU (restart)**).
+  (pestaña Upscaling: **Offer FSR Ray Regeneration on this GPU (restart)**). **Enfoque después de RR** (0.3.4.1):
+  cuando el juego no envía ningún valor de nitidez, AMDNR aplica un enfoque de 0.25 después de RR en Windows (0 en
+  Linux / Proton); para desactivarlo: Image > Sharpness, marca Override, control deslizante a 0.
 - **AMDNR Screen GI** (preview, nuevo en 0.3.4, desactivado por defecto; Neural > Experimental, o `[AmdGi] Enabled=true`) — la luz rebotada y la oclusión ambiental en espacio de pantalla propias de AMDNR, a partir de la profundidad del juego, antes de NR y del upscaler; funciona con NR activado o desactivado; alrededor de 1 ms en High con un render de 1080p en una RX 9070 XT (medido fuera de un juego). Es espacio de pantalla: falta la luz que viene de fuera de la pantalla. Ver `CHANGELOG.md`.
 - **Save report** (Neural > Diagnostics, o Advanced > Logging) — un zip con todos los logs y los archivos ini para un reporte; ver "Si
   no funciona" más arriba.
@@ -420,10 +542,13 @@ clean exit recorded" (desde 0.3.4 ya no tras una salida normal).
 **¿NR frames 0/s, y la pestaña Neural o `amd_presr.log` dicen que la DLL del pase es una build que este
 AMDNR no maneja?** Tus `dlssnr_amd_pass1..3.dll` son una build de danielblnc que este AMDNR no conoce (se ha
 visto circular un conjunto 0.2.16), o falta una de las tres. Desde 0.3.3.2 la pestaña Neural nombra el
-archivo y su versión y dice qué hacer. Usa `v0.4.0-Runtime.zip` (la más nueva) o `Runtime.zip` (0.3.1) de
-esta release, las tres DLL de pase del mismo zip: la `dlssnr_amd_pass1.dll` de `v0.4.0-Runtime.zip` tiene
-10,027,008 bytes y su SHA256 empieza por `d62be3d8`. Builds soportadas: 0.2.17, 0.3.0, 0.3.1, 0.3.2, 0.3.3,
-0.4.0, y 0.4.x antes de su publicación. No instales el instalador propio de danielblnc ni su
+archivo y su versión y dice qué hacer. Usa el runtime de tu GPU, con las tres DLL de pase del mismo zip: en
+**RX 9000**, `v0.4.1-Runtime.zip` (el más nuevo) o `v0.4.0-Runtime.zip` de esta release (la `dlssnr_amd_pass1.dll`
+de `v0.4.1-Runtime.zip` tiene 9,916,928 bytes y su SHA256 empieza por `823063eb`; en `v0.4.0-Runtime.zip`:
+10,027,008 bytes, `d62be3d8`); en **RX 7000**, `v0.3.3-Runtime.zip` de la
+[release Alpha0.3.4](https://github.com/3zwr1/AMD-NR---OptiScaler/releases/tag/Alpha0.3.4) (su
+`dlssnr_amd_pass1.dll`: 7,607,296 bytes, con un SHA256 que empieza por `907b30a6`). Builds
+soportadas: 0.2.17, 0.3.0, 0.3.1, 0.3.2, 0.3.3, 0.4.0, 0.4.1, y 0.4.x antes de su publicación. No instales el instalador propio de danielblnc ni su
 `dxgi.dll` / `version.dll` / `winhttp.dll` junto a AMDNR: AMDNR ya ejecuta su runtime.
 
 **¿lmxxf no hace nada, o se detiene enseguida, en un PC con gráficos integrados?** Corregido en 0.3.3.2. En
@@ -431,7 +556,7 @@ un Ryzen de escritorio con los gráficos integrados activados, un portátil con 
 con dos GPU AMD, la GPU del juego a menudo no es el dispositivo HIP 0. lmxxf fallaba entonces en su primer
 fotograma (`hipErrorInvalidHandle (400)`, y luego "session is poisoned" en `lmxxf_backend.log`) y se quedaba
 apagado. Reemplaza tanto `OptiScaler.dll` (el archivo que renombraste, p. ej. `dxgi.dll`) como
-`LmxxfNrRuntime.dll` por los de 0.3.3.2. Aún sin probar en un PC así: si lmxxf sigue deteniéndose, la
+`LmxxfNrRuntime.dll` por los de 0.3.3.2 o posteriores. Aún sin probar en un PC así: si lmxxf sigue deteniéndose, la
 pestaña Neural ahora dice por qué; envía `lmxxf_backend.log` y `amd_bridge.log` (lista los dispositivos HIP).
 
 **¿La línea de estado de lmxxf dice `c32w=off:nofile` en una RX 9070 / 9070 XT?** Una carpeta antigua
@@ -442,8 +567,8 @@ renombra la carpeta `DLSS5-AMD`: el pak contiene todo lo que lmxxf necesita. Un 
 `fk=fff-` en la misma línea significa lo mismo (un pak antiguo o una carpeta suelta): lmxxf sigue
 funcionando, a la velocidad de antes.
 
-**danielblnc: ¿el estilo de NR sigue cambiando cuando la NR resolution deja el 100%?** Sigue abierto en 0.3.4, y
-el valor por defecto no cambia. Al 100%, Residual strength 0.99 da el 99% de 1.00 (corregido en 0.3.3.2); fuera
+**danielblnc: ¿el estilo de NR sigue cambiando cuando la NR resolution deja el 100%?** Sigue abierto en 0.3.4 y
+0.3.4.1, y el valor por defecto no cambia. Al 100%, Residual strength 0.99 da el 99% de 1.00 (corregido en 0.3.3.2); fuera
 del 100% (también en los pasos de Dynamic NR y los presets Balanced / Performance), strength, limit y edge fade
 siguen actuando sobre el resultado completo, así que el aspecto puede cambiar. 0.3.4 añade un A/B para encontrar
 la corrección adecuada: Neural > Diagnostics > **Edit shaper (A/B, not saved)** con Literal, F1 y F2, más Only
@@ -456,7 +581,8 @@ escritorio con el menú abierto (Assetto Corsa)?** Corregido en 0.3.4: una segun
 o de NR en menos de 400 ms se ignora (`[Hotfix] MenuToggleDebounceMs`, 0 = el comportamiento anterior), y con el
 menú abierto se salta el hook de teclado o ratón de bajo nivel del juego, pero la tecla sigue llegando a Windows
 (`[Hotfix] MenuLowLevelHookPassThrough=false` = el comportamiento anterior). Aún sin confirmar en Assetto Corsa:
-si sigue ocurriendo, envía el zip del reporte.
+si sigue ocurriendo, envía el zip del reporte. Un reporte más reciente, el ratón que no funciona en el menú en
+Assetto Corsa, aún se está investigando; no está corregido en 0.3.4.1.
 
 **¿Un juego Vulkan (Indiana Jones and the Great Circle) se detiene al arrancar con "Could not create the
 Vulkan device (VK_ERROR_EXTENSION_NOT_PRESENT)"?** Corregido en 0.3.2: la ruta neural heredada de
@@ -508,7 +634,12 @@ Notas completas de cada versión: `CHANGELOG.md` (en el zip y en el repositorio)
 
 ## Hoja de ruta
 
-- **0.3.4** (esta build) — el menú nuevo (la pestaña Neural rehecha, el mismo aspecto en todas las pestañas,
+- **0.3.4.1** (esta build) — hotfix: enfoque de Ray Regeneration cuando el juego no envía ningún valor de nitidez
+  (Windows; ninguno por defecto en Linux / Proton), la falsa ventana emergente "Upscaler failed to run!" de Control
+  Resonant, el menú de Linux / Proton se vincula a la ventana del juego, Save report nombra vkd3d-proton / DXVK;
+  AMDNR Launcher 0.3.4.1 (nueve idiomas, búsqueda, favoritos, ocultar, renombrar, CHOOSE GAME .EXE, PLAY, un
+  UNINSTALL completo); NR sin cambios.
+- **0.3.4** — el menú nuevo (la pestaña Neural rehecha, el mismo aspecto en todas las pestañas,
   Save report); lmxxf más rápido en RX 7000 (el nivel de tamaño de red por defecto) y en RX 9070 /
   9070 XT (kernels de lmxxf 0.31); lmxxf en APU de consolas portátiles (experimental; nuevos tamaños
   de red 360p y 576p); lmxxf gana Network output, Encoding, Residual edge fade, la máscara de personajes nativa y un Fast mode opcional; AMDNR Screen GI (preview); ajustes del runtime de danielblnc (Network style, Tone curve, Black lift, Game exposure) y
@@ -544,7 +675,7 @@ Esta build es un trabajo de cableado sobre el trabajo de otras personas. Si te r
 agradecimiento pertenece a upstream.
 
 - **TheAutomatic** — DLSS 5 AMD project — https://github.com/TheAutomatic/dlss-5-amd-project
-- **danielblnc** — DLSS-NR on AMD by Daniel Blanco — https://github.com/danielblnc/DLSS-NR-on-AMD (`Runtime.zip`, sin modificar)
+- **danielblnc** — DLSS-NR on AMD by Daniel Blanco — https://github.com/danielblnc/DLSS-NR-on-AMD (los archivos `*Runtime.zip`, sin modificar)
 - **lmxxf** (Kien) — https://github.com/lmxxf/dlss5-on-amd-9070xt-porting (el port de la red, los kernels y el runtime HIP, MIT)
 - **TheAutomatic** — `LmxxfNrRuntime.cpp`, `LmxxfNrApi.h`, `LmxxfProductionOptions.h`: portions contributed to lmxxf by TheAutomatic (MIT)
 - **kernels de lmxxf 0.31** en `LmxxfNrRuntime.pak` (the ViT projection (lmxxf031-vit-wide-deep), the C512 QKV and mix kernels (lmxxf031-c512-m32-mh, lmxxf031-c512-m32-deep) and one-wave-per-head attention (lmxxf031-c64-wave2)) — de lmxxf (Kien, MIT), compilados por AMDNR a partir de las fuentes y la receta de compilación de lmxxf; la parte de AMDNR es la carga, los pines SHA-256, el filtrado por GPU y las alternativas
@@ -563,8 +694,35 @@ agradecimiento pertenece a upstream.
 
 ## AMDNR Launcher
 
-**AMDNR Launcher** (nuevo en 0.3.4) instala y actualiza AMDNR juego por juego. Descarga `AMDNR-Launcher.exe` de
-la release Alpha0.3.4: <https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.4/AMDNR-Launcher.exe>
+**AMDNR Launcher** (nuevo en 0.3.4) es un programa de Windows 10 / 11 que también puede funcionar bajo Proton en
+Linux (experimental, aún no lo hemos probado: ver "Linux / Proton"). Instala y actualiza AMDNR juego por juego:
+encuentra tus juegos (Steam, Epic, la app de Xbox, Ubisoft Connect, la app de EA, GOG, Rockstar, Battle.net y Amazon
+Games), elige el nombre de la DLL, descarga la build y el runtime de danielblnc que elijas, comprueba cada instalación
+con su Doctor y se actualiza a sí mismo. Descarga `AMDNR-Launcher.exe` (0.3.4.1) de la release Alpha0.3.4.1:
+<https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.4.1/AMDNR-Launcher.exe>
+
+**Novedades del Launcher 0.3.4.1: lo pediste, lo hicimos** (a partir de los primeros comentarios en Discord):
+
+- Nueve idiomas: inglés, árabe, chino (simplificado), francés, español, portugués, italiano, ruso y polaco. El
+  launcher sigue el idioma de tu Windows (si no es uno de estos, inglés); elige otro en LANGUAGE (IDIOMA) o en
+  SETTINGS (AJUSTES), donde también se ofrece la primera vez que lo abres. Los resultados del Doctor, los mensajes
+  de instalación y el reporte de COLLECT LOGS (RECOPILAR REGISTROS) se quedan en inglés para que el soporte pueda
+  leerlos.
+- Busca en la biblioteca; favoritos (una estrella, y los juegos marcados primero); oculta juegos (HIDDEN los vuelve
+  a mostrar); renombra un juego.
+- CHOOSE GAME .EXE: elige tú el exe del juego cuando el launcher eligió uno equivocado o ninguno. Cyberpunk 2077 y
+  The Witcher 3 (REDengine) ahora se encuentran en la carpeta correcta sin necesidad de ello.
+- PLAY y OPEN FOLDER en la página de cada juego; STORES activa y desactiva tiendas enteras; las carpetas que añades a
+  mano siguen en la lista, también mientras su unidad está desconectada, hasta que las quitas.
+- UNINSTALL pregunta primero y quita todo lo que colocó el mod, incluido lo que escribió mientras el juego corría
+  (logs, cachés, volcados de cierre, reportes sin terminar); conserva los zips de Save report terminados y una DLL
+  con el nombre del proxy que ya no es un OptiScaler (la del propio juego).
+- COLLECT LOGS en cualquier juego, instalado o no, con un informe del escaneo.
+- Las consolas portátiles y las APU (ROG Ally Z1 Extreme y otras APU Ryzen) se reconocen, con una nota de que AMDNR
+  en ellas aún está en pruebas.
+- Linux (experimental, aún no lo hemos probado): el mismo exe de Windows puede funcionar bajo Proton, muestra ahí un
+  aviso con lo que hay que hacer y también busca juegos en tu biblioteca de Steam de Linux; los pasos están en
+  "Linux / Proton". Cuéntanos en Discord si funciona.
 
 Su código fuente está en `Launcher/OpenSource/` del repositorio de GitHub de este proyecto, con su propia licencia,
 `Launcher/OpenSource/LICENSE.txt`. **No** está cubierto por la licencia GPL-3.0 (`LICENSE`) de este repositorio: es

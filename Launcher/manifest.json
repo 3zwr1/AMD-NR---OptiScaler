@@ -22,6 +22,10 @@
           "gpus": ["rdna4"]
         },
         {
+          "package": "runtime-042",
+          "gpus": ["rdna4"]
+        },
+        {
           "package": "runtime-033",
           "gpus": ["rdna2", "rdna3", "rdna4", "unknown-amd", "none"]
         },
@@ -59,6 +63,10 @@
           "gpus": ["rdna4"]
         },
         {
+          "package": "runtime-042",
+          "gpus": ["rdna4"]
+        },
+        {
           "package": "runtime-033",
           "gpus": ["rdna2", "rdna3", "rdna4", "unknown-amd", "none"]
         },
@@ -92,6 +100,23 @@
       "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.4.1/v0.4.1-Runtime.zip",
       "sha256": "d6aa1ff24f4d1379b2914e31403c8027bf556d59f87ec265ea79502b60e4d492",
       "size": 112707880,
+      "passSha256": [
+        "bc97f3b06718e19042acaf227bfe15d1e43d4977f9dc2e39994fcc511445ff4e",
+        "8321cae728d28cb7632d0d58d3d913e91132bf7645c126505698fbe4cd5a0138",
+        "b108d6407eb7f094a4f9111edd778eee7b978b648d413a9fc7aeedfdd914c154",
+        "b92f7481bc03fa41f443b1e1e54b502789df2bbbcefe48c680df7bb02a33fc1e",
+        "907b30a61644a6d7e43e58a43a9d97a04a24b1a764a88bdef3954ac807e8d112",
+        "d62be3d8b9fbb3c6c81982c4ddb3dfa00eb9662e3206925cbe5b7e1bc6798b80",
+        "823063eb4c76b1334fd1800c41798873ae61d4016af0406f1f0b9dce57b1d376",
+        "8aa2dcc5b6596aca97995dbfd4e0a9790d8c15108495e0ed154dd15dbb5b465a"
+      ]
+    },
+    {
+      "id": "runtime-042",
+      "version": "0.4.2",
+      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.4.1/v0.4.2-Runtime.zip",
+      "sha256": "f875a8e425e71b1e7f1e3f5a406a0af0187da17b15d77dff18a453f5b7244a19",
+      "size": 116520953,
       "passSha256": [
         "bc97f3b06718e19042acaf227bfe15d1e43d4977f9dc2e39994fcc511445ff4e",
         "8321cae728d28cb7632d0d58d3d913e91132bf7645c126505698fbe4cd5a0138",
@@ -146,7 +171,7 @@
     }
   ],
   "compatibility": [],
-  "proxyDefaults": ["dxgi.dll", "d3d12.dll", "winmm.dll", "version.dll", "dbghelp.dll", "d3d11.dll"],
+  "proxyDefaults": ["dxgi.dll", "d3d12.dll", "winmm.dll", "version.dll", "dbghelp.dll", "winhttp.dll", "wininet.dll"],
   "proxyOverrides": [
     {
       "exe": "re9.exe",

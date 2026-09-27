@@ -3,6 +3,514 @@
 Many thanks to **TheAutomatic** (DLSS 5 AMD project) — the releases, the HIP toolchain and the asset
 layout that the lmxxf runtime integration in 0.3.0 builds on.
 
+## 0.3.4 — 2026-09-27
+
+A new menu: the Neural tab is rebuilt (runtime, status and Preset at the top, then Performance, Quality, Image
+look, Ray Regeneration and a tools row with Diagnostics, Runtime options and Experimental), and every other tab
+follows the same look. lmxxf is faster on RX 7000: its network now runs the cheaper size tier by default (1440p FSR
+Quality: 73.3 -> 52.2 ms per network run on an RX 7800 XT, network time measured by a tester outside a game). lmxxf is also faster on
+RX 9070 / 9070 XT with lmxxf 0.31's kernels (network time 15.35 -> 14.08 ms at 1080p on an RX 9070 XT, measured outside a game, the same output).
+lmxxf runs on handheld APUs (Z1 Extreme / Z2 / Radeon 780M, Z2 Extreme / Radeon 890M / 880M), experimental and slow.
+lmxxf gains Network output, Encoding, Residual edge fade, the model's native character mask and an opt-in Fast mode
+(about 29% less network time at 1080p);
+danielblnc gains its runtime settings (Network style, Tone curve, Black lift, Game exposure) and a highlight colour
+guard. **AMDNR Screen GI** is new as a preview, off by default: AMDNR's own screen-space bounce light and
+ambient occlusion. A **Save report** button zips every log for a bug report, and Assetto Corsa's menu input, the false "no
+clean exit" warning, Shadow of the Tomb Raider's crash when the upscaler starts, Marvel's Midnight Suns on danielblnc,
+The Last of Us Part II's late frames on lmxxf and many logs are fixed. Replace `OptiScaler.dll`, `LmxxfNrRuntime.dll` and
+`LmxxfNrRuntime.pak`: all three changed. Most of this is not yet tested in a game (see "Known issues / not
+tested").
+
+### New menu
+- **The Neural tab is rebuilt** (both runtimes; the approved mock). Top: Enable Neural Rendering with its key
+  button; **Neural runtime** (danielblnc / lmxxf) with one state word (running, restart the game to switch, not
+  installed, not for this GPU, stopped) and the running runtime's credit (Daniel Blanco's opens his GitHub page;
+  on RDNA 4 lmxxf's names AMDNR's c32w kernels, on RDNA 3 AMDNR's RDNA 3 backend); one status line
+  (`Running - 1920x1080 at 100% - NR 62/s - model 62/s - 15.3 ms`, the last number being the NR cost), with the
+  placement, Streamline and Vulkan notes in its hover. The old Live section is now a closed **Live** row under the
+  status line (NR and model rate, working size, dropped frames and network ms, Streamline and the runtime in use; a
+  fourth line in a game that submits its frames late); the "AMD processing" line is gone.
+  At most one orange line follows when something needs you, with a button when there is a fix (Retry lmxxf, Switch
+  to danielblnc, Open Upscaling); none in the default state.
+- **Preset is three buttons** (Quality / Balanced / Performance): they set only NR resolution (100 / 85 / 70%) and
+  turn Dynamic NR off. They no longer change Temporal stability, Sharpening or Detail / Colour strength, so NR
+  style keeps its value; "Custom" shows when no button matches. NR style reads the style from the sliders the
+  running runtime uses, so "Default" reads Default on both runtimes. **Style slots** is a button with a popup:
+  Store / Apply / Clear (were Save / Load / Clear; same `StyleSlot1..3` keys).
+- **Performance**: NR resolution (%) with its cost beside it (`N.NNx cost`; on lmxxf the price of the network size
+  tier it runs, named in the hover), Neural passes, Full network, Fast mode (see "Speed"), Dynamic NR resolution (Target FPS only while it
+  is ticked), Model interleave (Interleave preset and a pacing line appear under it only while it is on).
+  **Quality**: Residual strength, Residual limit, Temporal stability, Sharpening (CAS) and *More quality options*:
+  Network history (one checkbox for both runtimes instead of "Network history (lmxxf)" and "Model history
+  (interleave)"; same keys), Output smoothing, Stability mode, Residual temporal, Residual edge fade and
+  Still-surface steadiness. A row that cannot act says why (e.g. "needs Temporal stability", "not with Model
+  interleave"). The long notes under the residual sliders moved into their hover. The locked-off Adaptive
+  interleave rows are gone (the keys are still read).
+- **Image look**: Colour composition, Detail / Colour strength and three folds: *Model strength* (Tone intensity,
+  Structure intensity, Character structure with Follow Structure, Edit detail, Edit colour, Edge guard, Native
+  character mask, and danielblnc's Network style, Tone curve and Black lift), *Exposure and highlights*
+  (Auto-exposure, its highlight cap, Highlight colour guard, Game exposure) and *Appearance filter* (moved here from
+  the tools row; its off / on word after the name; labels Specular reduction, Contact shadows, Halo protection,
+  Flat-area protection, Tonemap strength). Fixed: Character structure could not go back to "follow Structure"
+  (-1); ticking Follow Structure now saves `SkinStructure=auto`. **Reset appearance filter now resets only
+  `[AmdLook]`**: 0.3.3.2 also reset Neural passes, NR resolution, Encoding, Structure, Character structure and Tone
+  intensity. A RenoDX refusal note now carries a fix button ("Turn off Network output", "Encoding: Auto").
+- **Ray Regeneration has its own section** (Neural > Ray Regeneration, after Image look; was Neural > Quality >
+  Ray Regeneration), shown only while the game runs FSR Ray Regeneration. See "Ray Regeneration" below.
+- **The tools row** is closed when the game starts and has three buttons: **Diagnostics** (Network output, Debug
+  view 1-5, the RR debug view in plain words, Edit shaper A/B, NR cost, the ghost / self-tuning / edit
+  accumulation readouts, a GPU line naming what the GPU runs, and **Save report**), **Runtime options** (was Advanced: Encoding,
+  Every-frame NR, NR slots, Highlight proxy) and **Experimental** (AMDNR Screen-space GI, a preview: see
+  "AMDNR Screen GI" below; the inherited Screen-space GI is retired from the menu). The Graphics wait row is gone (`AmdGraphicsWaitExperimental`
+  is still read and saved).
+- **Rows the running runtime does not have** are greyed with a short tag ("not in lmxxf yet", "not in this
+  danielblnc build") or hidden with a count ("3 danielblnc-only options hidden"); a value you saved stays clickable
+  so it can be turned back. Switching runtime moves no other row.
+- **Help:** hover a control's label (no more (?) markers); help texts are a few plain lines with the ini key in a
+  dim last line, and no version history.
+- **Before the first upscaled frame** the Neural tab and the Home-key notice name the runtime that will run (0.3.3.2
+  showed danielblnc's rows on an lmxxf-only install until the first frame). The notice reads "Neural Rendering: On
+  (lmxxf)" / "On (danielblnc)" / "Off".
+- **No runtime files on an AMD or Intel GPU:** the Neural tab shows only the "No neural runtime found" card (with
+  the folder and a Discord link), plus Ray Regeneration while it runs. The inherited NVIDIA layout is no longer
+  drawn there (its Auto skin mask checkbox wrote `[DlssNr] AutoMask`). On a GPU that can run neither runtime the card
+  says so, with the reason in its hover.
+- **First-launch chooser:** two rows, each with its credit ("DLSS-NR on AMD by Daniel Blanco (danielblnc)", "lmxxf
+  runtime by Kien (MIT)"), installed or not and whether it runs on this GPU; the files are in the row's hover.
+- **Header and footer:** the header reads AMDNR (hover: version and build) with Discord and GitHub buttons and the
+  copyright line; a second row credits the neural runtimes ("DLSS-NR on AMD by Daniel Blanco (danielblnc) - lmxxf by
+  Kien (MIT)"; hover it for the full credits). The footer's "Open Wiki" (upstream OptiScaler's wiki) is gone: the
+  header's GitHub button opens this project's README. The footer holds the frame-time graph, Menu Scale, Save
+  Settings and Close. **Save report** is the last row of Neural > Diagnostics and the first row of Advanced > Logging.
+  The window title reads "AMDNR v0.3.4 - <exe> - <game>", and the start-up splash "AMDNR - Insert for menu".
+- **The other tabs** follow the same look. Upscaling: the upscaler first, one status line (GPU, API, input,
+  spoofing), a render / display / upscaler-time line, and *Render resolution* (the former Upscale Ratio Override and
+  Output Scaling); on a non-NVIDIA card "DLSS w/Dx12" is no longer listed; in a D3D11 or Vulkan game with Neural
+  Rendering on the w/Dx12 items read e.g. "FSR 3.X/4 w/Dx12 - Neural". Image: Sharpness (one Sharpener combo),
+  Textures (moved from Advanced), Init Flags (one per row; "Upscaler auto exposure"), Magnifier. Frame Gen: FG Input
+  and FG Output first, external frame generation in a Compatibility fold, "Low latency" (was "fakenvapi").
+  Interface: FPS Overlay and Keybinds (a button per key, Reset only on a rebound key). Advanced: one intro line,
+  Active Quirks, Display (V-Sync: Game / On / Off in one combo, same `[V-Sync] ForceVsync` values), Compatibility,
+  Logging (with the build stamp). Keys, defaults and what Save Settings writes are unchanged.
+- **Smaller menu fixes:** tooltips no longer end in "##2" (Frame Gen > XeFG > Rectangle Settings); "Motion
+  Threshold" (was MotionThreshod); Root Signatures says it can pause Neural Rendering on some frames; the large
+  header messages before an upscaler runs wrap inside the window; the Menu Scale combo shows "Auto (1.0)" in full;
+  collapsing sections no longer draw a box inside a box; the FPS overlay and the splash draw their text as plain
+  text.
+- **The Neural runtime combo names the exact version of your files**, e.g. "lmxxf 0.3.4" or "danielblnc 0.4.0"
+  (only the name when the version is unknown); the running state stays the dim word after it.
+- **Fold tags:** More quality options, Model strength and Exposure and highlights show a dim "default" or "custom"
+  after their name, so a changed value inside a closed fold is easy to find (Appearance filter keeps its off / on).
+- **Components: N of 7 active** sits in the header of every tab, under the credits line (the seven component chips
+  no longer sit above every tab, and the row left the Advanced tab): click it for the pills, grouped Upscalers /
+  Frame gen / Hooks / NVIDIA, each with a hover; "nvngx.dll not present (normal on AMD)".
+- **Preset has a fourth button, Handheld**, on handheld APUs only (Z1 Extreme / Z2 / 780M, Z2 Extreme / 890M / 880M):
+  NR resolution 100%, Dynamic NR off, the model every 4th frame (Model interleave), 1 Neural pass and Full network
+  off. On these chips a dim line under Preset says the network stays at 360p whatever the Preset.
+- **Fast mode** in Neural > Performance, right after Full network (see "Speed").
+- **Late frames:** in a game that submits its frames late (The Last of Us Part II) the Neural tab says "This game
+  submits frames late: the model ran on N% of frames" (see "Fixes").
+
+### AMDNR Screen GI (preview, off by default)
+AMDNR's own screen-space global illumination, new in 0.3.4, by 3zwr1. It is a preview: off by default, not yet
+tested in a game, and its look will change.
+- **What it does:** ambient occlusion (darkening in creases and where objects touch) and one bounce of light from
+  nearby surfaces (a lit red wall tints the floor beside it), plus an optional share of the last frame's bounce for
+  more than one bounce. It is traced from the game's depth and colour before Neural Rendering, the upscaler and the
+  game's UI, so the UI is never lit. It works with NR on (both runtimes, danielblnc and lmxxf, take GI's picture as
+  their input) and with NR off (the upscaler takes it). The light comes from the game's own image; GI adds no lights.
+- **Turn it on:** Neural > tools row > **Experimental** > **AMDNR Screen-space GI** (dim tag "preview - by 3zwr1"),
+  or `[AmdGi] Enabled=true` in `OptiScaler.ini`. While it is ticked: GI quality (Low / Medium / High / Ultra / Auto;
+  High by default, Low on APUs and handhelds; its measured GPU time shows beside it), Bounce light, Ambient
+  occlusion, Radius, Object thickness, Camera FOV (auto reads it from FSR, Streamline or DLSS-FG; the tag says from
+  where), *More GI options* (Bounce colour, Sky light, Multi-bounce, FOV axis, Colour encoding), Debug view (not
+  saved), Reset GI and a status line. Only one screen-space GI at a time: ticking it unticks the inherited one. The
+  Experimental drawer is drawn only while an NR runtime is installed.
+- **Cost, measured in AMDNR's GPU lab on an RX 9070 XT** (synthetic scenes, not in a game; the whole GI pass per
+  frame with the GPU clocked up; the range goes from an outdoor scene to a closed room; "render" is the game's
+  resolution before the upscaler):
+
+  | GI quality | 1920x1080 render | 1280x720 render |
+  |---|---|---|
+  | Low | 0.39-0.42 ms | 0.28-0.30 ms |
+  | Medium | 0.55-0.60 ms | 0.32-0.36 ms |
+  | High (default) | 0.95-1.05 ms | 0.47-0.52 ms |
+  | Ultra | 1.57-1.76 ms | 1.30-1.38 ms |
+
+  In a game expect somewhat more (the game shares the GPU's caches and bandwidth), and the cost depends on what is
+  on screen: read the ms tag beside GI quality. Not yet measured on RX 7000 or a handheld.
+- **Limits:** it is screen-space. Only what is on screen can cast or block light: light from off-screen, behind the
+  camera or behind an object is missing, and GI changes as things enter or leave the view. Thin objects can show a
+  dark halo or let light leak behind them (Object thickness trades one for the other). Preview quality: the bounce
+  into shadowed areas is weaker than it should be, ambient occlusion can darken lit surfaces a little, and still
+  scenes can shimmer slightly. Direct3D 12 games with an upscaler (DLSS, FSR or XeSS inputs) on an AMD GPU only: not
+  D3D11 or Vulkan games in this preview, and not where NR runs on the upscaled image (final image mode, after FSR
+  Ray Regeneration). The status line says why when GI does not run.
+- **AMDNR's own work**, Copyright (c) 2026 3zwr1 (AMDNR), written clean-room from published papers only: Therrien,
+  Levesque and Gilet 2023 (screen-space indirect lighting with a visibility bitmask); Jimenez, Wu, Pesce and Jarabo
+  2016 (GTAO and its multi-bounce fit); Jimenez 2014 (interleaved gradient noise); Roberts (the R2 sequence);
+  Schied et al. 2017 (SVGF); Dammertz et al. 2010 (edge-avoiding a-trous); Kopf et al. 2007 (joint bilateral
+  upsampling); Karis 2014 and Salvi 2016 (history clamping); Turanszki 2019 and Wu 2020 (normals from depth); Hartley
+  1997 (rotating-camera self-calibration); IEC 61966-2-1 (the sRGB transfer function). No code from the inherited
+  Screen-space GI or any other project was used. The inherited Screen-space GI (OptiScaler-AMD-PreSR lineage, credit
+  to its original authors) is a separate effect: retired from the menu in 0.3.4 (its checkbox shows, tagged
+  "retired", only while your ini has it on), and it still runs from `[AmdRtgi] Enabled` in the ini.
+
+### Handhelds (experimental)
+- **lmxxf runs on handheld APUs with 12 or more compute units**, through AMDNR's RDNA 3 backend by 3zwr1:
+  Z1 Extreme, Z2 and Radeon 780M (gfx1103), Z2 Extreme, Radeon 890M and 880M (gfx1150). Experimental and slow.
+  First tester results (ROG Ally, Z1 Extreme): lmxxf's probe outside a game, 54.7 ms per network run at 360p,
+  110.9 ms at 576p (168.0 ms at 720p); in a game, one tester's run (Shadow of the Tomb Raider, 1280x720 with XeSS, Handheld preset),
+  62 ms per network run on average at the 360p size with the model every 4th frame, about 29 fps with NR on. The Neural
+  runtime row says "experimental" after the RDNA 3 credit, and the lmxxf entry's hover has an orange "Experimental on
+  this GPU" line. The NR cost readout shows the real number on the device.
+- **Refused, with a note:** Z1 and Radeon 740M (4 compute units), Radeon 760M (8), Radeon 860M / 840M (gfx1152) and
+  a chip whose compute-unit count is unknown. danielblnc's runtime does not run on handheld APUs. RX 6000 (RDNA 2) is
+  planned for 0.4.0.
+- **Handheld defaults, only while your ini has no value of its own:** the
+  network runs at the new 360p size (640x360) and the model runs every 4th frame (`AmdInterleave` 4, never saved).
+  Picking Model interleave Off is saved as `[DlssNr] AmdInterleave=1` (also off), so the default does not come back
+  at the next start; to turn it off by hand, write 1. `[DlssNr] AmdLmxxfTierCap=576` gives the 1024x576 size (sharper,
+  slower).
+- **What to expect on a handheld:** the network sees a 360p picture and runs every 4th frame, so its effect is
+  lighter than on a desktop card, and more Neural passes mostly cost frame rate. On these chips the network stays at
+  360p whatever the Preset, so Quality, Balanced and Performance look like Handheld; the menu says so. For a stronger,
+  much slower effect set `[DlssNr] AmdLmxxfTierCap=576` and `AmdInterleave=2` in the ini.
+- `amd_bridge.log`'s GPU line names the compute units and the verdict, e.g. "AMD neural: GPU <name> (gfx1103, 12
+  CUs) - ... lmxxf yes (experimental): <note>".
+- `LmxxfNrRuntime.dll` 0.3.4 refuses a handheld chip with fewer than 12 compute units, and a handheld whose
+  `OptiScaler.dll` did not ask for the small network sizes ("this handheld needs OptiScaler.dll 0.3.4 or newer");
+  `AMDNR_ALLOW_SLOW_GPU=1` skips both (testers only). Neural passes 2-3 also have their kernel on these chips.
+- The handheld modules (48: `hip/gfx1103` and `hip/gfx1150`) are in the new `LmxxfNrRuntime.pak`. Use AMD's own
+  Adrenalin driver: lmxxf needs HIP (`amdhip64_7.dll`), which some handheld makers' drivers leave out.
+
+### Speed (RX 9000 / RX 7000)
+- **RX 7000 (RDNA 3): lmxxf's NR size now snaps to the cheaper network size tier by default**
+  (`[DlssNr] AmdLmxxfTierSnap` unset = on for RX 7000, Radeon 8060S / 8050S and the handheld APUs; off on RX 9000; an
+  explicit `true` / `false` wins; `false` restores 0.3.3.2's sizes). The network runs at a few fixed sizes (720, 900,
+  1080) and a size costs the same whatever part of it the picture fills: a size nearer the next smaller tier is
+  lowered to it, a size that fills 90% or more of its own tier is grown to fill it, never above the frame's own size.
+  Network time per run on an RX 7800 XT (a tester's run of lmxxf's probe, mean of 30 runs, network only):
+  1440p FSR Quality (1706x960, NR 100%) **73.3 -> 52.2 ms** (1080 tier -> 900 tier); 1080p at NR 85% **73.2 ->
+  52.2 ms**; 1080p at NR 70% **52.2 -> 34.4 ms** (900 -> 720 tier); 1080p at 80% stays in the 900 tier, grown to
+  fill it (same cost, more detail). The gain per displayed frame is smaller (Model interleave, the game's own cost)
+  and not yet measured in a game. Not bit-exact on RX 7000 by design: the network sees a slightly smaller picture
+  (about 6% per side at 1440p Quality). The RX 7000 and Strix Halo advice now reads "start with NR resolution at
+  70% or lower".
+- **Two smaller network sizes, 360p (640x360) and 576p (1024x576)**, in `LmxxfNrRuntime.dll` 0.3.4, used only when
+  `OptiScaler.dll` asks for them: on handheld APUs by default, and on any GPU with `[DlssNr] AmdLmxxfTierCap=360` or
+  `576` (for testing; the look at these sizes is not yet judged in a game). `AmdLmxxfTierCap` = 720 / 900 / 1080 caps
+  the size without the small sizes. Without the key every size and picture is 0.3.3.2's (RX 9070 XT output checked
+  unchanged, with c32w on and off).
+- **RX 9000: `[DlssNr] AmdLmxxfTierSnap=true` is an opt-in** (off by default, output unchanged). From a 1920x1080
+  render: 85-90% -> 1600x900 (the 900 tier, cheaper, a little softer), 75-80% -> grown to 1600x900 (same cost, more
+  detail), 70% -> 1280x720, 60% -> grown to 1280x720; 100% unchanged. `lmxxf_backend.log`'s frame line names the
+  tier and what the snap did.
+- **lmxxf is faster on RX 9070 / 9070 XT: network 15.35 -> 14.08 ms at 1080p, 10.79 -> 9.96 ms at 900p and
+  6.97 -> 6.63 ms at 720p on an RX 9070 XT (measured outside a game), the same network output (bit-identical).** This uses lmxxf's own new
+  kernels from lmxxf 0.31 (the ViT projection (lmxxf031-vit-wide-deep), the C512 QKV and mix kernels (lmxxf031-c512-m32-mh, lmxxf031-c512-m32-deep) and one-wave-per-head attention (lmxxf031-c64-wave2); Kien, MIT) on top of AMDNR's c32w. RX 9060 (gfx1200) keeps the previous
+  kernels until a tester confirms them. The lmxxf runtime no longer reads lmxxf's `DLSS5_VIT_*` environment
+  switches. Replace `LmxxfNrRuntime.dll` **and** `LmxxfNrRuntime.pak`; with an old pak (or a loose `DLSS5-AMD`
+  folder) the status line says `fk=fff-` and lmxxf runs at the old speed.
+- **Fast mode for lmxxf (opt-in, off by default):** Neural > Performance > Fast mode, or
+  `[DlssNr] AmdLmxxfFastMode=true` (saved). The network runs one size tier lower (1080 -> 900, 900 -> 720; 720 -> 576
+  and 576 -> 360 where the small sizes are on): about 29% less network time at 1080p (RX 9070 XT, measured outside a
+  game), with fine detail a little softer. The NR resolution cost tag and its hover follow it. Off, lmxxf gets
+  exactly the input it got without it; no runtime change.
+- **Fast mode for danielblnc builds that have one** (`[DlssNr] AmdDanielFastMode`, saved; auto = the runtime keeps its
+  own mode): the row shows in Neural > Performance only with a danielblnc build that has the mode (true = Fast, false
+  = Reference, live, no restart). The runtimes in this release's runtime zips do not have it, so the row stays hidden
+  and a key set in the ini logs once that it is not available.
+- **NR cost readout, both runtimes:** the status line ends with the NR cost in ms and Diagnostics shows "NR
+  cost: N ms of GPU time per model frame". lmxxf: the network's GPU time from its stats window (about 10 s after NR
+  starts). danielblnc: the game queue's GPU time inside NR, D3D12 only (none on Vulkan and D3D11 titles), timed
+  only while the menu shows it, so with the menu closed the game's command lists are 0.3.3.2's.
+
+### Ray Regeneration
+- **Its own section, Neural > Ray Regeneration**, after Image look, shown only while the game runs FSR Ray
+  Regeneration: a status line, Path-traced profile (+ Profile temporal values and Texture route while it is ticked),
+  Disocclusion threshold, Bias mask strength, Skin smoothing (Strength, Radius, Skin classifier) and the fold *More
+  Ray Regeneration options*. The RR debug view is in Diagnostics while an NR runtime is installed, and in this
+  section while none is. Keys unchanged.
+- **New sliders** in *More Ray Regeneration options*: Stability bias, Cross-bilateral normal strength, Gaussian
+  kernel relaxation, Radiance clip and Max radiance (`[FSR-RR]` keys that were ini-only), live; greyed while AMD's
+  default tuning is on. A value typed with Ctrl+Click is clamped to the slider's range.
+- **Profile temporal values** (`[FSR-RR] FfxDenoiserPathTracedTemporal`, on = 0.3.3.2): off applies only the
+  path-traced profile's routing half; its six temporal values stay the fork's / yours.
+- **RX 7000 / RDNA 3: FSR Ray Regeneration is offered by default again** (0.3.3.2 offered it on RDNA 4 only): RX
+  7000, the RDNA 3 APUs and Strix Halo, while `[FSR-RR] FfxDenoiserAllowPreRdna4` is unset (auto, as shipped).
+  `false` = RDNA 4 only; RX 6000 and older (and Intel) get it only with `true`. AMD ships Ray Regeneration for RDNA 4:
+  when the driver refuses it on RDNA 3, the log and a notice say "FSR Ray Regeneration could not start" and the game
+  gets FSR without the denoiser. The Upscaling tab has the switch as **Offer FSR Ray Regeneration on this GPU
+  (restart)** (D3D12 games, AMD cards that are not RDNA 4), under the upscaler combo.
+- **Fixed: the Ray Reconstruction option could be missing on RDNA 4** in Streamline titles that load
+  `sl.interposer` before OptiScaler (the GPU check ran before the GPU was known): the RR hooks now attach and decide
+  per call.
+- **Bias mask strength is greyed "no bias mask in this game"** where the game publishes no DLSS bias mask
+  (Resident Evil Requiem): its 0 default there changes nothing.
+- **"Ray Regeneration is off in this title"** now says why in plain words (the game's DLSS plugin passes empty
+  camera matrices; NVIDIA's Ray Reconstruction treats them as optional, FSR Ray Regeneration needs them) and what to
+  do (turn RR off in the game and restore the engine's denoiser settings). It shows in the Neural tab (also without
+  an NR runtime) and in the Upscaling tab under the upscaler combo.
+- **Fixed: re-picking FSR Ray Regeneration after a fallback** clears "Ray Regeneration is off in this title" (it
+  comes back after 30 frames if the inputs are still missing).
+- **Changed: in an Unreal title whose DLSS plugin passes null camera matrices** (Ray Reconstruction evaluated
+  through NGX directly, no Streamline camera, on all 30 frames) Ray Regeneration now stays off for the whole session:
+  later RR features are created as FSR, and re-picking it in the menu keeps FSR with a notice. Other fallbacks retry
+  as before.
+- **Fixed: the game textures kept for Ray Regeneration** (up to 18 Streamline tags) are released once RR goes off;
+  not on an in-game resize or quality change.
+- **Opt-in experiments, ini only, off by default:** `[FSR-RR] FfxDenoiserAlbedoFp16=true` stores the albedo handed
+  to Ray Regeneration as FP16 instead of 8-bit (for dark low-albedo surfaces and hair; whether AMD's denoiser accepts
+  it is unproven: set it back if FFX errors appear); `[FSR-RR] FfxDenoiserNgxDirectSLConstants=true` takes the camera
+  from the Streamline constants whose jitter matches, for NGX-direct titles that also send them (unproven on a real
+  title).
+- **The path-traced profile is retired (not recommended):** every Resident Evil Requiem report found it worse than
+  the normal route (etched textures, lamps and emissive light too bright, thinner hair), also with Texture route 1.
+  Its row shows only while `[FSR-RR] FfxDenoiserPathTracedProfile` is on, tagged "retired" (untick it, then Save
+  Settings); while it is on, the log has one warning and every `[RR_PROFILE]` line says so. Resident Evil Requiem and
+  PRAGMATA no longer carry the "path-traced title (profile opt-in)" quirk tag.
+- **Diagnostic GPU work at default**, only on Ray Regeneration frames whose camera is missing, once per handle: one
+  shader compile, up to 3 small dispatches and about 0.8 MB of buffers, to read the depth and normals format for a
+  later fix. Nothing runs where the camera resolves (Resident Evil Requiem). Not yet run on a real GPU.
+- **Logs:** `[RR_PROFILE]` names where the routing and temporal halves come from and whether a bias mask is
+  published; `[RR_POST]` is logged again when a post setting changes; `[RR_CFG] settings changed` once per slider
+  move; `[RR_GUIDES]` adds the disocclusion masks; `[RR_CAM]` and `[RR_INPUT] ... snapshot` lines once per handle; the
+  per-frame "View matrix missing!", "slEvaluateFeature" and specular-hit-distance lines are logged a few times, then
+  every 1000th. The RR dispatch snapshot (about 60 lines) is logged on a feature's first dispatch and on history resets
+  1-3 and every 20th, not on every reset (Resident Evil Requiem resets on camera cuts), and one line names every reset.
+  One line confirms the Ray Regeneration version with the game's device ("FSR Ray Regeneration - 1.2.0"); the
+  earlier device-less version queries are INFO, no longer a false version warning. The denoiser provider's
+  `0x80070057` line is INFO (the denoiser uses its own providers). One line says FSR Ray Regeneration does not need
+  NR (it works the same with NR off) and, under Wine / Proton, that it works there while NR cannot.
+- In a title where Ray Regeneration gave up, the Upscaling tab's orange line now points to Neural > Ray Regeneration
+  for its options.
+
+### danielblnc
+danielblnc's runtime is **DLSS-NR on AMD by Daniel Blanco (danielblnc)** —
+<https://github.com/danielblnc/DLSS-NR-on-AMD>. AMDNR ships it unmodified, with his permission; this release
+changes only how AMDNR drives it.
+- **Runtime settings in the menu** (Image look > Model strength: *Network style*, *Tone curve* (Reinhard / ACES) and
+  *Black lift*; Exposure and highlights: *Game exposure*). Auto (the default) writes nothing, so the runtime's own
+  value stays (0.3.3.2). Only danielblnc's public 0.3.3 and 0.4.0 builds take them; with another build the rows are
+  greyed "not in this danielblnc build" and a key set in the ini logs once that it is ignored. A change resets the
+  model history; back to Auto restores the runtime's value without a restart. Keys `[DlssNr] AmdRuntimeStyle`,
+  `AmdToneCurve`, `AmdToneLift`, `AmdUseGameExposure`.
+- **Highlight colour guard for danielblnc** (`[DlssNr] AmdDanielHighlightGuard`, off by default): bright areas (sky,
+  lamps, fog lit by a flashlight) keep the game's colour instead of going grey; also inside the RenoDX composition.
+  The first enable compiles a shader (a short hitch). In the menu: Exposure and highlights >
+  Highlight colour guard (one row for both runtimes; it writes the running runtime's key).
+- **Native character mask:** `[DlssNr] AutoMask=false` (or unticking the row) now turns danielblnc's character mask
+  off on every pass; 0.3.3.2 forced it on. Default on, unchanged.
+- **Network history with Model interleave off:** `[DlssNr] AmdInterleaveModelHistory=true` (the Network history
+  checkbox) now keeps danielblnc's network history with Model interleave off too. Default off, unchanged.
+- **Edit shaper A/B** (the "NR style changes away from 100%" issue, still open, default unchanged): Diagnostics >
+  *Edit shaper (A/B, not saved)* = Off / Literal / F1 no limit / F2 ramped, with *Only below 100%* and *Carry cap*,
+  in memory only (Save Settings writes nothing). Ini keys `AmdEditShaperLimit` (0 literal, 1 F1, 2 F2; any other value
+  = 0), `AmdEditShaperScope` (1 = below 100% only) and `AmdEditShaperCarryCap` (never above 4x), read only with
+  `AmdEditShaper=true`. `amd_presr.log` names the mode on each change, and says why when the shaper does not act.
+- The model-frame ghost readout (Diagnostics) says it is waiting for the first model frame instead of "n/a".
+- The warning about danielblnc's standalone installer in the game folder now also catches renamed installers
+  (`dlssnr_on_amd_setup*.exe`) and names the file.
+
+### lmxxf
+- **`LmxxfNrRuntime.dll` 0.3.4:** takes the model's native character mask controls and the two small network sizes,
+  and guards handheld chips. At default the host sends 0.3.3.2's frame byte for byte, and the output equals
+  0.3.3.2's. It also accepts an older `OptiScaler.dll`. With 0.3.3.2's runtime and the new `OptiScaler.dll` the
+  controls are refused once, NR keeps running, and the Native character mask row says "refused: runtime DLL too old".
+- **Native character mask on lmxxf, with Structure intensity and Character structure:** lmxxf now
+  follows Native character mask (`[DlssNr] AutoMask`), Structure intensity and Character structure, and the
+  NR styles that set structure (Cinematic, Crisp, Natural, Vivid). Each change rebuilds the network (about a
+  1 s hitch). Defaults send the 0.3.3.2 frame.
+- **Network output** (Diagnostics, `[DlssNr] AmdNetworkOutput`, off): the model's answer reaches the frame untouched
+  (one frame late, as every lmxxf answer): no look, no sharpening, full strength. The RenoDX composition stays
+  refused under it, as on danielblnc.
+- **Encoding** (Runtime options, `[DlssNr] AmdEncoding`, Auto): sRGB / Gamma 2.2 decode the game's colour to linear
+  light before the network and encode the result back, as on danielblnc. Upscaler path only (final image mode keeps
+  0.3.3.2's feed). The RenoDX composition stays refused with sRGB / Gamma 2.2 on both runtimes.
+- **Residual edge fade** (`[DlssNr] AmdResidualFade`, 0..0.25, 0 default): fades the model's edit toward the screen
+  edges, only while the edit is lifted (NR resolution not 100%, a render above 1920x1080, or the tier snap moving the
+  size) and not under Network output.
+- **Screen-space GI** (the inherited effect, `[AmdRtgi] Enabled`, off; an effect AMDNR inherited from the
+  OptiScaler-AMD-PreSR lineage, credit to its original authors; retired from the menu in 0.3.4, see "AMDNR Screen
+  GI"): needs the `experimental_lighting` folder of the
+  danielblnc package beside the game (else one log line and the network runs on). It runs on the carried frame
+  before the Image look. While on it costs GPU time and 64 bytes of VRAM per pixel (about 130 MB at 1080p, 530 MB at
+  4K after Ray Regeneration), released about 8 frames after it stops.
+- **Interleave pacing:** a saved `[DlssNr] AmdInterleavePacing` of 0..1 now also paces lmxxf with Model interleave
+  on (it pads the filled frames, so FPS drops); -1 (auto, the default) stays off on lmxxf. The menu shows "Interleave
+  pacing: off with lmxxf" with the measured model / fill ms, and each `lmxxf stats` line shows the pacing readout.
+- **Game exposure** (`[DlssNr] AmdUseGameExposure`, -1 auto = use the title's exposure texture, 0 ignore, 1 use): 0
+  feeds lmxxf by its auto-exposure instead; logged once, and again only when the key moves to or from 0.
+- **Classic carry is saved as `AmdInterleavePreset=1`** (0.3.3.2 wrote 6): switching to danielblnc then reads
+  Standard. An old ini with 6 still reads Classic carry under lmxxf and Guided fill v2 under danielblnc.
+- **Fixed: the lmxxf stats window cleared 8 of its 12 counters**, so shoulder / blown / rejected summed over the
+  session and could latch a false self-heal (a colour switch mid-session).
+- Logs: the "runtime up" line says "modules pak" when the pak is used; the loose-folder warning no longer tells you
+  to delete a `native-game-tiled-assets` folder beside the exe (it may be another mod's); the stats line adds
+  `release_marks=`.
+
+### Fixes
+- **Assetto Corsa: the menu input.** While the menu blocks the game's input, a game's low-level keyboard or mouse
+  hook is now skipped and the event passed on to Windows; before, it was swallowed for the whole desktop (Alt+Tab
+  and the Windows key dead). Kill switch `[Hotfix] MenuLowLevelHookPassThrough=false`. And a second menu or NR key
+  press within 400 ms of the last one is ignored, so one press toggles once (`[Hotfix] MenuToggleDebounceMs`, 0 = the
+  old behaviour). Not yet confirmed in Assetto Corsa.
+- **Clean exit:** after a normal quit the next start no longer warns "No clean exit recorded". AMDNR stamps its
+  marker when the game's own exit call runs and again when its NR shutdown has finished; with both stamps the new log
+  says the game was quitting, not crashing. With only the first stamp (a crash or hang in AMDNR's shutdown) it still
+  warns, and says so.
+- **Previous logs:** three previous logs are kept per game exe (`[Log] KeepPreviousLogs=3`; 1 = one, as in
+  0.3.3.2): `OptiScaler.previous.<exe>.log` (newest, the old name), `OptiScaler.previous-1.<exe>.log` and
+  `OptiScaler.previous-2.<exe>.log`.
+- **Report zip: Save report** (Neural > Diagnostics, last row, or Advanced > Logging, first row) writes `AMDNR-report-<exe>-<date>.zip` into the game folder
+  (on the Desktop if it is read-only, else in `%TEMP%`), with `report.txt` (an `[AMDNR]` section), `logs/`
+  (`OptiScaler.log`, every previous log, `amd_bridge.log`, `amd_presr.log`, `lmxxf_backend.log`, `dlssnr_on_amd.log`)
+  and `config/` (`OptiScaler.ini`, `dlssnr_on_amd.ini`). Your Windows user name and PC name are masked (a name inside
+  a game path outside `C:\Users\` is not); the result line masks the user folder too. With `[Log] LogToFile=false`
+  the old log is zipped as `OptiScaler.NOT-THIS-SESSION.log` and `report.txt` says so. It saves in the background.
+- **Crash log (opt-in):** `[Log] CrashHandler=true` writes `amdnr_crash.log` beside `OptiScaler.log` (START, the
+  module of a crash with its kind, e.g. "[AMD driver]", END on a clean exit); `[Log] CrashDump=true` adds a minidump
+  ("DUMP ready" or "DUMP unavailable"). Off by default: nothing is registered. Save report collects it.
+- **Crash reporters no longer empty the game's `OptiScaler.log`:** OptiScaler also passes through crash reporters
+  and CEF helpers by name (crashpad_handler, crashreport, crashhandler, cefsubprocess) and danielblnc's installer
+  under any name. Games are not affected.
+- **Logs:** "waiting for resolution settings to settle" once per settle instead of about 45 times; the RDR2 flood of
+  `CreateCommittedResource result: 80070057` and the frame-generation flip / create errors are logged 5 times per
+  resource, then every 1000th, and name the resource; one `amd_bridge.log` line "AMD settings: <key> a -> b" per
+  settled change of a picture setting (both runtimes); the colour line mentions the RenoDX fallback only when RenoDX
+  is selected.
+- **REFramework warning can be silenced:** `[Hotfix] WarnMissingREFramework=false` hides the start-up notice and the
+  menu line (one log line remains). Default on, unchanged.
+- **`[Anisotropy] ModifyComparison` / `ModifyMinMax` saved by Save Settings are now read back** (they were read under
+  other names, so a saved `false` was ignored).
+- **Frame generation:** after a failed depth / velocity copy re-create the next frame no longer reads the freed copy.
+- **Marvel's Midnight Suns (and other titles whose D3D12 device is a Streamline proxy): danielblnc no longer
+  crashes.** Its backend is now built on the device behind the proxy (the device of the game's queue), proven by
+  Streamline's own identity or a probe; with two devices and no proof danielblnc is not started, the status line says
+  why and the game runs untouched. The lmxxf runtime also asks Streamline for the real device. Kill switch
+  `[DlssNr] AmdStreamlineDeviceFix=false` (0.3.3.2). Not yet confirmed in the game.
+- **The Last of Us Part II (games that submit a frame's work late):** lmxxf ran on a fraction of the frames and
+  restarted its network history about every other frame. A job whose command list arrives one frame late is now kept
+  for that frame, and its answer is used one frame later, warped into place by the motion; still late a frame later,
+  it is dropped as before. `lmxxf stats` lines count late and graced jobs. Kill switch
+  `[DlssNr] AmdLateSubmitGrace=false` (0.3.3.2). Games that submit on time are unchanged. danielblnc: `amd_presr.log`
+  says how often NR ran ("AMD late submission: NR ran on X% of the last N frames"); its fix is planned for 0.3.5, so
+  use lmxxf in such a game. The Neural tab shows the share for both runtimes.
+- **An NR resolution change alone no longer pauses NR for 300 ms** (the slider, a Preset or NR style, a Dynamic NR
+  step): the history restarts and NR is back on the next frame. A change of the game's input size still settles as
+  before, and so does a burst of changes. lmxxf still has its short hitch when the network size tier changes.
+- **Forza Horizon 6: no false "No clean exit recorded"** after a normal quit. A game that ends itself with exit code
+  0 now counts as a quit; crash exits still warn.
+- **lmxxf after an error that stops it for the session** no longer calls the runtime every frame (each call failed
+  and filled the log): the game's frame passes through untouched and the Neural tab still offers Switch to
+  danielblnc. A device removal (driver timeout) is still logged as such.
+- **Wine / Proton:** the Neural tab says NR cannot run there (both runtimes need AMD's Windows HIP runtime,
+  `amdhip64_7.dll`), while FSR Ray Regeneration and FSR upscaling still work; before, it said to reinstall the driver.
+- **Logs:** the menu's input-health lines now count every input channel and warn at most once per 10 s with no
+  input while the menu is open, instead of firing on healthy sessions; `hkslSetTag only supports DX12` in D3D11 /
+  Vulkan Streamline titles is INFO, 5 times, then every 1000th.
+- **Handhelds and laptops with a Radeon 780M / 760M / 740M (ROG Ally, Legion Go and similar), on Windows: no automatic
+  FSR 4.** These chips got the FSR 4 INT8 upgrade on their own, and AMD does not support FSR 4 on them yet. The
+  upscaler now stays on its non-FSR 4 path: with `Dx12Upscaler=auto` that is XeSS, and FSR 3.1 stays FSR 3.1 (`Dx12Upscaler=fsr22` is the
+  lightest choice on these chips). `[FSR] Fsr4ForceModel=2` still forces FSR 4 INT8 if you want to try it
+  (experimental on these chips). RX 7000 desktop cards and RX 9000 are unchanged.
+- **Shadow of the Tomb Raider (and games that make their D3D12 device twice) no longer crash when the upscaler
+  starts.** The game hands its first device to NGX, releases it, and renders on a new one; OptiScaler kept the
+  released device and the upscaler's first start crashed (seen on a ROG Ally, with XeSS and with FSR alike). OptiScaler
+  now checks the device of the game's command list when it creates the upscaler and uses that one. The log shows
+  `[CREATE]` lines for each step.
+
+### Before you update: values in your own ini that now act differently
+If your `OptiScaler.ini` holds these (non-default) values, the picture or the frame rate changes:
+- `[DlssNr] AutoMask=false`: now turns danielblnc's character mask off, and lmxxf's (each change rebuilds lmxxf's
+  network: about 1 s).
+- `DlssNrLocalStructure` (Structure intensity) other than 1, an own Character structure (`DlssNrSkinStructure` other than
+  -1), or an NR style that sets structure (Cinematic, Crisp, Natural, Vivid): now changes lmxxf's picture on every GPU
+  (0.3.3.2's lmxxf ignored them); each change rebuilds the network (about 1 s).
+- `AmdInterleaveModelHistory=true`: now also keeps danielblnc's network history with Model interleave off.
+- `AmdEncoding` sRGB / Gamma 2.2, `AmdResidualFade` above 0, `AmdNetworkOutput=true` and `AmdRtgiEnabled=true` saved
+  while on danielblnc: now also act under lmxxf (Screen-space GI adds GPU and VRAM cost).
+- `AmdInterleavePacing` 0..1 (older builds had a slider): now also paces lmxxf with Model interleave on, so FPS drops.
+  -1 (the default) stays off on lmxxf.
+- `AmdLmxxfTierSnap` unset on RX 7000 / Radeon 8060S / handhelds: now on (above). Set `false` for 0.3.3.2's sizes.
+- `AmdInterleave` unset on a handheld APU: the model runs every 4th frame.
+
+### Defaults that differ from 0.3.3.2
+- `[Log] KeepPreviousLogs=3` (0.3.3.2 kept one previous log); the "no clean exit" note no longer follows a normal
+  quit; crash reporters and danielblnc's setup under any name are passed through.
+- Menu: a second toggle key press within 400 ms is ignored; a game's low-level input hook is skipped (not swallowed)
+  while the menu is open.
+- Preset writes only NR resolution and Dynamic NR off; lmxxf's Classic carry is saved as 1; "DLSS w/Dx12" is hidden on
+  non-NVIDIA cards; the Graphics wait row is gone; Reset appearance filter resets only `[AmdLook]`; the menu layout and
+  labels above.
+- Ray Regeneration: a fallback on the Unreal null-camera signature stays for the session; offered by default on
+  RX 7000 / RDNA 3 again (0.3.3.2: RDNA 4 only; `[FSR-RR] FfxDenoiserAllowPreRdna4=false` restores that).
+- RX 7000 / Radeon 8060S / handhelds: the lmxxf network size tier snap is on. Handhelds: 360p network size and the
+  model every 4th frame.
+- lmxxf keeps a job the game submits one frame late (`AmdLateSubmitGrace`); danielblnc runs on the device behind a
+  Streamline proxy (`AmdStreamlineDeviceFix`); an NR resolution change alone no longer pauses NR.
+
+### New ini keys
+`AmdLmxxfTierSnap` (on RDNA 3), `AmdLateSubmitGrace`, `AmdStreamlineDeviceFix`, `KeepPreviousLogs`,
+`MenuToggleDebounceMs` and `MenuLowLevelHookPassThrough` change the behaviour at their default (see "Defaults that differ"); the others keep 0.3.3.2's behaviour at their default.
+"Not saved" = read at start, never written by Save Settings: set it by hand.
+- `[DlssNr]` `AmdLmxxfTierSnap` (unset: on for RDNA 3, off elsewhere; not saved), `AmdLmxxfTierCap` (0 auto = 360 on
+  handhelds, no cap elsewhere; 360 / 576 / 720 / 900 / 1080; not saved), `AmdDanielHighlightGuard` (false),
+  `AmdRuntimeStyle`, `AmdToneCurve`, `AmdToneLift`, `AmdUseGameExposure` (-1 auto), `AmdEditShaperLimit` (0),
+  `AmdEditShaperScope` (0), `AmdEditShaperCarryCap` (false; the three not saved), `AmdLmxxfFastMode` (false),
+  `AmdDanielFastMode` (auto = the runtime's own mode), `AmdLateSubmitGrace` (true; not saved),
+  `AmdStreamlineDeviceFix` (true; not saved).
+- `[Hotfix]` `MenuToggleDebounceMs` (400, used as 0..1000), `MenuLowLevelHookPassThrough` (true),
+  `WarnMissingREFramework` (true); not saved.
+- `[Log]` `KeepPreviousLogs` (3, 1..5), `CrashHandler` (false), `CrashDump` (false); not saved.
+- `[FSR-RR]` `FfxDenoiserPathTracedTemporal` (true), `FfxDenoiserAlbedoFp16` (false, not saved),
+  `FfxDenoiserNgxDirectSLConstants` (false, not saved).
+- `[AmdGi]` (AMDNR Screen GI; off at the defaults): `Enabled` (false), `Quality` (unset: High, Low on APUs),
+  `Intensity` (1), `Occlusion` (1), `Radius` (1), `Thickness` (0 = auto), `Saturation` (1), `Sky` (0), `Feedback`
+  (0.5), `Placement` (0 = before NR, the only one in the preview), `Fov` (0 = auto), `FovAxis` (0 = vertical),
+  `NearFade` and `DistanceFade` (-1 = no fade), `Encoding` (-1 = auto); not saved: `DebugView` (0) and
+  `DepthConvention`, `TraceCap`, `AlbedoMode`, `AoLitProtect`, `Translucency`.
+- `OptiScaler.ini` documents all of them.
+
+### Files
+- `OptiScaler.dll`: AMD-NR v0.3.4. `LmxxfNrRuntime.dll`: 0.3.4 (Properties > Details).
+- `LmxxfNrRuntime.pak` is new (440 MB, md5 `522fab211dd51916b81f4cbcde6effdb`): every entry of the 0.3.3.2 pak unchanged (the
+  c32w kernels included), plus the handheld modules for gfx1103 and gfx1150 and lmxxf 0.31's
+  kernels (the ViT projection (lmxxf031-vit-wide-deep), the C512 QKV and mix kernels (lmxxf031-c512-m32-mh, lmxxf031-c512-m32-deep) and one-wave-per-head attention (lmxxf031-c64-wave2); Kien, MIT). Replace all three files together; the forwarder and
+  `Runtime.zip` are unchanged.
+- The new `OptiScaler.dll` also runs with 0.3.3.2's `LmxxfNrRuntime.dll` (without the native character mask and the
+  small sizes; handhelds need the new one), and the new `LmxxfNrRuntime.dll` accepts an older `OptiScaler.dll` on
+  desktop GPUs.
+
+### Known issues / not tested
+- **Not yet tested in a game:** this build was checked on the desk (full builds, unit tests, the lmxxf probe's
+  image hashes on an RX 9070 XT, the menu in a capture host). The in-game test is still to come, most of all
+  for the new menu, the RX 7000 tier snap's look, Ray Regeneration by default on RX 7000, Assetto Corsa's input,
+  Save report, the Fast modes, Midnight Suns and The Last of Us Part II.
+- **AMDNR Screen GI (preview)** has run only in AMDNR's GPU lab (synthetic scenes on an RX 9070 XT, with D3D12
+  GPU-based validation: no errors), not yet in a game. Known from the lab: the bounce into shadow is weak, ambient
+  occlusion can darken lit surfaces a little, and still scenes can shimmer slightly.
+- **Handhelds:** lmxxf has run on one handheld so far, a ROG Ally (Z1 Extreme): in lmxxf's probe (HIP found the chip
+  with ASUS's Adrenalin driver, all modules loaded, no errors) and in one tester's run in a game, Shadow of the Tomb Raider (about 29 fps with NR
+  on, see "Handhelds"). Not yet on a gfx1150 chip (Z2 Extreme / Radeon 890M / 880M). If a handheld maker's driver leaves out `amdhip64_7.dll`, the
+  Neural tab says HIP is not available: install AMD's own Adrenalin driver.
+- **The 360p and 576p sizes:** their look is not yet judged in a game.
+- **danielblnc: the NR style can still change when NR resolution leaves 100%** (default unchanged; use the Edit
+  shaper A/B and tell us which matches).
+- **Ticking Network history mid-game on danielblnc** can freeze the picture for about 4 s (now also with Model
+  interleave off); fix planned for 0.3.5.
+- The Ray Regeneration diagnostic probe, `FfxDenoiserAlbedoFp16` and `FfxDenoiserNgxDirectSLConstants` have not run in
+  a real game.
+- The menu window still scrolls as a whole once it reaches its height cap.
+- Frame generation: the stale-copy write-back and the "CopyResource error!" throttle in the FSR / XeFG / DLSSG copy
+  paths are planned for 0.3.5.
+- lmxxf keeps about 10-25 MB of VRAM per NR size change (known since 0.3.3.2).
+- danielblnc in games that submit late (The Last of Us Part II) still runs NR on about half the frames: only the
+  counter and the menu line are in 0.3.4; the fix is planned for 0.3.5.
+- RX 6000 (RDNA 2) is planned for 0.4.0.
+
+
 ## 0.3.3.2 — 2026-09-26
 
 Hotfix: lmxxf now runs on PCs with more than one AMD GPU (for example a Ryzen with its integrated graphics on) and is
@@ -243,7 +751,7 @@ Replace `OptiScaler.dll`, `LmxxfNrRuntime.dll` and `LmxxfNrRuntime.pak`: all thr
 
 ## 0.3.3.1 — 2026-09-25
 
-Hotfix: danielblnc's runtimes 0.3.3 and 0.4.0 are supported (and 0.4.1 ahead of its release), and FSR Ray Regeneration's path-traced profile is
+Hotfix: danielblnc's runtimes 0.3.3 and 0.4.0 are supported (and one newer 0.4.x build ahead of its release), and FSR Ray Regeneration's path-traced profile is
 opt-in again (it corrupted the picture in Resident Evil Requiem). Only `OptiScaler.dll` and the ini changed;
 `LmxxfNrRuntime.dll` and `LmxxfNrRuntime.pak` are the same as in 0.3.3.
 
@@ -255,11 +763,11 @@ opt-in again (it corrupted the picture in Resident Evil Requiem). Only `OptiScal
   `dlssnr_on_amd_weights.bin` works with it unchanged. The release has a new `v0.3.3-Runtime.zip`
   (danielblnc's 0.3.3 runtime, unmodified, with his permission, plus the weights); `Runtime.zip` (0.3.1) and
   `v0.3.2-Runtime.zip` still work.
-- **danielblnc 0.4.0 is supported, and 0.4.1 ahead of its release.** Daniel shared both early, so AMDNR
+- **danielblnc 0.4.0 is supported, and one newer 0.4.x build ahead of its release.** Daniel shared both early, so AMDNR
   drove 0.4.0 the day he published it (2026-09-25; the public build is byte-identical to the one we mapped):
   the release has a new `v0.4.0-Runtime.zip` (his 0.4.0 runtime, unmodified, with his permission, plus the
   weights). His release notes claim 42% more speed than 0.3.3; its new fast kernels run on RX 9000 only.
-  0.4.1 will work the day it comes out, with no AMDNR update needed. Each build was derived twice,
+  That newer build will work the day it comes out, with no AMDNR update needed. Each build was derived twice,
   independently, and both results agreed; the host contract is unchanged from 0.3.3. Not yet run on a GPU.
   The existing weights file works with both.
 

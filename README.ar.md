@@ -1,4 +1,4 @@
-# AMDNR — DLSS 5 Neural Rendering على AMD (نسخة OptiScaler) — v0.3.3.2
+# AMDNR — DLSS 5 Neural Rendering على AMD (نسخة OptiScaler) — v0.3.4
 
 [English](README.md) | [中文](README.zh-CN.md) | [Português](README.pt-BR.md) | [Español](README.es.md) | **العربية** | [Français](README.fr.md) | [Italiano](README.it.md) | [Русский](README.ru.md) | [Polski](README.pl.md)
 
@@ -24,6 +24,13 @@
 > يوزّعها AMDNR دون أي تعديل وبإذن منه؛ وهي ليست من عمل AMDNR. رجاءً ادعم مشروعه.
 > وتجد الشكر الكامل لجميع المساهمين الآخرين في نهاية هذه الصفحة.
 
+> **الجديد في 0.3.4:** قائمة جديدة (تبويب Neural أُعيد بناؤه، وشكل موحّد لكل التبويبات، وزر **Save report** يجمع
+> ملفات السجل في ملف zip واحد للبلاغ)؛ وصار lmxxf أسرع على RX 7000 (1440p مع FSR Quality: من 73.3 إلى 52.2 ms لكل
+> تشغيل للشبكة على RX 7800 XT، زمن الشبكة مقيس خارج اللعبة) وعلى RX 9070 / 9070 XT (kernels الإصدار 0.31 من lmxxf)؛ وصار lmxxf يعمل على معالجات APU في أجهزة الألعاب المحمولة (تجريبي؛ تجربة مختبر واحد داخل لعبة: نحو 29 fps في Shadow of the Tomb Raider على
+> ROG Ally)؛ و**Fast mode** اختياري لـ lmxxf؛ و**AMDNR Screen GI**، إضاءة GI في مساحة الشاشة من صنع AMDNR (preview،
+> معطّلة افتراضيًا)؛ مع إصلاحات كثيرة. استبدل `OptiScaler.dll`
+> و`LmxxfNrRuntime.dll` و`LmxxfNrRuntime.pak` معًا. التفاصيل في `CHANGELOG.md`.
+
 ---
 
 ## دليل تثبيت AMDNR - OptiScaler
@@ -47,6 +54,11 @@
 فيه ملف `.exe` الخاص باللعبة.
 
 بعد ذلك، كرر الأمر نفسه مع جميع الملفات من `Runtime`.
+
+> **هل تحدّث من إصدار أقدم من AMDNR؟** انسخ كل شيء من جديد مع الاستبدال. في 0.3.4 تغيّرت ثلاثة ملفات معًا:
+> `OptiScaler.dll` (استبدل الملف الذي غيّرت اسمه، مثل `dxgi.dll`، بالملف الجديد بعد إعطائه الاسم نفسه)،
+> و`LmxxfNrRuntime.dll`، و`LmxxfNrRuntime.pak` (440 MB، جديد في هذا الإصدار). لا تخلطها بنسخ أقدم.
+> ويمكنك الإبقاء على ملف `OptiScaler.ini` الخاص بك: الإعدادات الجديدة تأخذ قيمها الافتراضية.
 
 ### 4. غيّر اسم OptiScaler.dll
 
@@ -100,6 +112,12 @@ Interface > Keybinds.
 
 ملفات السجل هذه مهمة جدًا، وستساعدنا على تحديد المشكلة بشكل أسرع بكثير.
 
+**الطريقة الأسهل: Save report.** إذا كانت القائمة تفتح، فاضغط **Save report** (آخر سطر في Neural > Diagnostics، أو أول سطر في Advanced > Logging). سيكتب ملف zip
+واحدًا، `AMDNR-report-<ملف exe للعبة>-<التاريخ>.zip`، في مجلد اللعبة (أو على سطح المكتب إذا كان مجلد اللعبة للقراءة
+فقط، وإلا ففي `%TEMP%`)، ويضم `report.txt` وملفات السجل وملفات ini، وتعرض القائمة مكان حفظه. يُستبدل اسم مستخدم
+Windows واسم الجهاز بعلامات بديلة؛ أما الاسم الموجود داخل مسار لعبة خارج `C:\Users\` فلا يُستبدل. أرفق ملف zip في
+`#bug-report`.
+
 > غالبًا لا يكون ملف `.exe` في المكان الذي يشير إليه الاختصار. ألعاب Unreal تضعه داخل
 > `<Game>\Binaries\Win64\`.
 
@@ -108,19 +126,21 @@ Interface > Keybinds.
 ### بيئة تشغيل lmxxf (0.3.0، اختيارية)
 
 يمكن لبيئة تشغيل عصبية ثانية (برخصة MIT، من تطوير lmxxf) أن تتولى التمريرة بدلًا من بيئة
-danielblnc. تعمل على RDNA 4، وعلى RDNA 3 (RX 7000 وStrix Halo) عبر واجهة RDNA 3 الخلفية (backend) الخاصة
-بـ AMDNR - وهي أبطأ هناك: ابدأ بضبط NR resolution على 67%. تحتاج إلى شيئين بجانب اللعبة:
+danielblnc. تعمل أصليًا على RDNA 4، وعلى RDNA 3 (RX 7000 وStrix Halo) عبر واجهة RDNA 3 الخلفية (backend) الخاصة
+بـ AMDNR من تطوير 3zwr1 - وهي أبطأ هناك، راجع قسم "RX 7000" أدناه: ابدأ بضبط NR resolution على 70% أو أقل.
+وتعمل أيضًا على معالجات APU في أجهزة الألعاب المحمولة، بشكل تجريبي (راجع قسم "معالجات APU في الأجهزة المحمولة"
+أدناه). تحتاج إلى شيئين بجانب اللعبة:
 
 1. الملف `LmxxfNrRuntime.dll` - موجود في هذا الأرشيف، بجانب `OptiScaler.dll` (يُنسخ مع بقية الملفات).
-2. الملف `LmxxfNrRuntime.pak` (416 MB، مضمّن في ملف zip الخاص بـ AMDNR) بجانب `LmxxfNrRuntime.dll` - ويضم
+2. الملف `LmxxfNrRuntime.pak` (440 MB، مضمّن في ملف zip الخاص بـ AMDNR) بجانب `LmxxfNrRuntime.dll` - ويضم
    ملفات أوزان lmxxf ووحدات HIP وHLSL في ملف واحد مشفّر وموثَّق (authenticated). تفتحه بيئة التشغيل في الذاكرة؛ ولا
    يُستخرج أي شيء إلى القرص.
 
 في أول تشغيل تُكتشف فيه بيئة تشغيل مثبتة دون أن يكون قد تم اختيار أي بيئة، تسألك القائمة أي بيئة تشغيل تريد
 استخدامها (يُحفظ الاختيار في ملف ini عبر `[DlssNr] NrBackend = daniel | lmxxf`؛ ويمكنك تغييره من
 Neural > Neural runtime، ويسري التغيير عند تشغيل اللعبة التالي). يُطبَّق تعديل lmxxf متأخرًا بإطار
-واحد، محمولًا عبر متجهات الحركة، لذلك لا ينتظر الإطار الشبكة أبدًا (نحو 17 ms بدقة 1080p على
-RX 9070 XT). ملف السجل الخاص بها هو `lmxxf_backend.log` بجانب اللعبة.
+واحد، محمولًا عبر متجهات الحركة، لذلك لا ينتظر الإطار الشبكة أبدًا (نحو 14.1 ms من زمن الشبكة بدقة
+1080p على RX 9070 XT). ملف السجل الخاص بها هو `lmxxf_backend.log` بجانب اللعبة.
 
 **التوافق (lmxxf).** لا ترى بيئة التشغيل إلا ما تراه DLSS، لذا فإن ما يختلف من لعبة لأخرى قائمة
 قصيرة: صيغة الألوان وHDR، ومتجهات الحركة ومقياسها، والعمق واتجاهه، والقناع التفاعلي (reactive mask)،
@@ -140,30 +160,112 @@ Reconstruction). ما تم اختباره حتى الآن:
 والسطوع المُدخل، وتعديل النموذج، والتعديل المحمول، وقيمة keep، ومتوسط التفاعلية، وطول المتجهات،
 ونسبة الرفض). أرفق ملف السجل مع البلاغ؛ فهذان السطران عادةً ما يوضحان السبب.
 
-مع lmxxf، يحتوي قسم Neural runtime على **Network history** (المدخل الزمني الخاص بالنموذج نفسه)،
-ويحتوي Image look على مجموعة **lmxxf edit**: مُشكِّل التعديل (Edit detail وEdit colour وEdge guard:
-تضخيم الجزء الدقيق من تعديل النموذج، ولونه مقابل تغيّر سطوعه، وتلاشي التعديل عبر حواف العمق)
-و**Output smoothing** (تمريرة المشروع الأصلي (upstream) على المخرجات، وتحتاج إلى Network history).
-أما Neural passes وResidual strength/limit وزيادة الحدة (sharpening) وDebug view 1 ومرشح Appearance
-فتنطبق على كلتا بيئتي التشغيل.
+تتشارك بيئتا التشغيل تبويب Neural واحدًا (راجع قسم "القائمة" أدناه). عناصر التحكم التي لا تملكها بيئة التشغيل
+العاملة تظهر رمادية مع وسم قصير، أو تُخفى مع ذكر عددها. خاص بـ lmxxf فقط: **Full network**، و**Output
+smoothing** (ضمن Quality > More quality options، ويحتاج إلى Network history)، و**Edit detail** و**Edit colour**
+و**Edge guard** (ضمن Image look > Model strength: تضخيم الجزء الدقيق من تعديل النموذج، ولونه مقابل تغيّر سطوعه،
+وتلاشي التعديل عبر حواف العمق)، وسقف المناطق الساطعة في التعريض التلقائي. الجديد في lmxxf مع 0.3.4: Network
+output وEncoding وResidual edge fade وGame exposure وFast mode، وقراءة توقيت التناوب (pacing)، وقناع
+الشخصيات الأصلي في النموذج مع Structure intensity وCharacter structure (كل تغيير يعيد بناء
+الشبكة: توقف لحظي نحو ثانية واحدة).
 
 الخيار **Full network** (Neural > Performance، `[DlssNr] LmxxfFullNetwork`، لـ lmxxf فقط) يشغّل جميع
 كتل الشبكة الـ 71 بدلًا من تخطي الكتل 42 و43 و46: أدق قليلًا، وأبطأ بنحو 0.5 ms بدقة 1080p
 (من 16.6 إلى 17.1 ms على RX 9070 XT). معطّل افتراضيًا.
 
+**Fast mode** (Neural > Performance، `[DlssNr] AmdLmxxfFastMode`، لـ lmxxf فقط، اختياري ومعطّل افتراضيًا) يشغّل
+الشبكة بمستوى حجم أصغر بدرجة (1080 -> 900، 900 -> 720): وقت شبكة أقل بنحو 29% عند 1080p (RX 9070 XT، مقيس خارج
+لعبة)، مع تفاصيل دقيقة أنعم قليلًا. ونسخ danielblnc التي فيها Fast mode خاص بها يظهر لها هناك سطر Fast mode أيضًا
+(`[DlssNr] AmdDanielFastMode`)؛ وبيئات التشغيل في ملفات zip الخاصة ببيئة التشغيل في هذا الإصدار لا تملكه، لذلك يبقى
+السطر مخفيًا.
+
+### RX 7000 (RDNA 3): أسرع بفضل مستويات حجم الشبكة (جديد في 0.3.4)
+
+تعمل شبكة lmxxf بعدد قليل من الأحجام الثابتة (المستويات): 720 (1280x720) و900 (1600x900) و1080 (1920x1080)،
+إضافة إلى 576 و360 (جديدان، يُستخدمان في الأجهزة المحمولة). وتكلفة المستوى واحدة أيًّا كان الجزء الذي تملؤه
+الصورة منه. على RDNA 3 (RX 7000 وRadeon 8060S / 8050S ومعالجات APU في الأجهزة المحمولة) صار حجم NR في lmxxf
+يُضبط افتراضيًا على أحد المستويات: ينزل إلى المستوى الأصغر التالي عندما يكون أقرب إليه (أرخص)، وإلا فيكبر حتى
+يملأ مستواه (التكلفة نفسها، مع تفاصيل أكثر قليلًا)، ولا يتجاوز أبدًا حجم الإطار نفسه.
+
+زمن الشبكة لكل تشغيل على RX 7800 XT (قاسه أحد المختبرين بأداة القياس (probe) الخاصة بـ lmxxf؛ الشبكة وحدها،
+المتوسط من 30 تشغيلًا؛ وزمن المستوى 900 قيس عند 1600x900):
+
+| إعداد اللعبة | 0.3.3.2 | 0.3.4 على RX 7000 |
+|---|---|---|
+| 1440p، FSR Quality (دقة رسم 1706x960)، NR 100% | المستوى 1080: 73.3 ms | المستوى 900: 52.2 ms |
+| دقة رسم 1080p، NR 85% | المستوى 1080: 73.2 ms | المستوى 900: 52.2 ms |
+| دقة رسم 1080p، NR 70% | المستوى 900: 52.2 ms | المستوى 720: 34.4 ms |
+| دقة رسم 1080p، NR 80% | المستوى 900: 52.2 ms | المستوى 900 ممتلئًا: 52.2 ms (تفاصيل أكثر) |
+| دقة رسم 1080p، NR 100% | المستوى 1080: 73.2 ms | دون تغيير |
+
+- داخل اللعبة يكون المكسب لكل إطار معروض أقل: مع Model interleave تعمل الشبكة مرة كل إطارين، وللعبة تكلفتها
+  الخاصة. لم يُقَس داخل لعبة بعد.
+- ترى الشبكة صورة أصغر قليلًا (عند 1440p Quality نحو 6% بكسلات أقل في كل ضلع)، لذا قد تصبح التفاصيل الدقيقة
+  أنعم قليلًا. الخيار `[DlssNr] AmdLmxxfTierSnap=false` يعيد أحجام 0.3.3.2. وتبقى سلسلة RX 9000 على أحجام 0.3.3.2
+  إلا إذا ضبطته على `true`.
+- ابدأ بضبط NR resolution على 70% أو أقل (المستوى 720 مع دقة رسم 1080p؛ والإعداد المسبق Performance يساوي 70%).
+  التكلفة المعروضة بجانب NR resolution محسوبة بحسب المستوى الذي تعمل عليه الشبكة، ويذكر التلميح الخاص بها اسم
+  المستوى.
+
+### معالجات APU في الأجهزة المحمولة (تجريبي، جديد في 0.3.4)
+
+يعمل lmxxf على معالجات APU في أجهزة الألعاب المحمولة التي تملك 12 وحدة حوسبة (compute units) أو أكثر، عبر واجهة
+RDNA 3 الخلفية الخاصة بـ AMDNR من تطوير 3zwr1: **Z1 Extreme وZ2 وRadeon 780M** (gfx1103)، و**Z2 Extreme وRadeon
+890M و880M** (gfx1150). هذا الدعم تجريبي وبطيء. ويعرض سطر Neural runtime كلمة
+"experimental" بعد الإشارة إلى واجهة RDNA 3.
+أولى نتائج مختبر (ROG Ally، Z1 Extreme): أداة القياس (probe) الخاصة بـ lmxxf خارج لعبة، 54.7 ms لكل تشغيل للشبكة
+بحجم 360p، و110.9 ms بحجم 576p؛ وداخل لعبة، في تجربة مختبر واحد (Shadow of the Tomb Raider، بدقة 1280x720 مع XeSS، والإعداد المسبق
+Handheld)، 62 ms في المتوسط لكل تشغيل للشبكة بحجم 360p والنموذج يعمل كل 4 إطارات، أي نحو 29 fps مع تشغيل NR.
+
+- **غير مدعومة:** Z1 وRadeon 740M (4 وحدات حوسبة)، وRadeon 760M (8)، وRadeon 860M / 840M. ولا تعمل بيئة تشغيل
+  danielblnc على معالجات APU في الأجهزة المحمولة. دعم RX 6000 (RDNA 2) مخطط له في 0.4.0؛ أما Steam Deck وبقية
+  معالجات APU المبنية على RDNA 2 فغير مدعومة.
+- **ما يفعله تلقائيًا** (فقط ما دام ملف ini لا يحوي قيمة خاصة بك): تعمل الشبكة بأصغر أحجامها، 360p (640x360)،
+  ويعمل النموذج مرة كل 4 إطارات (Model interleave؛ لا يُحفظ). وتبقى Neural passes على 1.
+- **السرعة بصراحة:** للمقارنة: تحتاج
+  RX 7800 XT (60 وحدة حوسبة) إلى 34.4 ms لكل تشغيل للشبكة بحجم 720، بينما تملك هذه الشرائح من 12 إلى 16 وحدة
+  وتعمل بترددات أقل. توقّع انخفاضًا كبيرًا في معدل الإطارات حتى عند 360p مع تشغيل النموذج مرة كل 4 إطارات، وبعض
+  الظلال المتخلفة (ghosting) بسبب التناوب الطويل، وصورة أنعم مما على بطاقة مكتبية. تكلفة NR في آخر سطر الحالة
+  في تبويب Neural (وفي Diagnostics) تعرض الرقم الحقيقي على جهازك.
+- **الإعدادات:**
+  - أوضح لكن أبطأ: `[DlssNr] AmdLmxxfTierCap=576` (حجم الشبكة 1024x576).
+  - مع دقة رسم 720p أو 800p، فإن NR resolution بنسبة 100% تغذّي حجم 360p أصلًا، لذا لا يقلل خفض NR resolution
+    التكلفة.
+  - يُحفظ اختيار Off في Model interleave على شكل `[DlssNr] AmdInterleave=1` (وهو إيقاف أيضًا)، حتى لا تعود القيمة
+    الافتراضية للأجهزة المحمولة في التشغيل التالي. لإيقافه يدويًا اكتب 1 وليس 0.
+  - الإعداد Preset > **Handheld** يضبط NR resolution على 100%، ويوقف Dynamic NR، ويجعل النموذج يعمل كل 4 إطارات، مع Neural pass واحد وإيقاف Full network. ولا يظهر هذا الزر إلا على هذه المعالجات؛ وهنا تُبقي Quality وBalanced وPerformance أيضًا حجم الشبكة 360p (والقائمة تقول ذلك).
+- **FSR 4:** على هذه الشرائح (وعلى Radeon 780M / 760M / 740M عمومًا) لم يعد FSR 4 INT8 يُفعَّل تلقائيًا: مع
+  `Dx12Upscaler=auto` يكون الـ upscaler هو XeSS، ويبقى FSR 3.1 كما هو. و`[FSR] Fsr4ForceModel=2` ما زال يفرضه
+  (تجريبي).
+- **Shadow of the Tomb Raider** (والألعاب التي تنشئ جهاز D3D12 مرتين) لم تعد تنهار عند بدء الـ upscaler (أُصلح في
+  0.3.4).
+- **التعريف (driver):** استخدم تعريف Adrenalin الرسمي من AMD. يحتاج lmxxf إلى HIP (`amdhip64_7.dll`)، وبعض تعريفات
+  الشركات المصنعة للأجهزة المحمولة لا تتضمنه؛ وعندها يذكر `amd_bridge.log` أن HIP غير متاح.
+- **استخدم ملفات 0.3.4 الثلاثة معًا:** وحدات الأجهزة المحمولة موجودة في ملف pak الخاص بـ 0.3.4 فقط، وملف
+  `LmxxfNrRuntime.dll` من 0.3.4 يرفض العمل على جهاز محمول إذا كان `OptiScaler.dll` أقدم ("this handheld needs
+  OptiScaler.dll 0.3.4 or newer").
+- **للمختبرين الذين يملكون جهازًا محمولًا:** اطلبوا حزمة اختبار الأجهزة المحمولة (`handheld-test.zip`) على Discord.
+  يقيس الملف `run_probe.bat` فيها الشبكة على جهازك ويكتب `handheld_result.txt` (مع إخفاء اسم مستخدم Windows).
+
 ## المتطلبات
 
 - بطاقة رسوميات AMD مع تعريف (driver) حديث. تستخدم بيئة التشغيل العصبية HIP عبر التعريف؛ فلا حاجة
-  إلى HIP SDK ولا إلى وضع المطوّر. بحسب الشريحة: سلسلة RX 9000 (RDNA 4) تشغّل كلتا بيئتي التشغيل؛
-  وسلسلة RX 7000 (RDNA 3، للأجهزة المكتبية والمحمولة) تشغّل الاثنتين أيضًا - lmxxf عبر واجهة RDNA 3 الخلفية
-  الخاصة بـ AMDNR، وبأداء أبطأ من RDNA 4؛ وStrix Halo (8060S / 8050S) تشغّل lmxxf؛ أما معالجات APU في
-  أجهزة الألعاب المحمولة (Z1 Extreme / 780M، Z2 Extreme / 890M) وRDNA 2 (RX 6000، Steam Deck) فلا تدعمها
-  أي من البيئتين.
-  يوضح لك تبويب Neural ما يمكن لبطاقتك تشغيله.
+  إلى HIP SDK ولا إلى وضع المطوّر. بحسب الشريحة:
+  - RX 9000 (RDNA 4): كلتا بيئتي التشغيل.
+  - RX 7000 (RDNA 3، للأجهزة المكتبية والمحمولة): كلتا بيئتي التشغيل - lmxxf عبر واجهة RDNA 3 الخلفية الخاصة
+    بـ AMDNR، وبأداء أبطأ من RDNA 4 (مستويات حجم الشبكة مفعّلة افتراضيًا، راجع أعلاه).
+  - Strix Halo (Radeon 8060S / 8050S): lmxxf.
+  - معالجات APU في الأجهزة المحمولة بـ 12 وحدة حوسبة فأكثر (Z1 Extreme / Z2 / 780M، Z2 Extreme / 890M / 880M):
+    lmxxf، تجريبي وبطيء. أما Z1 (4 CU) و760M / 740M و860M / 840M: فغير مدعومة.
+  - RX 6000 (RDNA 2): غير مدعومة بعد، ودعمها مخطط له في 0.4.0. Steam Deck ومعالجات APU المبنية على RDNA 2: غير
+    مدعومة.
+
+  يوضح لك تبويب Neural ما يمكن لبطاقتك تشغيله (مرّر المؤشر فوق خيارات بيئة التشغيل، أو انظر سطر GPU في
+  Diagnostics).
 - لعبة تعمل بـ Direct3D 12 أو Direct3D 11 أو Vulkan. المسار العصبي لـ AMD نفسه يعمل على D3D12؛ وتصل
   إليه ألعاب D3D11 وVulkan عبر جسر D3D12 في OptiScaler، ما يعني أن أداة رفع الدقة (upscaler) يجب أن
   تكون إحدى الواجهات الخلفية "w/Dx12" (`ffx_12`). اترك `Dx11Upscaler` / `VulkanUpscaler` على `auto`
-  وستختارها هذه النسخة لك عند تفعيل العرض العصبي (neural rendering).
+  وستختارها هذه النسخة لك عند تفعيل العرض العصبي (neural rendering). ومع تفعيل Neural Rendering تسمّيها قائمة Upscaling "... w/Dx12 - Neural".
 - نحو 2 GB من ذاكرة VRAM المتاحة عند دقة رسم (render resolution) من فئة 1080p.
 
 ## محتويات الأرشيفين
@@ -172,10 +274,10 @@ Reconstruction). ما تم اختباره حتى الآن:
 
 | الملف | ما هو |
 |---|---|
-| `OptiScaler.dll` | OptiScaler مع واجهة AMD الخلفية لـ DLSS-NR. غيّر اسمه كما يوضح الدليل. |
+| `OptiScaler.dll` | OptiScaler مع واجهة AMD الخلفية لـ DLSS-NR (AMDNR 0.3.4). غيّر اسمه كما يوضح الدليل. |
 | `OptiScaler.ini` | الإعدادات. Neural Rendering مفعّل؛ والتسجيل (logging) مفعّل حتى يكون لديك ما ترفقه ببلاغ الخطأ. |
-| `LmxxfNrRuntime.dll` | بيئة التشغيل العصبية lmxxf (مع kernels الإصدار 0.29 من lmxxf). لا تُستخدم إلا عند اختيارها؛ وتقرأ `LmxxfNrRuntime.pak` الموجود بجانبها، راجع قسم "بيئة تشغيل lmxxf". |
-| `LmxxfNrRuntime.pak` | أوزان بيئة تشغيل lmxxf ووحدات HIP والـ shaders الخاصة بها في ملف واحد مشفّر (416 MB). لا تقرؤه إلا بيئة تشغيل lmxxf؛ ولا ضرر من إبقائه مع بيئة تشغيل danielblnc. |
+| `LmxxfNrRuntime.dll` | بيئة التشغيل العصبية lmxxf (الإصدار 0.3.4: kernels الخاصة بـ lmxxf ومنها kernels الإصدار 0.31، وc32w kernels من AMDNR، وأحجام الشبكة الصغيرة، وقناع الشخصيات الأصلي). لا تُستخدم إلا عند اختيارها؛ وتقرأ `LmxxfNrRuntime.pak` الموجود بجانبها، راجع قسم "بيئة تشغيل lmxxf". |
+| `LmxxfNrRuntime.pak` | أوزان بيئة تشغيل lmxxf ووحدات HIP والـ shaders الخاصة بها في ملف واحد مشفّر (440 MB؛ الجديد في 0.3.4: وحدات الأجهزة المحمولة وkernels الإصدار 0.31 من lmxxf). لا تقرؤه إلا بيئة تشغيل lmxxf؛ ولا ضرر من إبقائه مع بيئة تشغيل danielblnc. |
 | `OptiScaler\` | FSR وXeSS ومزيل التشويش FidelityFX وD3D12 Agility SDK التي يستخدمها OptiScaler. |
 | `OptiScaler/amdnr_dlssg_fsr3.dll` | أداة dlssg-to-fsr3 من Nukem9، دون تعديل مع إعادة تسميتها: تُلبّى استدعاءات DLSS Frame Generation الصادرة من اللعبة بواسطة توليد الإطارات في FSR 3، وعلى Vulkan أيضًا (`FGNvngxReplacement=Nukems`). برخصة GPLv3، راجع `Licenses/`. |
 | `Licenses\`، `LICENSE` | تراخيص الأطراف الثالثة، وإشعار AMDNR (`AMDNR_NOTICE.txt`)، وترخيص GPL-3.0 لهذه النسخة. |
@@ -188,6 +290,48 @@ Reconstruction). ما تم اختباره حتى الآن:
 | `dlssnr_amd_pass1..3.dll` | بيئة التشغيل العصبية لـ AMD، الإصدار v0.3.1 من danielblnc، دون تعديل. ثلاث نسخ حتى يكون لكل تمريرة نسختها الخاصة في وضع التمريرات المتعددة (multi-pass). |
 | `dlssnr_on_amd_weights.bin` | أوزان الشبكة التي تحمّلها بيئة التشغيل. |
 
+## القائمة (جديدة في 0.3.4)
+
+اضغط `INSERT`. لكل التبويبات الشكل نفسه: تبويبات نصية، وسطر رأس فيه Discord وGitHub (يفتح هذه الصفحة)، وسطر شكر (اسم Daniel Blanco يفتح صفحته على GitHub)، وسطر **Components** (عدد المكونات النشطة من
+مكونات OptiScaler السبعة؛ اضغطه لرؤية القائمة)، وسطر سفلي فيه Menu Scale وSave Settings
+وClose. تظهر المساعدة عند تمرير المؤشر فوق اسم عنصر التحكم.
+
+**تبويب Neural من الأعلى إلى الأسفل:**
+
+- **Enable Neural Rendering** ومفتاحه (الزر، مثل `Home`: اضغطه ثم اضغط مفتاحًا آخر لتغييره).
+- **Neural runtime** (danielblnc / lmxxf، مع الإصدار الدقيق لملفاتك، مثل `lmxxf 0.3.4`) مع كلمة حالة واحدة: running أو restart the game to switch أو not
+  installed أو not for this GPU أو stopped. وتحته الإشارة إلى صاحب بيئة التشغيل العاملة وسطر حالة واحد، مثل
+  `Running - 1920x1080 at 100% - NR 62/s - model 62/s - 15.3 ms` (الرقم الأخير هو تكلفة NR)، وسطر **Live** مطوي فيه تفاصيل أكثر.
+  وعندما يحتاج شيء
+  إلى انتباهك يظهر سطر برتقالي، مع زر عندما يوجد حل (Retry lmxxf أو Switch to danielblnc أو Open Upscaling). ولا
+  يظهر أي سطر منها في الوضع الافتراضي.
+- **Preset**: الأزرار Quality / Balanced / Performance تضبط NR resolution على 100 / 85 / 70% وتوقف Dynamic NR؛ ولا
+  شيء غير ذلك. وعلى معالجات APU في الأجهزة المحمولة يظهر زر رابع، **Handheld** (راجع قسم الأجهزة المحمولة). ثم **NR style**
+  و**Style slots** (Store / Apply / Clear).
+- **Performance**: NR resolution (%) مع تكلفتها، وNeural passes، وFull network، وFast mode، وDynamic NR resolution، وModel
+  interleave (يظهر Interleave preset وسطر التوقيت تحته ما دام مفعّلًا).
+- **Quality**: Residual strength وResidual limit وTemporal stability وSharpening (CAS)، و**More quality options**
+  (Network history - مربع واحد لبيئتي التشغيل -، وOutput smoothing، وStability mode، وResidual temporal، وResidual
+  edge fade، وStill-surface steadiness).
+- **Image look**: Colour composition، وDetail وColour strength، وثلاثة أقسام قابلة للطي: **Model strength** (Tone
+  وStructure intensity، وCharacter structure، وEdit detail / colour، وEdge guard، وNative character mask، إضافة إلى
+  Network style وTone curve وBlack lift الخاصة بـ danielblnc)، و**Exposure and highlights** (Auto-exposure وسقف
+  المناطق الساطعة فيه، وHighlight colour guard، وGame exposure)، و**Appearance filter** (مع كلمة off / on بعد اسمه). وكلمة "default" أو "custom" الباهتة بعد اسم
+  القسم المطوي تبيّن هل غيّرت شيئًا بداخله.
+- **Ray Regeneration**: قسم مستقل، لا يظهر إلا أثناء استخدام اللعبة لـ FSR Ray Regeneration.
+- **صف الأدوات**، ويكون مغلقًا عند البدء: **Diagnostics** (Network output وDebug view وعرض تصحيح RR وEdit shaper
+  A/B وNR cost وقراءات الظلال المتخلفة والضبط الذاتي وسطر GPU و**Save report**)، و**Runtime options** (Encoding وEvery-frame NR وNR
+  slots وHighlight proxy)، و**Experimental** (AMDNR Screen-space GI، بنسخة preview).
+
+عنصر التحكم الذي لا تملكه بيئة التشغيل العاملة يظهر رماديًا مع وسم قصير (مثل "not in lmxxf yet") أو يُخفى مع ذكر
+العدد ("3 danielblnc-only options hidden")؛ وتغيير بيئة التشغيل لا يحرّك أي صف آخر.
+
+**التبويبات الأخرى:** يبدأ Upscaling بأداة رفع الدقة، وسطر حالة واحد، وRender resolution (أي Upscale Ratio Override
+وOutput Scaling سابقًا)؛ وعلى بطاقة ليست من NVIDIA لم يعد "DLSS w/Dx12" يظهر في القائمة. ويضم Image كلًّا من
+Sharpness وTextures وInit Flags وMagnifier. ويبدأ Frame Gen بـ FG Input وFG Output. ويضم Interface طبقة FPS وKeybinds
+(زر لكل مفتاح). ويبدأ Advanced بـ Active Quirks، ثم Display (V-Sync) وCompatibility وLogging. الإعدادات والمفاتيح وما يكتبه Save Settings
+لم تتغير، إلا حيث يذكر `CHANGELOG.md` ذلك.
+
 ## إعدادات يجدر بك معرفتها
 
 افتح تبويب **Neural**. القيم الافتراضية هي أحدث ترتيب تم اختباره، لذا فالخطوة الأولى المفيدة هي
@@ -198,6 +342,8 @@ Reconstruction). ما تم اختباره حتى الآن:
   الأصلية. وفوق 100% تزداد التكلفة بمربع النسبة (150% تعني 2.25x). يتحرك شريط التمرير بخطوات قدرها
   5%: وكل حجم NR جديد قد يحتجز جزءًا من VRAM إلى أن يُعاد تشغيل اللعبة، لذا أعد تشغيل اللعبة بعد
   تغييرات كثيرة.
+  وتعرض التكلفة بجانبها 1.00x عند 100%؛ ومع lmxxf هي سعر مستوى حجم الشبكة الذي تعمل عليه (ويذكر التلميح اسم
+  المستوى). وتضبطها أزرار Preset على 100 / 85 / 70%.
 - **قوة التعديل المتبقي (Residual strength)** — مقدار ما يُطبَّق من تعديل النموذج؛ وفوق 1 يُضخّمه.
   هذا هو الإعداد الأكثر تأثيرًا في الصورة.
 - **حد التعديل المتبقي (Residual limit)** — سقف لمقدار ما يمكن أن يتغير به البكسل الواحد. إذا ظهرت
@@ -206,8 +352,9 @@ Reconstruction). ما تم اختباره حتى الآن:
   أما الإطارات المتخطاة فيملؤها **Interleave preset**؛ والافتراضي هو *Edit accumulation* (الإعداد 10،
   في بيئتَي التشغيل كلتيهما): كل إطار هو صورة ذلك الإطار نفسه مضافًا إليها التصحيح الذي يحمله النموذج،
   فلا تُستبقى أي صورة من إطار سابق. وتُعدّ *Guided fill v2* (الإعداد 6، danielblnc) و*Classic carry*
-  (lmxxf) طريقتَي الملء الأقدم. ضبط توقيت نوعي الإطارات (pacing) تلقائي. وAdaptive interleave معطّل
-  في هذا الإصدار.
+  (lmxxf) طريقتَي الملء الأقدم. ضبط توقيت نوعي الإطارات (pacing) تلقائي مع danielblnc ومعطّل مع lmxxf
+  (`[DlssNr] AmdInterleavePacing` بين 0 و1 يضبط التوقيت في الاثنين، على حساب بعض الإطارات)؛ ويعرض سطر باهت تحت
+  الإعداد المسبق القياس. وAdaptive interleave معطّل في هذا الإصدار.
 - **التمريرات العصبية (Neural passes)** — القيمتان 2 و3 تكدّسان النموذج فوق نفسه، مع عائد متناقص.
   مع lmxxf يبقى سجل الشبكة (history) في تمريرتها الأولى؛ والتمريرات الإضافية مجرد تحسين مكاني.
   أما danielblnc فيشغّل تمريرة واحدة في ألعاب Vulkan (وتوضح ذلك ملاحظة أسفل شريط التمرير).
@@ -215,8 +362,13 @@ Reconstruction). ما تم اختباره حتى الآن:
   (الافتراضي) هو الصورة التي كانت لديك من قبل. أما *RenoDX (experimental)* فيشغّل تركيب الألوان الخاص
   بـ RenoDX بعد النموذج، كما يفعل مسار NVIDIA، ويضم: Composition detail وcolour، و**Highlight guard**
   ثنائي الاتجاه (2x افتراضيًا) يقيّد ناتج النموذج قياسًا بالصورة الأصلية، وعناصر تحكم اختيارية للبشرة /
-  البيئة. في إطار من نوع display-referred (SDR) يعود إلى Classic، مع ملاحظة في القائمة. ولا تغيّره
-  أنماط NR وإعداداتها المسبقة (presets).
+  البيئة. في إطار من نوع display-referred (SDR)، أو مع Network output، أو مع Encoding بقيمة sRGB / Gamma 2.2،
+  يعود إلى Classic في كلتا بيئتي التشغيل؛ وتعرض ملاحظة القائمة حينها زرًا يوقف السبب. ولا تغيّره أنماط NR
+  وإعداداتها المسبقة (presets).
+- **قناع الشخصيات الأصلي (Native character mask)** (Image look > Model strength، `[DlssNr] AutoMask`، مفعّل
+  افتراضيًا) — معالجة النموذج الخاصة للوجوه والبشرة. صار إلغاء تفعيله يؤثر في بيئتي التشغيل كلتيهما (ومع lmxxf
+  يعيد بناء الشبكة: توقف لحظي نحو ثانية)؛ ومع lmxxf صار Structure intensity وCharacter structure يؤثران
+  أيضًا.
 - **توليد الإطارات معطّل في ملف ini جديد.** في تبويب Frame Gen: اختر FG Input (مثل "DLSSG via
   Streamline" في لعبة تدعم توليد الإطارات من DLSS) وFG Output (XeFG)، ثم فعّل **Active** في قسم
   Frame Generation (XeFG) واضغط Save Settings. إذا كان هذا الخيار مفعّلًا في ملف ini من الإصدار 0.1.0، فلن
@@ -234,20 +386,29 @@ Reconstruction). ما تم اختباره حتى الآن:
 - **تقنية FSR Ray Regeneration** — مقتصرة افتراضيًا على RDNA 4 (RX 9000)؛ وتعمل فقط في الألعاب التي تستخدم
   DLSS Ray Reconstruction (Cyberpunk 2077، Alan Wake 2)، بشرط أن تكون اللعبة تشغّل DLSS (مع تفعيل spoofing)، وأن يكون تتبع الأشعة وRay
   Reconstruction مفعّلين في إعدادات اللعبة نفسها. عندها يعمل Neural Rendering بعدها، على مخرجاتها، وهذا
-  يكلّف أكثر: اخفض NR resolution إذا انخفض معدل الإطارات. تظهر عناصر التحكم الخاصة بها (Neural >
-  Quality > Ray Regeneration) فقط أثناء تشغيل اللعبة لـ Ray Reconstruction. أما **ملف تعريف تتبع
-  المسار (path-traced profile)** (حبيبات أقل على الوجوه مع path tracing) فهو اختياري منذ 0.3.3.1:
-  فعّله من هناك لتجربته في Resident Evil Requiem أو PRAGMATA. وفي المكان نفسه ستجد قوة bias mask، وعرض
-  تصحيح (debug view) لـ RR، و**تنعيم البشرة (skin smoothing)** (تجريبي، للألعاب التي توفّر خامة توجيه SSS (SSS guide)؛
-  معطّل افتراضيًا، لكنه مفعّل افتراضيًا في Resident Evil Requiem منذ 0.3.3.2).
+  يكلّف أكثر: اخفض NR resolution إذا انخفض معدل الإطارات. عناصر التحكم الخاصة بها صار لها قسم مستقل، **Neural >
+  Ray Regeneration**، لا يظهر إلا أثناء تشغيل اللعبة لـ Ray Reconstruction. أما **ملف تعريف تتبع المسار
+  (path-traced profile)** (حبيبات أقل على الوجوه مع path tracing) فهو اختياري منذ 0.3.3.1: فعّله من هناك لتجربته
+  في Resident Evil Requiem أو PRAGMATA. وفي القسم نفسه ستجد قوة bias mask و**تنعيم البشرة (skin smoothing)**
+  (تجريبي، للألعاب التي توفّر خامة توجيه SSS (SSS guide)؛ معطّل افتراضيًا، لكنه مفعّل افتراضيًا في Resident Evil
+  Requiem منذ 0.3.3.2)؛ أما أشرطة الضبط الزمني ففي *More Ray Regeneration options*، وعرض تصحيح RR في Diagnostics.
+  وعلى RX 7000 (RDNA 3) يُعرض FSR Ray Regeneration افتراضيًا من جديد (كانت 0.3.3.2 تعرضه على RDNA 4 فقط).
+  توفّر AMD هذه التقنية لـ RDNA 4 فقط: فإذا رفضها التعريف تحصل اللعبة على FSR دون إزالة التشويش.
+  `[FSR-RR] FfxDenoiserAllowPreRdna4=false` يقصره على RDNA 4، ولا تحصل عليه RX 6000 والأقدم إلا مع `true` (تبويب
+  Upscaling: **Offer FSR Ray Regeneration on this GPU (restart)**).
+- **AMDNR Screen GI** (preview، جديد في 0.3.4، معطّل افتراضيًا؛ Neural > Experimental، أو `[AmdGi] Enabled=true`) — الضوء المرتد وحجب الإضاءة المحيطة (ambient occlusion) في مساحة الشاشة من صنع AMDNR، من عمق اللعبة، قبل NR والـ upscaler؛ يعمل مع NR مفعّلًا أو معطّلًا؛ نحو 1 ms على High مع رسم بدقة 1080p على RX 9070 XT (مقيس خارج لعبة). وهو يعمل في مساحة الشاشة: الضوء القادم من خارج الشاشة غير موجود. راجع `CHANGELOG.md`.
+- **Save report** (Neural > Diagnostics أو Advanced > Logging) — ملف zip واحد فيه كل ملفات السجل وملفات ini للبلاغ؛ راجع قسم "إذا لم يعمل"
+  أعلاه.
 
 ## إذا حدث خطأ ما
 
 يظهر الملف `OptiScaler.log` في مجلد اللعبة. أرفقه في `#bug-report`، واذكر اسم اللعبة ونوع بطاقة
-الرسوميات. كما تكتب واجهة AMD الخلفية الملفين `amd_presr.log` و`amd_bridge.log`، وهما المفيدان عندما
-تكون المشكلة في التمريرة العصبية تحديدًا. ويُحتفظ بسجل الجلسة السابقة باسم
-`OptiScaler.previous.<exe>.log`؛ وبعد أي انهيار أرفقه أيضًا (سيذكر السجل الجديد حينها "no clean exit
-recorded").
+الرسوميات؛ والزر **Save report** (في Neural > Diagnostics أو Advanced > Logging) يجمعه مع كل ما سواه في ملف zip. كما تكتب واجهة AMD الخلفية
+الملفين `amd_presr.log` و`amd_bridge.log`، وهما المفيدان عندما تكون المشكلة في التمريرة العصبية تحديدًا. ويُحتفظ
+بسجلات آخر ثلاث جلسات بأسماء `OptiScaler.previous.<exe>.log` (الأحدث) و`OptiScaler.previous-1.<exe>.log`
+و`OptiScaler.previous-2.<exe>.log` (`[Log] KeepPreviousLogs`؛ والقيمة 1 تحتفظ بسجل واحد كما في السابق). وبعد أي
+انهيار أرفقها أيضًا: سيذكر السجل الجديد حينها "no clean exit recorded" (ومنذ 0.3.4 لم يعد يذكرها بعد الخروج
+الطبيعي).
 
 **هل يظهر NR frames 0/s، ويقول تبويب Neural أو `amd_presr.log` إن ملف DLL الخاص بالتمريرة نسخة لا
 يشغّلها هذا الإصدار من AMDNR؟** ملفات `dlssnr_amd_pass1..3.dll` لديك هي نسخة من danielblnc لا يعرفها هذا الإصدار من AMDNR
@@ -273,14 +434,24 @@ lmxxf يتوقف، فتبويب Neural يخبرك الآن بالسبب؛ أرس
 يُستخدم بدلًا من `LmxxfNrRuntime.pak`. لا يحتوي هذا المجلد على c32w kernels، لذا يعمل lmxxf بالسرعة
 القديمة. احذف مجلد `DLSS5-AMD` أو غيّر اسمه: فملف pak يضم كل ما يحتاجه lmxxf. ويظهر الوضع نفسه مع ملف
 `LmxxfNrRuntime.pak` أقدم من 0.3.3.2؛ استبدله بالملف الموجود في هذا الإصدار.
+وظهور `fk=fff-` في السطر نفسه يعني الشيء نفسه (ملف pak قديم أو مجلد منفصل): يبقى lmxxf عاملًا، لكن
+بالسرعة القديمة.
 
-**هل ما زال نمط NR في danielblnc يتغير عندما تبتعد NR resolution عن 100%؟** مشكلة معروفة لم تُصلح في
-0.3.3.2 (والإصلاح مخطط له في 0.3.4). يُصلح 0.3.3.2 القفزة عند NR resolution بنسبة 100% فقط: هناك صارت
-قيمة Residual strength البالغة 0.99 تعطي 99% من 1.00، وصارت أنماط NR تبدو كما تقول قوتها. أما بعيدًا عن
-100% (وكذلك في خطوات Dynamic NR والإعدادين المسبقين Balanced / Performance) فما زالت strength وlimit
-وedge fade تؤثر في النتيجة كلها، لذا قد يتغير المظهر. الخيار `[DlssNr] AmdEditShaper=true` يطبّقها على
-تعديل النموذج نفسه بدلًا من ذلك، لكنه معطّل افتراضيًا: فقد جعل المناطق الساطعة باهتة في اختبار
-(Forza Horizon 6، Classic، دقة NR بنسبة 115%). ولا يتأثر lmxxf بذلك.
+**هل ما زال نمط NR في danielblnc يتغير عندما تبتعد NR resolution عن 100%؟** ما زالت مفتوحة في 0.3.4، والقيمة
+الافتراضية لم تتغير. عند 100% تعطي Residual strength بقيمة 0.99 نسبة 99% من 1.00 (أُصلح في 0.3.3.2)؛ أما بعيدًا عن
+100% (وكذلك في خطوات Dynamic NR والإعدادين المسبقين Balanced / Performance) فما زالت strength وlimit وedge fade
+تؤثر في النتيجة كلها، لذا قد يتغير المظهر. يضيف 0.3.4 مقارنة A/B للعثور على الإصلاح الصحيح:
+Neural > Diagnostics > **Edit shaper (A/B, not saved)** مع Literal وF1 وF2، إضافة إلى Only below 100% وCarry cap (لـ danielblnc فقط؛
+ولا يحفظه Save Settings؛ ومفاتيح ini هي `[DlssNr] AmdEditShaper` و`AmdEditShaperLimit` و`AmdEditShaperScope`
+و`AmdEditShaperCarryCap`). إذا جعل أحدها نسبة 85% تبدو مثل 100% في لعبتك، فأخبرنا على Discord مع لقطات شاشة. ولا
+يتأثر lmxxf بذلك.
+
+**هل كانت القائمة تنفتح وتنغلق مرتين مع كل ضغطة، أو توقفت لوحة المفاتيح والفأرة عن العمل على سطح المكتب كله أثناء
+فتح القائمة (Assetto Corsa)؟** أُصلح في 0.3.4: تُتجاهل الضغطة الثانية على مفتاح القائمة أو مفتاح NR خلال 400 ms
+(`[Hotfix] MenuToggleDebounceMs`، والقيمة 0 = السلوك القديم)، وأثناء فتح القائمة يُتخطى خطاف (hook) لوحة المفاتيح
+أو الفأرة منخفض المستوى الخاص باللعبة، لكن الضغطة تصل إلى Windows كما هي
+(`[Hotfix] MenuLowLevelHookPassThrough=false` = السلوك القديم). لم يُؤكَّد بعد في Assetto Corsa: إذا تكرر ذلك،
+فأرسل ملف zip الخاص بالتقرير.
 
 **هل تتوقف لعبة Vulkan (Indiana Jones and the Great Circle) عند البدء برسالة "Could not create the Vulkan
 device (VK_ERROR_EXTENSION_NOT_PRESENT)"؟** أُصلح في 0.3.2: كان المسار العصبي الموروث من NVIDIA يطلب من
@@ -312,8 +483,10 @@ device (VK_ERROR_EXTENSION_NOT_PRESENT)"؟** أُصلح في 0.3.2: كان ال�
 ملف السجل مع البلاغ.
 
 **هل Ray Reconstruction مفعّل في اللعبة لكن تبويب Neural يقول "Ray Regeneration is off in this title"؟**
-اللعبة لا توفّر ما تحتاج إليه FSR Ray Regeneration (في Satisfactory: لا توجد مصفوفات الكاميرا). يعمل رفع
-الدقة FSR بدلًا منها ويأخذ NR موضعه المعتاد قبل SR؛ ولا يوجد في ملف ini ما يغيّر ذلك.
+اللعبة لا توفّر ما تحتاج إليه FSR Ray Regeneration: إضافة DLSS فيها تمرّر مصفوفات كاميرا فارغة (Satisfactory)،
+ويعدّها Ray Reconstruction من NVIDIA اختيارية بينما تحتاج إليها FSR Ray Regeneration. يعمل رفع الدقة FSR بدلًا
+منها ويأخذ NR موضعه المعتاد قبل SR؛ ويذكر تبويب Upscaling ذلك أيضًا. ومنذ 0.3.4 تبقى معطّلة طوال الجلسة في أي
+لعبة Unreal بهذه البصمة. أوقف Ray Reconstruction في اللعبة وأعد إعدادات إزالة التشويش الخاصة بالمحرك.
 
 **هل تظهر في لعبة من ألعاب محرك Ubisoft Anvil (AC Black Flag Resynced، Shadows، Mirage) رسالة "DX12 Error
 0x80070057"؟** هذه الألعاب تأتي بتقنية XeSS Frame Generation الخاصة بها. وهذه النسخة تترك لها هذه المهمة
@@ -329,7 +502,14 @@ device (VK_ERROR_EXTENSION_NOT_PRESENT)"؟** أُصلح في 0.3.2: كان ال�
 
 ## خارطة الطريق
 
-- **0.3.3.x** (هذه النسخة) — lmxxf على RDNA 3 (RX 7000؛ عبر واجهة AMDNR الخلفية الخاصة)؛ تركيب الألوان
+- **0.3.4** (هذه النسخة) — القائمة الجديدة (تبويب Neural أُعيد بناؤه، وشكل موحّد لكل التبويبات، وSave report)؛
+  lmxxf أسرع على RX 7000 (مستويات حجم الشبكة افتراضيًا) وعلى RX 9070 / 9070 XT (kernels الإصدار 0.31
+  من lmxxf)؛ lmxxf على معالجات APU في الأجهزة المحمولة (تجريبي؛ مع حجمي شبكة جديدين 360p و576p)؛
+  ويحصل lmxxf على Network output وEncoding وResidual edge fade وقناع الشخصيات الأصلي وFast mode اختياري؛ وAMDNR Screen GI (preview)؛ وإعدادات
+  بيئة تشغيل danielblnc (Network style وTone curve وBlack lift وGame exposure) وحماية لون المناطق الساطعة؛ وضبط
+  Ray Regeneration وتشخيصاتها؛ وإصلاحات إدخال القائمة في Assetto Corsa وShadow of the Tomb Raider وMarvel's Midnight Suns وThe Last of Us Part II
+  والخروج النظيف وملفات السجل.
+- **0.3.3.x** — lmxxf على RDNA 3 (RX 7000؛ عبر واجهة AMDNR الخلفية الخاصة)؛ تركيب الألوان
   RenoDX (تجريبي، اختياري) في كلتا بيئتي التشغيل؛ lmxxf: خيار Full network، وإصلاح تسريب RAM، وإصلاح
   ألعاب Vulkan (رفع كسول للأوزان (lazy weight upload) داخل جسر Vulkan)، وkernels الإصدار 0.29 (مطابقة
   بتًا ببت (bit-exact)، وأسرع)؛ danielblnc في ألعاب Vulkan: تمريرة Neural واحدة، ورسائل أوضح، وانتظار
@@ -345,8 +525,8 @@ device (VK_ERROR_EXTENSION_NOT_PRESENT)"؟** أُصلح في 0.3.2: كان ال�
   جانب بيئة danielblnc، وتأتي على شكل `LmxxfNrRuntime.dll` + `LmxxfNrRuntime.pak`: سجل الشبكة (network
   history)، وNeural passes حقيقية، ومُشكِّل التعديل، والتموضع بعد Ray Regeneration، وتشخيصات لكل لعبة،
   وإصلاح ذاتي. شكرًا جزيلًا لـ TheAutomatic، الذي يُبنى هذا الدمج على عمله في مشروع DLSS 5 AMD.
-- **0.4.0** — برنامج AMDNR Launcher (تثبيت بيئات التشغيل وملف pak بنقرة واحدة، والتحديثات) ودعم
-  الألعاب التي لا تملك أداة رفع دقة خاصة بها (من فئة Stray)، حيث يوفّر OptiScaler أداة رفع الدقة
+- **0.4.0** — دعم RX 6000
+  (RDNA 2)، ودعم الألعاب التي لا تملك أداة رفع دقة خاصة بها (من فئة Stray)، حيث يوفّر OptiScaler أداة رفع الدقة
   والتمريرة العصبية معًا.
 
 ---
@@ -357,9 +537,12 @@ device (VK_ERROR_EXTENSION_NOT_PRESENT)"؟** أُصلح في 0.3.2: كان ال�
 المشاريع الأصلية (upstream).
 
 - **TheAutomatic** — مشروع DLSS 5 AMD — https://github.com/TheAutomatic/dlss-5-amd-project
-- **danielblnc** — DLSS-NR on AMD — https://github.com/danielblnc/DLSS-NR-on-AMD (`Runtime.zip`، دون تعديل)
-- **lmxxf** — https://github.com/lmxxf/dlss5-on-amd-9070xt-porting (بيئة تشغيل HIP، برخصة MIT)
+- **danielblnc** — DLSS-NR on AMD by Daniel Blanco — https://github.com/danielblnc/DLSS-NR-on-AMD (`Runtime.zip`، دون تعديل)
+- **lmxxf** (Kien) — https://github.com/lmxxf/dlss5-on-amd-9070xt-porting (منفذ الشبكة وkernels وبيئة تشغيل HIP، برخصة MIT)
+- **TheAutomatic** — `LmxxfNrRuntime.cpp` و`LmxxfNrApi.h` و`LmxxfProductionOptions.h`: portions contributed to lmxxf by TheAutomatic (MIT)
+- **kernels الإصدار 0.31 من lmxxf** في `LmxxfNrRuntime.pak` (the ViT projection (lmxxf031-vit-wide-deep), the C512 QKV and mix kernels (lmxxf031-c512-m32-mh, lmxxf031-c512-m32-deep) and one-wave-per-head attention (lmxxf031-c64-wave2)) — من عمل lmxxf (Kien، برخصة MIT)، بناها AMDNR من مصادر lmxxf ووصفة البناء الخاصة به؛ ودور AMDNR هو التحميل وبصمات SHA-256 المثبتة والتصفية حسب بطاقة الرسوميات والبدائل
 - **c32w kernels** (0.3.3.2) — kernels خاصة بـ AMDNR تعمل بموجة واحدة (one-wave) على RDNA 4 لشبكة lmxxf، Copyright (c) 2026 3zwr1 (AMDNR)؛ والأفكار مستقاة من وثائق AMD العامة عن WMMA في RDNA 4 (GPUOpen، وأداة ROCm matrix instruction calculator)
+- **واجهة RDNA 3 الخلفية الخاصة بـ AMDNR** (0.3.3؛ ونسخ الأجهزة المحمولة gfx1103 / gfx1150 في 0.3.4)، وسياسة مستويات حجم الشبكة، وأحجام الشبكة الصغيرة (0.3.4) — Copyright (c) 2026 3zwr1 (AMDNR)
 - **Matheus / dlss-5-amd** — https://github.com/MatheusGViana/dlss-5-amd-project
 - **Dagherbou / OptiScaler_DLSSNR** — https://github.com/Dagherbou/OptiScaler_DLSSNR
 - **wilsjo2 / OptiScaler-DLSSNR-PreSR-Multipass** — https://github.com/wilsjo2/OptiScaler-DLSSNR-PreSR-Multipass
@@ -367,7 +550,19 @@ device (VK_ERROR_EXTENSION_NOT_PRESENT)"؟** أُصلح في 0.3.2: كان ال�
 - **RenoDX** — clshortfuse — https://github.com/clshortfuse/renodx (رياضيات تركيب الألوان، برخصة MIT)
 - **Coldwood1026** — XeFGUnlock (GPL-3.0)، وهو الأساس الذي بُني عليه فتح توليد الإطارات المتعددة المدمج في XeFG وضبط توقيته (pacing)
 - **burak113** — المعالج المسبق (preprocessor) لـ FSR Ray Regeneration (فرع OptiScaler المسمى ffx-denoise-experimental، برخصة GPL-3.0)
+- **Screen-space GI** (التأثير الموروث؛ أُزيل من القائمة في 0.3.4، و`[AmdRtgi] Enabled` في ملف ini) — تأثير ورثه AMDNR من سلسلة OptiScaler-AMD-PreSR؛ والفضل فيه لمؤلفيه الأصليين. ويحتاج إلى مجلد `experimental_lighting` من حزمة danielblnc، وهو لا يأتي مع AMDNR.
+- **AMDNR Screen GI** (preview في 0.3.4) — عمل AMDNR الخاص، Copyright (c) 2026 3zwr1 (AMDNR)، مكتوب انطلاقًا من أوراق بحثية منشورة (Therrien وLevesque وGilet 2023؛ Jimenez وآخرون 2016؛ Schied وآخرون 2017؛ والبقية مذكورة في `CHANGELOG.md` و`Licenses/AMDNR_NOTICE.txt`)
 - **OptiScaler** — Overclockers — https://github.com/Overclockers/OptiScaler-Releases
+
+## AMDNR Launcher
+
+**AMDNR Launcher** (جديد في 0.3.4) يثبّت AMDNR ويحدّثه لكل لعبة على حدة. نزّل `AMDNR-Launcher.exe` من
+إصدار Alpha0.3.4: <https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.4/AMDNR-Launcher.exe>
+
+الشيفرة المصدرية للبرنامج موجودة في `Launcher/OpenSource/` في مستودع GitHub الخاص بهذا المشروع، مع ترخيص خاص
+بها هو `Launcher/OpenSource/LICENSE.txt`. وهي **غير** مشمولة بترخيص GPL-3.0 (`LICENSE`) الخاص بهذا المستودع: فهي
+مصدر متاح للاطلاع (source-available)، وجميع الحقوق محفوظة، Copyright (c) 2026 3zwr1 (AMDNR). ملف البيان
+(manifest) للبرنامج هو `Launcher/manifest.json`. راجع أيضًا القسم 7 من `Licenses/AMDNR_NOTICE.txt`.
 
 ## حقوق النشر / الترخيص
 

@@ -1,0 +1,32 @@
+<!-- Copyright (c) 2026 3zwr1 (AMDNR). All rights reserved. Source published to be read, not reused: see LICENSE.txt. -->
+<UserControl x:Class="AmdnrLauncher.App.Views.BrandWordmark"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Focusable="False" IsTabStop="False">
+
+    <!-- The owner's mark: AMD in white, then the arrow, then NR in the accent, on one line sized
+         from FontSize alone in the code-behind, so a caller sets one number. The order is the
+         owner's logo's, and the one tools\make-icon.ps1 draws into the exe's icon. The owner's
+         own pictures, once they are in the build, stand in: a Picture for the whole line, a Mark
+         for the arrow. Without them this is the vector, and nothing here is ever made up. -->
+    <Grid>
+        <Image x:Name="PicturePane" Stretch="Uniform" HorizontalAlignment="Left" Visibility="Collapsed" />
+
+        <StackPanel x:Name="VectorPane" Orientation="Horizontal">
+            <!-- Face and weight set here, not inherited: the implicit TextBlock style in
+                 Controls.xaml puts the UI face and body size on every TextBlock, and a style
+                 setter beats an inherited value. -->
+            <TextBlock x:Name="Amd" Text="AMD" FontFamily="{StaticResource BrandFont}" FontWeight="Bold"
+                       Foreground="{StaticResource BrandInk}" VerticalAlignment="Center" />
+            <Grid x:Name="MarkSlot" VerticalAlignment="Center">
+                <Image x:Name="MarkPicture" Stretch="Uniform" Visibility="Collapsed" />
+                <Viewbox x:Name="MarkVector">
+                    <Path x:Name="Arrow" Width="100" Height="100"
+                          Data="{StaticResource AmdArrowMark}" Fill="{StaticResource BrandInk}" />
+                </Viewbox>
+            </Grid>
+            <TextBlock x:Name="Nr" Text="NR" FontFamily="{StaticResource BrandFont}" FontWeight="Bold"
+                       Foreground="{StaticResource Accent}" VerticalAlignment="Center" />
+        </StackPanel>
+    </Grid>
+</UserControl>

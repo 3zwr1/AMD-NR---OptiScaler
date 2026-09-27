@@ -1,0 +1,129 @@
+<!-- Copyright (c) 2026 3zwr1 (AMDNR). All rights reserved. Source published to be read, not reused: see LICENSE.txt. -->
+<!--
+    The design tokens. Every colour, brush, radius and text size the launcher uses is
+    declared exactly once here, and Controls.xaml and MainWindow.xaml refer to these
+    keys rather than to literal values. Changing the accent is one edit in this file.
+
+    The palette is dark-only on purpose. This tool is opened from a game launcher, next
+    to a game, usually in a dark room — and a light theme would be the only white
+    rectangle on the screen. There is no light variant to keep in sync.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+
+    <!-- ====================== Surfaces ====================== -->
+    <!-- Four steps, darkest at the back. Anything that needs to read as "on top of"
+         something else moves one step up rather than growing a heavier border. -->
+    <Color x:Key="SurfaceBackColor">#0D0F13</Color>
+    <Color x:Key="SurfaceBaseColor">#13161C</Color>
+    <Color x:Key="SurfaceCardColor">#191D25</Color>
+    <Color x:Key="SurfaceRaisedColor">#222732</Color>
+
+    <SolidColorBrush x:Key="SurfaceBack"   Color="{StaticResource SurfaceBackColor}" />
+    <SolidColorBrush x:Key="SurfaceBase"   Color="{StaticResource SurfaceBaseColor}" />
+    <SolidColorBrush x:Key="SurfaceCard"   Color="{StaticResource SurfaceCardColor}" />
+    <SolidColorBrush x:Key="SurfaceRaised" Color="{StaticResource SurfaceRaisedColor}" />
+
+    <!-- The window backdrop. A near-flat gradient, not a decorative one: it keeps the
+         top bar from looking pasted onto a single flat fill at large window sizes. -->
+    <LinearGradientBrush x:Key="WindowBackdrop" StartPoint="0,0" EndPoint="0.35,1">
+        <GradientStop Offset="0"   Color="#15181F" />
+        <GradientStop Offset="0.5" Color="#0F1218" />
+        <GradientStop Offset="1"   Color="#0C0E13" />
+    </LinearGradientBrush>
+
+    <!-- ====================== Scrims ====================== -->
+    <!-- Laid over the selected game's own artwork, which is the window background. The
+         art is the user's, and every colour choice below it is arbitrary — so legibility
+         comes from these, not from hoping the picture happens to be dark.
+         Vertical: darkest at the bottom, where the status bar and the actions sit. -->
+    <LinearGradientBrush x:Key="StageScrim" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Offset="0"    Color="#4D0B0D11" />
+        <GradientStop Offset="0.5"  Color="#8A0B0D11" />
+        <GradientStop Offset="1"    Color="#F2080A0E" />
+    </LinearGradientBrush>
+
+    <!-- Horizontal: solid behind the game list, clearing to nothing across the stage, so
+         the artwork is actually visible where there is no text on top of it. -->
+    <LinearGradientBrush x:Key="RailScrim" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Offset="0"    Color="#F20C0E13" />
+        <GradientStop Offset="0.52" Color="#D90C0E13" />
+        <GradientStop Offset="0.74" Color="#6B0C0E13" />
+        <GradientStop Offset="1"    Color="#000C0E13" />
+    </LinearGradientBrush>
+
+    <!-- ====================== Lines ====================== -->
+    <SolidColorBrush x:Key="BorderSubtle" Color="#242A34" />
+    <SolidColorBrush x:Key="BorderStrong" Color="#333B47" />
+
+    <!-- ====================== Text ====================== -->
+    <SolidColorBrush x:Key="TextPrimary"   Color="#E9ECF1" />
+    <SolidColorBrush x:Key="TextSecondary" Color="#9BA5B4" />
+    <SolidColorBrush x:Key="TextMuted"     Color="#6B7482" />
+    <SolidColorBrush x:Key="TextOnAccent"  Color="#FFFFFF" />
+
+    <!-- ====================== Accent ====================== -->
+    <!-- Warm red, in the family of AMD's own brand colour. The mod is AMD-only, so the
+         accent carrying that association is a deliberate signal, not decoration. -->
+    <Color x:Key="AccentColor">#E23E2C</Color>
+    <SolidColorBrush x:Key="Accent"        Color="{StaticResource AccentColor}" />
+    <SolidColorBrush x:Key="AccentHover"   Color="#F2543F" />
+    <SolidColorBrush x:Key="AccentPressed" Color="#C32F20" />
+    <SolidColorBrush x:Key="AccentMuted"   Color="#3A1D19" />
+    <!-- For outlining a selected row. The full accent at 1px reads as an error box around
+         the row rather than as selection; this is the accent dimmed to border weight. -->
+    <SolidColorBrush x:Key="AccentBorder"  Color="#6E3227" />
+
+    <LinearGradientBrush x:Key="AccentFill" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Offset="0" Color="#EC4A33" />
+        <GradientStop Offset="1" Color="#CF3222" />
+    </LinearGradientBrush>
+
+    <!-- ====================== Status ====================== -->
+    <!-- One colour per GameStatus, plus one per DoctorFinding severity. These are the
+         only semantic colours; nothing else in the UI is allowed to be green or amber,
+         so a coloured pixel always means a state rather than a flourish. -->
+    <SolidColorBrush x:Key="StatusOk"        Color="#3FB950" />
+    <SolidColorBrush x:Key="StatusOkSoft"    Color="#132A18" />
+    <SolidColorBrush x:Key="StatusWarn"      Color="#D9A429" />
+    <SolidColorBrush x:Key="StatusWarnSoft"  Color="#2E2413" />
+    <SolidColorBrush x:Key="StatusError"     Color="#F2564D" />
+    <SolidColorBrush x:Key="StatusErrorSoft" Color="#331816" />
+    <SolidColorBrush x:Key="StatusIdle"      Color="#7D8794" />
+    <SolidColorBrush x:Key="StatusIdleSoft"  Color="#1D222B" />
+    <SolidColorBrush x:Key="StatusInfo"      Color="#58A6FF" />
+    <SolidColorBrush x:Key="StatusInfoSoft"  Color="#14212F" />
+
+    <!-- ====================== Typography ====================== -->
+    <!-- Segoe UI Variable is Windows 11's UI face; the fallback chain keeps Windows 10
+         (and a stripped Server SKU) on something that still has the right metrics. -->
+    <FontFamily x:Key="UiFont">Segoe UI Variable Text, Segoe UI, Arial</FontFamily>
+
+    <!-- Bahnschrift is the condensed industrial face that ships with Windows 10 and 11.
+         It is the reason the headings do not read as the system default: narrow, flat-sided
+         and slightly technical, which is the right register for a tool that patches DLLs
+         into games. The chain falls back through Segoe if it has been removed. -->
+    <FontFamily x:Key="DisplayFont">Bahnschrift SemiBold Condensed, Bahnschrift, Segoe UI Semibold, Segoe UI</FontFamily>
+    <FontFamily x:Key="MonoFont">Cascadia Mono, Consolas, Courier New</FontFamily>
+
+    <sys:Double x:Key="TextTiny">11</sys:Double>
+    <sys:Double x:Key="TextSmall">12</sys:Double>
+    <sys:Double x:Key="TextBody">13</sys:Double>
+    <sys:Double x:Key="TextSubhead">15</sys:Double>
+    <sys:Double x:Key="TextTitle">20</sys:Double>
+
+    <!-- ====================== Brand ====================== -->
+    <!-- The owner's mark, as BrandWordmark draws it: AMD and NR in Bahnschrift at full weight,
+         the geometric face rather than the condensed display cut, so the wordmark reads as a
+         mark and not as one more heading; AMD in plain white, NR in the accent above. -->
+    <FontFamily x:Key="BrandFont">Bahnschrift, Segoe UI Black, Segoe UI, Arial</FontFamily>
+    <SolidColorBrush x:Key="BrandInk" Color="#FFFFFF" />
+
+    <!-- ====================== Shape ====================== -->
+    <CornerRadius x:Key="RadiusSmall">4</CornerRadius>
+    <CornerRadius x:Key="RadiusMedium">7</CornerRadius>
+    <CornerRadius x:Key="RadiusLarge">10</CornerRadius>
+    <CornerRadius x:Key="RadiusPill">100</CornerRadius>
+
+</ResourceDictionary>

@@ -1,0 +1,709 @@
+﻿<!-- Copyright (c) 2026 3zwr1 (AMDNR). All rights reserved. Source published to be read, not reused: see LICENSE.txt. -->
+<Window x:Class="AmdnrLauncher.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        xmlns:core="clr-namespace:AmdnrLauncher.Core;assembly=AmdnrLauncher.Core"
+        xmlns:diag="clr-namespace:AmdnrLauncher.Core.Diagnostics;assembly=AmdnrLauncher.Core"
+        xmlns:views="clr-namespace:AmdnrLauncher.App.Views"
+        xmlns:local="clr-namespace:AmdnrLauncher.App"
+        Title="{x:Static local:Brand.Name}"
+        Height="760" Width="1240" MinHeight="580" MinWidth="980"
+        Background="{StaticResource WindowBackdrop}"
+        TextOptions.TextFormattingMode="Ideal"
+        FontFamily="{StaticResource UiFont}">
+
+    <!-- The real non-client frame stays underneath, so Aero Snap, drag-to-maximise, the
+         resize borders, the system menu and the taskbar thumbnail all keep working while
+         the caption pixels are ours. -->
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="46"
+                            ResizeBorderThickness="6"
+                            CornerRadius="0"
+                            GlassFrameThickness="0"
+                            UseAeroCaptionButtons="False" />
+    </shell:WindowChrome.WindowChrome>
+
+    <Grid>
+        <!-- Maximised, WindowChrome pushes content past the work area by the resize border
+             on every side. The margin puts it back, and must be zero when restored. -->
+        <Grid.Style>
+            <Style TargetType="Grid">
+                <Setter Property="Margin" Value="0" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType=Window}}"
+                                 Value="Maximized">
+                        <Setter Property="Margin" Value="7" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Style>
+
+        <!-- ===================== The selected game's own art =====================
+             The window's background is the game, not a colour we picked. Steam already
+             caches a pre-blurred hero at roughly 2 KB, so this draws a small image large
+             rather than running a blur over a full-window bitmap every frame. With no game
+             selected the Source binding yields null, the Image draws nothing, and the
+             gradient backdrop on the Window shows through — no trigger needed. -->
+        <Image Source="{Binding Selected.HeroBlurPath,
+                        Converter={StaticResource PathToImage},
+                        ConverterParameter=960}"
+               Stretch="UniformToFill" Opacity="0.85"
+               HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+        <!-- When Steam has no pre-blurred copy — a hero the CDN sent, an Xbox logo, the exe's
+             own icon — the launcher makes one: the converter decodes the picture 240 px wide,
+             blurs that small bitmap once, and this Image draws the result large, exactly as
+             Steam's own is drawn above. No Effect on this element — one here would run over the
+             window-sized surface at every redraw, the whole window's worth of pixels in software
+             rendering — and the blurred bitmap is opaque to its edges, so there is no soft border
+             to push out of the frame. The parameter is the blur's radius at 240 px: what a radius
+             of 56 looked like over the window. Null while there is a pre-blurred hero, so nothing
+             is blurred twice. -->
+        <Image Source="{Binding Selected.BackdropToBlurPath,
+                        Converter={StaticResource PathToBlurredImage},
+                        ConverterParameter=10}"
+               Stretch="UniformToFill" Opacity="0.85"
+               HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+        <Rectangle Fill="{StaticResource StageScrim}" />
+        <Rectangle Fill="{StaticResource RailScrim}" />
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="46" />     <!-- caption -->
+                <RowDefinition Height="Auto" />   <!-- launcher update -->
+                <RowDefinition Height="*" />      <!-- rail + stage -->
+                <RowDefinition Height="Auto" />   <!-- status -->
+            </Grid.RowDefinitions>
+
+            <!-- ============================= Caption ============================= -->
+            <Grid Grid.Row="0" x:Name="Caption">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="22,0,0,0">
+                    <!-- The owner's wordmark, drawn rather than a picture: the caption is 46 px,
+                         and a PNG scaled to it blurs where the vector stays sharp. -->
+                    <views:BrandWordmark FontSize="17" VerticalAlignment="Center" />
+                    <TextBlock Text="LAUNCHER" Margin="9,1,0,0" VerticalAlignment="Center"
+                               FontFamily="{StaticResource DisplayFont}" FontSize="13"
+                               Foreground="{StaticResource TextMuted}" />
+                    <!-- Started with a manifest override: what this window shows is not what users get.
+                         The tooltip needs hit-testing, and in the caption that means asking. -->
+                    <TextBlock Text="TEST MANIFEST" Margin="16,1,0,0" VerticalAlignment="Center"
+                               FontFamily="{StaticResource DisplayFont}" FontSize="15"
+                               Foreground="{StaticResource StatusError}"
+                               shell:WindowChrome.IsHitTestVisibleInChrome="True"
+                               ToolTip="{Binding Settings.ManifestUrl}"
+                               Visibility="{Binding IsTestManifest, Converter={StaticResource BoolToVisibility}}" />
+                </StackPanel>
+
+                <!-- IsHitTestVisibleInChrome is required on anything clickable inside the
+                     caption height, or the chrome swallows the click as a window drag. -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+                    <!-- Discord's mark, one click from the owner's server, on every page: the
+                         first-run chooser is where a newcomer needs it most. Tag holds the
+                         address so a test can read what the click opens. -->
+                    <Button x:Name="DiscordButton" Content="{StaticResource DiscordMark}"
+                            Style="{StaticResource LinkCaptionButton}" Margin="0,0,10,0"
+                            Tag="{x:Static local:Brand.DiscordUrl}" Click="OnDiscord"
+                            ToolTip="Join the AMD NR Discord — discord.gg/AMDNR" />
+                    <Button Content="{StaticResource GlyphMinimise}" Style="{StaticResource CaptionButton}"
+                            Click="OnMinimise" ToolTip="Minimise" />
+                    <Button x:Name="MaximiseButton" Content="{StaticResource GlyphMaximise}"
+                            Style="{StaticResource CaptionButton}"
+                            Click="OnMaximiseRestore" ToolTip="Maximise" />
+                    <Button Content="{StaticResource GlyphClose}" Style="{StaticResource CloseCaptionButton}"
+                            Click="OnClose" ToolTip="Close" />
+                </StackPanel>
+            </Grid>
+
+            <!-- ========================= Launcher update ========================= -->
+            <Border Grid.Row="1" Margin="22,0,22,0" Padding="15,10"
+                    Background="{StaticResource AccentMuted}"
+                    BorderBrush="{StaticResource Accent}" BorderThickness="0,0,0,1"
+                    Visibility="{Binding PendingUpdatePath, Converter={StaticResource NullToVisibility}}">
+                <!-- Two columns, because the busy wording is long enough to run under the
+                     button in a narrow window. -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <!-- Greyed while an install or scan runs: restarting ends this process,
+                         and one that exits mid-copy leaves a game folder half-installed. -->
+                    <TextBlock VerticalAlignment="Center" Margin="0,0,15,0" TextWrapping="Wrap"
+                               Text="{Binding UpdateBanner}" />
+                    <Button Grid.Column="1" Content="RESTART TO UPDATE" VerticalAlignment="Center"
+                            IsEnabled="{Binding CanApplyUpdate}"
+                            Style="{StaticResource ToolbarAccentButton}" Click="OnApplyUpdate" />
+                </Grid>
+            </Border>
+
+            <!-- =========================== Rail + stage ===========================
+                 Collapsed while the build chooser is open. The chooser's scrim is kept light so
+                 the game art still shows through it, and at that weight the library's own text
+                 (the placeholder, a wordmark, the buttons) showed through as well, overlapping
+                 the chooser's. The art is the backdrop; the library is not. -->
+            <Grid Grid.Row="2"
+                  Visibility="{Binding Chooser, Converter={StaticResource NullToInverseVisibility}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="376" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- ============================== Rail ============================== -->
+                <DockPanel Grid.Column="0" Margin="22,10,10,0">
+                    <Grid DockPanel.Dock="Top" Margin="4,0,4,12">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="LIBRARY" FontFamily="{StaticResource DisplayFont}"
+                                       FontSize="13" Foreground="{StaticResource TextSecondary}" />
+                            <TextBlock Text="{Binding Games.Count}" Margin="8,0,0,0"
+                                       FontFamily="{StaticResource DisplayFont}" FontSize="13"
+                                       Foreground="{StaticResource Accent}" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Content="RESCAN" Style="{StaticResource ToolbarButton}"
+                                    Command="{Binding RescanCommand}" />
+                            <Button Content="ADD" Style="{StaticResource ToolbarButton}"
+                                    Click="OnAddFolder" />
+                            <Button Content="SETTINGS" Style="{StaticResource ToolbarButton}"
+                                    Command="{Binding SettingsCommand}" />
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Greyed while anything runs: restarting ends this process, and it can be
+                         on screen for one game while an install copies into another. -->
+                    <Button DockPanel.Dock="Top" Content="RESTART AS ADMINISTRATOR"
+                            Style="{StaticResource ToolbarAccentButton}"
+                            HorizontalAlignment="Stretch" Margin="4,0,4,10"
+                            Click="OnRestartElevated"
+                            IsEnabled="{Binding CanRestartElevated}"
+                            Visibility="{Binding NeedsElevation, Converter={StaticResource BoolToVisibility}}" />
+
+                    <TextBlock DockPanel.Dock="Top" Style="{StaticResource SecondaryText}"
+                               Margin="4,10,10,0"
+                               Visibility="{Binding Games.Count, Converter={StaticResource ZeroToVisibility}}"
+                               Text="Nothing found yet. The launcher reads Steam, Epic, the Xbox app, Ubisoft Connect, the EA app, GOG, Rockstar, Battle.net and Amazon Games — for anything else, use ADD and point it at the folder holding the game's .exe." />
+
+                    <!-- WPF turns IsSynchronizedWithCurrentItem on by itself once SelectedItem
+                         is bound, which silently selects the view's current item — the launcher
+                         opened with an arbitrary game selected and its Install button live. -->
+                    <ListBox ItemsSource="{Binding Games}" SelectedItem="{Binding Selected}"
+                             IsSynchronizedWithCurrentItem="False"
+                             Style="{StaticResource GameList}"
+                             ItemContainerStyle="{StaticResource GameListItem}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="12,9">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Box art at its own 2:3 proportion rather than cropped
+                                         into a square: a shelf of spines is recognisable at a
+                                         glance in a way a grid of squares is not. The coloured
+                                         plate underneath shows through for games with no art,
+                                         so there is one code path, not two. -->
+                                    <Border Grid.Column="0" Width="42" Height="63"
+                                            CornerRadius="3" ClipToBounds="True"
+                                            Background="{Binding Name, Converter={StaticResource NameToTileBrush}}">
+                                        <Grid>
+                                            <!-- The initial goes once any tile is there: a
+                                                 letterboxed square would show it on either side. -->
+                                            <TextBlock Text="{Binding Initial}"
+                                                       Style="{StaticResource GameTileText}"
+                                                       Visibility="{Binding HasTile,
+                                                                    Converter={StaticResource BoolToInverseVisibility}}" />
+                                            <Image Source="{Binding PortraitPath,
+                                                            Converter={StaticResource PathToImage},
+                                                            ConverterParameter=120}"
+                                                   Stretch="UniformToFill" />
+                                            <!-- A square — the Xbox app's logo, or the exe's own
+                                                 icon — sits whole on the plate rather than being
+                                                 cropped to a spine, which would leave nothing of it. -->
+                                            <Image Source="{Binding SquareTilePath,
+                                                            Converter={StaticResource PathToImage},
+                                                            ConverterParameter=120}"
+                                                   Stretch="Uniform" Margin="3" />
+                                        </Grid>
+                                    </Border>
+
+                                    <StackPanel Grid.Column="1" Margin="13,0,10,0" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Name}"
+                                                   FontFamily="{StaticResource DisplayFont}"
+                                                   FontSize="16"
+                                                   TextTrimming="CharacterEllipsis" />
+                                        <!-- One muted line of facts instead of two bordered
+                                             chips. Chips draw a box around every value; at
+                                             twenty rows that is forty boxes and no hierarchy.
+                                             The DLL half is its own block because a Run cannot
+                                             collapse: a row with no exe folder has no DLL name. -->
+                                        <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+                                            <TextBlock Style="{StaticResource SecondaryText}"
+                                                       Foreground="{StaticResource TextMuted}"
+                                                       Text="{Binding Store, Mode=OneWay}" />
+                                            <TextBlock Style="{StaticResource SecondaryText}"
+                                                       Foreground="{StaticResource TextMuted}"
+                                                       Visibility="{Binding DllName, Converter={StaticResource NullToVisibility}}">
+                                                <Run Text=" ·" Foreground="{StaticResource BorderStrong}" />
+                                                <Run Text="{Binding DllName, Mode=OneWay}"
+                                                     FontFamily="{StaticResource MonoFont}" />
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <!-- A dot alone. The words live in the detail panel; in the
+                                         rail all that matters is installed / needs attention /
+                                         not yet, and three colours say that without adding a
+                                         column of repeated text to every row. -->
+                                    <Ellipse x:Name="Dot" Grid.Column="2" Width="8" Height="8"
+                                             VerticalAlignment="Center"
+                                             Fill="{StaticResource StatusIdle}"
+                                             ToolTip="{Binding StatusText}" />
+                                </Grid>
+
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding Status}" Value="{x:Static core:GameStatus.Installed}">
+                                        <Setter TargetName="Dot" Property="Fill" Value="{StaticResource StatusOk}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Status}" Value="{x:Static core:GameStatus.UpdateAvailable}">
+                                        <Setter TargetName="Dot" Property="Fill" Value="{StaticResource StatusWarn}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Status}" Value="{x:Static core:GameStatus.Problem}">
+                                        <Setter TargetName="Dot" Property="Fill" Value="{StaticResource StatusError}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Status}" Value="{x:Static core:GameStatus.ExistingInstall}">
+                                        <Setter TargetName="Dot" Property="Fill" Value="{StaticResource StatusInfo}" />
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+
+                <!-- ============================= Stage ============================= -->
+                <!-- No margin: the key art has to reach the window edges, or it reads as a
+                     photograph pasted into a box. The inset lives on the content below it. -->
+                <Grid Grid.Column="1">
+
+                    <TextBlock Style="{StaticResource SecondaryText}" FontSize="{StaticResource TextBody}"
+                               HorizontalAlignment="Left" VerticalAlignment="Center" MaxWidth="360"
+                               Margin="28,0,0,0"
+                               Visibility="{Binding Selected, Converter={StaticResource NullToInverseVisibility}}"
+                               Text="Pick a game from the library to install AMDNR, check what is already there, or collect a report for support." />
+
+                    <!-- DataContext deliberately sits here and not on an element that also
+                         carries Visibility. Setting both on one element is a WPF trap:
+                         DataContext applies to the element itself, so a Visibility binding
+                         beside it resolves as Selected.Selected, fails, and falls back to
+                         Visibility's CLR default — Visible. The panel then renders empty on
+                         top of the placeholder, and WPF logs nothing about it. -->
+                    <!-- DataContext.Selected, not Selected. RelativeSource AncestorType=Window
+                         resolves against the Window *element*, which has no Selected property,
+                         so the shorter path fails silently and Visibility falls back to its
+                         CLR default — Visible. The whole panel then renders over the
+                         placeholder with nothing selected, buttons and all. This is the same
+                         trap as setting DataContext and Visibility on one element, wearing a
+                         different hat, and WPF logs nothing for either. -->
+                    <Grid DataContext="{Binding Selected}"
+                          Visibility="{Binding DataContext.Selected,
+                                       RelativeSource={RelativeSource AncestorType=Window},
+                                       Converter={StaticResource NullToVisibility}}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" MinHeight="170" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!-- The game's key art, full bleed, with its own wordmark sitting on
+                             it. This is the whole point of the layout: the panel should look
+                             like that game's page, not like a form about a folder. -->
+                        <!-- Two layers, deliberately separated. The art spans both rows so
+                             it has no bottom edge to form a seam against the panel below it;
+                             the wordmark sits in row 0 only, so it stays anchored above the
+                             facts and the buttons instead of sliding down onto them. -->
+                        <Grid Grid.Row="0" Grid.RowSpan="2" ClipToBounds="True">
+                            <!-- A game with no key art anywhere still gets a page of its own:
+                                 its icon or its Xbox logo, blurred and enlarged, stands where
+                                 the hero would. Blurred once by the converter over the 240 px
+                                 decode — not by an Effect on this element, which would run over
+                                 the stage at every redraw — and drawn large from that. The
+                                 parameter is the radius at 240 px: what 64 looked like over the
+                                 stage. -->
+                            <Image Source="{Binding StageBackdropPath,
+                                            Converter={StaticResource PathToBlurredImage},
+                                            ConverterParameter=16}"
+                                   Stretch="UniformToFill" Opacity="0.9"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Image Source="{Binding HeroPath,
+                                            Converter={StaticResource PathToImage},
+                                            ConverterParameter=900}"
+                                   Stretch="UniformToFill"
+                                   HorizontalAlignment="Center" VerticalAlignment="Top" />
+
+                            <!-- Both fades end fully opaque in the launcher's own background
+                                 colour — not merely dark. Anything short of the exact colour
+                                 of the panel beside it leaves a visible step, which is what a
+                                 near-miss here looks like: a faint vertical line down the
+                                 window that nobody can name. -->
+                            <Rectangle>
+                                <Rectangle.Fill>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Offset="0"    Color="#260C0E13" />
+                                        <GradientStop Offset="0.44" Color="#590C0E13" />
+                                        <GradientStop Offset="0.74" Color="#E60C0E13" />
+                                        <GradientStop Offset="1"    Color="#FF0C0E13" />
+                                    </LinearGradientBrush>
+                                </Rectangle.Fill>
+                            </Rectangle>
+                            <Rectangle>
+                                <Rectangle.Fill>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Offset="0"    Color="#FF0C0E13" />
+                                        <GradientStop Offset="0.22" Color="#730C0E13" />
+                                        <GradientStop Offset="0.5"  Color="#0F0C0E13" />
+                                        <GradientStop Offset="1"    Color="#000C0E13" />
+                                    </LinearGradientBrush>
+                                </Rectangle.Fill>
+                            </Rectangle>
+                        </Grid>
+
+                        <!-- Steam ships a transparent logo.png for most titles, and it is the
+                             single strongest signal that this is that game's page rather than
+                             a row in a table. The name is drawn only where there is no
+                             wordmark — never both, which reads as the same words twice. The
+                             shadow is not decoration: these logos are authored to sit on their
+                             own key art, and a pale one on a pale frame is unreadable. -->
+                        <Image Grid.Row="0"
+                               Source="{Binding LogoPath,
+                                        Converter={StaticResource PathToImage},
+                                        ConverterParameter=620}"
+                               MaxHeight="128" MaxWidth="430"
+                               HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                               Margin="28,0,0,10">
+                            <Image.Effect>
+                                <DropShadowEffect Color="#000000" BlurRadius="26"
+                                                  ShadowDepth="0" Opacity="0.95" />
+                            </Image.Effect>
+                        </Image>
+
+                        <TextBlock Grid.Row="0" Text="{Binding Name}"
+                                   HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                   Margin="28,0,34,8" MaxWidth="520"
+                                   FontFamily="{StaticResource DisplayFont}" FontSize="46"
+                                   Foreground="{StaticResource TextPrimary}" TextWrapping="Wrap"
+                                   Visibility="{Binding HasLogo,
+                                                Converter={StaticResource BoolToInverseVisibility}}">
+                            <TextBlock.Effect>
+                                <DropShadowEffect Color="#000000" BlurRadius="20"
+                                                  ShadowDepth="0" Opacity="0.9" />
+                            </TextBlock.Effect>
+                        </TextBlock>
+
+                        <StackPanel Grid.Row="1" Margin="28,18,34,22" Panel.ZIndex="1">
+
+                            <!-- Facts as one line of muted type. Putting each in its own
+                                 bordered chip is three boxes to say three short words. -->
+                            <!-- Three blocks, not one, for the same reason as the rail:
+                                 the DLL name has to be able to disappear. -->
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource SecondaryText}" FontSize="{StaticResource TextBody}"
+                                           Foreground="#C9D2DE" Text="{Binding Store, Mode=OneWay}" />
+                                <TextBlock Style="{StaticResource SecondaryText}" FontSize="{StaticResource TextBody}"
+                                           Visibility="{Binding DllName, Converter={StaticResource NullToVisibility},
+                                                                FallbackValue=Collapsed}">
+                                    <Run Text=" ·" Foreground="{StaticResource BorderStrong}" />
+                                    <Run Text="{Binding DllName, Mode=OneWay}"
+                                         FontFamily="{StaticResource MonoFont}" Foreground="#C9D2DE" />
+                                </TextBlock>
+                                <TextBlock Style="{StaticResource SecondaryText}" FontSize="{StaticResource TextBody}">
+                                    <Run Text=" ·" Foreground="{StaticResource BorderStrong}" />
+                                    <Run Text="{Binding StatusText, Mode=OneWay}" />
+                                </TextBlock>
+                            </StackPanel>
+
+                            <!-- The DLL name as a choice, not only a fact: the six names in one
+                                 row, the one in use — or the one INSTALL will use — marked with
+                                 the accent edge, a name some other file already holds greyed with
+                                 the reason in its tooltip, and under them why the launcher picked
+                                 what it picked. On an installed game a click moves the DLL to that
+                                 name, under TRY NEXT PROXY's guards. Hidden with the DLL name: no
+                                 exe folder, nothing to put a DLL beside. -->
+                            <StackPanel Margin="0,10,0,0"
+                                        Visibility="{Binding DllName, Converter={StaticResource NullToVisibility},
+                                                             FallbackValue=Collapsed}">
+                                <ItemsControl ItemsSource="{Binding ProxyOptions}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <!-- IsChecked is one-way on purpose: the click runs the
+                                                 command, Core decides, and the row is re-read with
+                                                 a fresh list — so a refused name never stays marked.
+                                                 ShowOnDisabled, or a greyed name would never say why. -->
+                                            <RadioButton Content="{Binding Name}" GroupName="ProxyName"
+                                                         Style="{StaticResource AnswerRadio}"
+                                                         FontFamily="{StaticResource MonoFont}"
+                                                         FontSize="{StaticResource TextBody}"
+                                                         Margin="0,0,10,0"
+                                                         IsChecked="{Binding IsSelected, Mode=OneWay}"
+                                                         IsEnabled="{Binding IsEnabled}"
+                                                         ToolTip="{Binding Tooltip}"
+                                                         ToolTipService.ShowOnDisabled="True"
+                                                         Command="{Binding DataContext.ChooseProxyCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                         CommandParameter="{Binding Name}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <TextBlock Margin="0,4,0,0" Style="{StaticResource SecondaryText}"
+                                           FontSize="{StaticResource TextSmall}" MaxWidth="620"
+                                           HorizontalAlignment="Left" Text="{Binding ProxyReason}" />
+                            </StackPanel>
+
+                            <TextBlock Text="{Binding Folder}" Style="{StaticResource PathText}"
+                                       Margin="0,7,0,0" MaxWidth="620" HorizontalAlignment="Left" />
+
+                            <!-- The folder alone does not say whether the launcher found the
+                                 game or the stub launcher beside it; the file name does. -->
+                            <TextBlock Margin="0,5,0,0" Style="{StaticResource PathText}"
+                                       Visibility="{Binding ExeName, Converter={StaticResource NullToVisibility},
+                                                            FallbackValue=Collapsed}">
+                                <Run Text="exe" Foreground="{StaticResource TextMuted}" />
+                                <Run Text="{Binding ExeName, Mode=OneWay}" Foreground="#9BA5B4" />
+                            </TextBlock>
+
+                            <TextBlock Margin="0,7,0,0" Style="{StaticResource PathText}"
+                                       Visibility="{Binding IsInstalled, Converter={StaticResource BoolToVisibility},
+                                                            FallbackValue=Collapsed}">
+                                <Run Text="build" Foreground="{StaticResource TextMuted}" />
+                                <Run Text="{Binding BuildStamp, Mode=OneWay}" Foreground="#9BA5B4" />
+                            </TextBlock>
+
+                            <!-- What the user needs to know before, or right after, pressing a
+                                 button: a dot and a line each, in the Doctor list's own shape
+                                 rather than a box. The anti-cheat line stays for as long as the
+                                 gate finds anti-cheat, because the risk is in playing online
+                                 later, not in the click. -->
+                            <StackPanel Margin="0,14,0,0" MaxWidth="620" HorizontalAlignment="Left">
+                                <Grid Margin="0,6,0,0"
+                                      Visibility="{Binding AntiCheatWarning, Converter={StaticResource NullToVisibility},
+                                                           FallbackValue=Collapsed}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Ellipse Width="7" Height="7" Margin="0,5,11,0" VerticalAlignment="Top"
+                                             Fill="{StaticResource StatusWarn}" />
+                                    <TextBlock Grid.Column="1" TextWrapping="Wrap" FontSize="{StaticResource TextSmall}"
+                                               Foreground="{StaticResource StatusWarn}"
+                                               Text="{Binding AntiCheatWarning}" />
+                                </Grid>
+                                <!-- Capcom's RE Engine without REFramework: the game closes itself after launch with a
+                                     mod loaded. Same shape as the anti-cheat line, and kept for as long as it is true. -->
+                                <Grid Margin="0,6,0,0"
+                                      Visibility="{Binding EngineWarning, Converter={StaticResource NullToVisibility},
+                                                           FallbackValue=Collapsed}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Ellipse Width="7" Height="7" Margin="0,5,11,0" VerticalAlignment="Top"
+                                             Fill="{StaticResource StatusWarn}" />
+                                    <TextBlock Grid.Column="1" TextWrapping="Wrap" FontSize="{StaticResource TextSmall}"
+                                               Foreground="{StaticResource StatusWarn}"
+                                               Text="{Binding EngineWarning}" />
+                                </Grid>
+
+                                <Grid Margin="0,6,0,0"
+                                      Visibility="{Binding EarlierInstallNote, Converter={StaticResource NullToVisibility},
+                                                           FallbackValue=Collapsed}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Ellipse Width="7" Height="7" Margin="0,5,11,0" VerticalAlignment="Top"
+                                             Fill="{StaticResource StatusInfo}" />
+                                    <TextBlock Grid.Column="1" TextWrapping="Wrap" FontSize="{StaticResource TextSmall}"
+                                               Text="{Binding EarlierInstallNote}" />
+                                </Grid>
+
+                                <Grid Margin="0,6,0,0"
+                                      Visibility="{Binding NextSteps, Converter={StaticResource NullToVisibility},
+                                                           FallbackValue=Collapsed}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Ellipse Width="7" Height="7" Margin="0,5,11,0" VerticalAlignment="Top"
+                                             Fill="{StaticResource StatusOk}" />
+                                    <TextBlock Grid.Column="1" TextWrapping="Wrap" FontSize="{StaticResource TextSmall}"
+                                               Text="{Binding NextSteps}" />
+                                </Grid>
+                            </StackPanel>
+
+                            <!-- Actions. The accent belongs to exactly one verb; everything
+                                 else is an outline, and the destructive one is a bare word set
+                                 apart so it can never be the button next to the one you meant. -->
+                            <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
+                                <Button Content="INSTALL" MinWidth="168"
+                                        Style="{StaticResource PrimaryButton}"
+                                        Command="{Binding DataContext.InstallCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                <Button Content="REPAIR / UPDATE" Margin="9,0,0,0"
+                                        Style="{StaticResource SecondaryButton}"
+                                        Command="{Binding DataContext.RepairCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                <Button Content="TRY NEXT PROXY" Margin="9,0,0,0"
+                                        Style="{StaticResource SecondaryButton}"
+                                        Command="{Binding DataContext.TryNextProxyCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                                <Button Content="RESET INI" Style="{StaticResource GhostButton}"
+                                        Command="{Binding DataContext.ResetIniCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                <Button Content="COLLECT LOGS" Margin="16,0,0,0" Style="{StaticResource GhostButton}"
+                                        Command="{Binding DataContext.CollectLogsCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                <Button Content="UNINSTALL" Margin="16,0,0,0" Style="{StaticResource GhostDangerButton}"
+                                        Command="{Binding DataContext.UninstallCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </StackPanel>
+
+                            <!-- FallbackValue is load-bearing for the same reason as above. -->
+                            <Border Margin="0,26,0,0" Padding="14,12" MaxWidth="620"
+                                    HorizontalAlignment="Left"
+                                    Background="#2E2413" BorderBrush="{StaticResource StatusWarn}"
+                                    BorderThickness="2,0,0,0"
+                                    Visibility="{Binding UpdateAvailable,
+                                                         Converter={StaticResource BoolToVisibility},
+                                                         FallbackValue=Collapsed}">
+                                <TextBlock TextWrapping="Wrap" Foreground="{StaticResource StatusWarn}"
+                                           Text="{Binding UpdateNote, FallbackValue=''}" />
+                            </Border>
+
+                            <!-- Doctor, as a list rather than a card. A severity dot and a
+                                 hairline rule carry the grouping; a border around it would be
+                                 a fourth box on a screen that is trying to have none. -->
+                            <StackPanel Margin="0,26,0,0" MaxWidth="620" HorizontalAlignment="Left"
+                                        Visibility="{Binding HasFindings, Converter={StaticResource BoolToVisibility},
+                                                             FallbackValue=Collapsed}">
+                                <TextBlock Text="DOCTOR" FontFamily="{StaticResource DisplayFont}"
+                                           FontSize="13" Foreground="{StaticResource TextSecondary}" />
+                                <Border Height="1" Background="{StaticResource BorderSubtle}" Margin="0,7,0,13" />
+
+                                <ItemsControl ItemsSource="{Binding Findings}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="0,0,0,12">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <!-- A dot, not a glyph: no icon font is
+                                                     guaranteed present on every Windows SKU,
+                                                     and a missing glyph renders as a box. -->
+                                                <Ellipse x:Name="Dot" Grid.Column="0"
+                                                         Width="7" Height="7" Margin="0,5,11,0"
+                                                         VerticalAlignment="Top"
+                                                         Fill="{StaticResource StatusIdle}" />
+
+                                                <StackPanel Grid.Column="1">
+                                                    <TextBlock Text="{Binding Message}" TextWrapping="Wrap"
+                                                               FontSize="{StaticResource TextSmall}" />
+                                                    <TextBlock Text="{Binding SuggestedAction}"
+                                                               Style="{StaticResource SecondaryText}"
+                                                               Foreground="{StaticResource TextMuted}"
+                                                               Margin="0,4,0,0"
+                                                               Visibility="{Binding SuggestedAction,
+                                                                            Converter={StaticResource NullToVisibility}}" />
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <DataTemplate.Triggers>
+                                                <DataTrigger Binding="{Binding Severity}" Value="{x:Static diag:DoctorSeverity.Ok}">
+                                                    <Setter TargetName="Dot" Property="Fill" Value="{StaticResource StatusOk}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Severity}" Value="{x:Static diag:DoctorSeverity.Warning}">
+                                                    <Setter TargetName="Dot" Property="Fill" Value="{StaticResource StatusWarn}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Severity}" Value="{x:Static diag:DoctorSeverity.Error}">
+                                                    <Setter TargetName="Dot" Property="Fill" Value="{StaticResource StatusError}" />
+                                                </DataTrigger>
+                                            </DataTemplate.Triggers>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Grid>
+
+            <!-- =========================== Build chooser ===========================
+                 Over the rail and the stage, not in a dialog: the first run happens with the
+                 launcher's own art behind it. The update banner and the status line stay
+                 uncovered, because the status line is what says the chooser is waiting.
+                 DataContext goes on the child, never beside the Visibility binding. -->
+            <Grid Grid.Row="2"
+                  Visibility="{Binding Chooser, Converter={StaticResource NullToVisibility}}">
+                <Rectangle>
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Offset="0"   Color="#F70C0E13" />
+                            <GradientStop Offset="0.6" Color="#E00C0E13" />
+                            <GradientStop Offset="1"   Color="#B80C0E13" />
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+                <views:BuildChooserView DataContext="{Binding Chooser}" />
+            </Grid>
+
+            <!-- ============================= Status ============================= -->
+            <Grid Grid.Row="3" Margin="22,0,26,0" Height="42">
+                <Border Height="1" VerticalAlignment="Top" Background="#1C222C" />
+
+                <Grid Margin="2,0,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- A pulsing dot rather than an indeterminate bar: it says "working"
+                         without implying a position in a progress that has none. -->
+                    <Ellipse Grid.Column="0" Width="7" Height="7" Margin="0,0,10,0"
+                             VerticalAlignment="Center" Fill="{StaticResource Accent}"
+                             Visibility="{Binding Busy, Converter={StaticResource BoolToVisibility}}">
+                        <Ellipse.Triggers>
+                            <EventTrigger RoutedEvent="Loaded">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                         From="1" To="0.2" Duration="0:0:0.7"
+                                                         AutoReverse="True" RepeatBehavior="Forever" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </Ellipse.Triggers>
+                    </Ellipse>
+
+                    <!-- The tooltip carries what trimming cuts off: an uninstall message can
+                         end in the backup path the user has to go and find. -->
+                    <TextBlock Grid.Column="1" VerticalAlignment="Center"
+                               Text="{Binding StatusMessage}" ToolTip="{Binding StatusMessage}"
+                               Style="{StaticResource SecondaryText}"
+                               TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+
+                    <!-- Mode=OneWay is required, not stylistic: RangeBase.Value is declared
+                         BindsTwoWayByDefault and Progress has a private setter, so the default
+                         mode throws "cannot work on the read-only property" during
+                         Window.Show() and the window never appears. -->
+                    <ProgressBar Grid.Column="2" Width="230" Margin="18,0,0,0"
+                                 Maximum="100" Style="{StaticResource ThinProgress}"
+                                 Value="{Binding Progress, Mode=OneWay}" />
+                </Grid>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

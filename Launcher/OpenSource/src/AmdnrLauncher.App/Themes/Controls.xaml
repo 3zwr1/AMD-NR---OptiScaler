@@ -1,0 +1,389 @@
+<!-- Copyright (c) 2026 3zwr1 (AMDNR). All rights reserved. Source published to be read, not reused: see LICENSE.txt. -->
+<!--
+    Control styles, built entirely on the tokens in Palette.xaml. No literal colour
+    appears below.
+
+    WPF's stock control templates are drawn with the classic Aero brushes, and those
+    brushes do not follow Foreground/Background — a Button left on its default template
+    stays light grey no matter what colours you set on it. That is why every control the
+    launcher uses is re-templated here rather than merely re-coloured.
+
+    Everything in this file sits on top of the selected game's artwork, so contrast is
+    carried by weight and by the scrims in Palette.xaml, not by panel fills.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ====================== Text ====================== -->
+    <!-- Implicit: everything inherits the dark-theme foreground and UI face without each
+         TextBlock having to ask. -->
+    <Style TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+        <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+        <Setter Property="FontSize" Value="{StaticResource TextBody}" />
+        <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
+        <Setter Property="TextOptions.TextRenderingMode" Value="ClearType" />
+    </Style>
+
+    <Style x:Key="SecondaryText" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource TextSecondary}" />
+        <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+        <Setter Property="FontSize" Value="{StaticResource TextSmall}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style x:Key="PathText" TargetType="TextBlock" BasedOn="{StaticResource SecondaryText}">
+        <Setter Property="FontFamily" Value="{StaticResource MonoFont}" />
+        <Setter Property="Foreground" Value="{StaticResource TextMuted}" />
+        <Setter Property="FontSize" Value="{StaticResource TextTiny}" />
+    </Style>
+
+    <!-- ====================== Choices ====================== -->
+    <!-- A word with an accent edge when chosen, not a stock radio circle: the chooser's Yes / No
+         and the stage's row of DLL names. A disabled one fades rather than greys, so it still
+         reads as a name — the tooltip carries why it cannot be picked. -->
+    <Style x:Key="AnswerRadio" TargetType="RadioButton">
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FontFamily" Value="{StaticResource DisplayFont}" />
+        <Setter Property="FontSize" Value="{StaticResource TextSubhead}" />
+        <Setter Property="Foreground" Value="{StaticResource TextMuted}" />
+        <Setter Property="Margin" Value="0,0,26,0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Grid Background="Transparent">
+                        <Border x:Name="Edge" Width="3" HorizontalAlignment="Left"
+                                Background="{StaticResource Accent}" CornerRadius="2" Opacity="0" />
+                        <ContentPresenter Margin="12,5,4,5" VerticalAlignment="Center" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{StaticResource TextSecondary}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Edge" Property="Opacity" Value="1" />
+                            <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.45" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ====================== Buttons ====================== -->
+    <!-- One template, four skins. The template is shared through BasedOn so hover, pressed
+         and disabled behave identically everywhere; only the brushes differ. Labels are set
+         in caps by the call sites: WPF has no letter-spacing property (CharacterSpacing is
+         WinUI), so the condensed display face does that work instead. -->
+    <Style x:Key="ButtonBase" TargetType="Button">
+        <Setter Property="FontFamily" Value="{StaticResource DisplayFont}" />
+        <Setter Property="FontSize" Value="{StaticResource TextBody}" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+        <Setter Property="Background" Value="#14FFFFFF" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderStrong}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="18,10" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Shell"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{StaticResource RadiusSmall}"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter x:Name="Body"
+                                          Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="Center"
+                                          RecognizesAccessKey="True" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Shell" Property="Background" Value="#22FFFFFF" />
+                            <Setter TargetName="Shell" Property="BorderBrush"
+                                    Value="{StaticResource AccentBorder}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Body" Property="Opacity" Value="0.7" />
+                        </Trigger>
+                        <!-- Disabled is dimmed rather than recoloured. Most of these are
+                             disabled because nothing is selected yet, which is the normal
+                             opening state — it should read as "not yet", not as an error. -->
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Shell" Property="Opacity" Value="0.3" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- The only filled button on the screen. One call to action per view, so the eye
+         always knows where the main verb is without reading. -->
+    <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource ButtonBase}">
+        <Setter Property="Background" Value="{StaticResource AccentFill}" />
+        <Setter Property="BorderBrush" Value="{StaticResource AccentPressed}" />
+        <Setter Property="Foreground" Value="{StaticResource TextOnAccent}" />
+        <Setter Property="FontSize" Value="{StaticResource TextSubhead}" />
+        <Setter Property="Padding" Value="22,11" />
+        <!-- No offset, coloured to the accent: it reads as the button emitting light
+             rather than as a drop shadow sitting under it. -->
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="{StaticResource AccentColor}" BlurRadius="26"
+                                  ShadowDepth="0" Opacity="0.5" />
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{StaticResource AccentHover}" />
+                <Setter Property="Effect">
+                    <Setter.Value>
+                        <DropShadowEffect Color="{StaticResource AccentColor}" BlurRadius="34"
+                                          ShadowDepth="0" Opacity="0.78" />
+                    </Setter.Value>
+                </Setter>
+            </Trigger>
+            <!-- A disabled button must not glow: the halo survives the template's opacity
+                 change, and a dimmed button ringed in light reads as active. -->
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Effect" Value="{x:Null}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource ButtonBase}" />
+
+    <!-- Borderless, for the actions that are neither primary nor destructive. They sit on
+         the game's artwork with nothing drawn around them until hovered. -->
+    <Style x:Key="GhostButton" TargetType="Button" BasedOn="{StaticResource ButtonBase}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource TextSecondary}" />
+        <Setter Property="FontSize" Value="{StaticResource TextSmall}" />
+        <Setter Property="Padding" Value="0,6" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Uninstall. A bare word rather than a button: findable, but never the brightest or
+         the largest thing in reach of the pointer. -->
+    <Style x:Key="GhostDangerButton" TargetType="Button" BasedOn="{StaticResource GhostButton}">
+        <Setter Property="Foreground" Value="#B2564D" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Foreground" Value="{StaticResource StatusError}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Library header actions: small, quiet, and only outlined on hover, so the header
+         reads as a header rather than as a toolbar of competing boxes. -->
+    <Style x:Key="ToolbarButton" TargetType="Button" BasedOn="{StaticResource ButtonBase}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource TextMuted}" />
+        <Setter Property="FontSize" Value="{StaticResource TextTiny}" />
+        <Setter Property="Padding" Value="8,5" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Draws attention without taking the accent: the update banner and the elevation
+         prompt, both of which are conditions rather than the main verb. -->
+    <Style x:Key="ToolbarAccentButton" TargetType="Button" BasedOn="{StaticResource ButtonBase}">
+        <Setter Property="Background" Value="{StaticResource AccentMuted}" />
+        <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+        <Setter Property="FontSize" Value="{StaticResource TextSmall}" />
+        <Setter Property="Padding" Value="13,7" />
+    </Style>
+
+    <!-- ====================== Scrollbar ====================== -->
+    <!-- A thin overlay bar. The stock one ships arrow buttons and a light track, which
+         would be the brightest thing on the screen. -->
+    <Style x:Key="ScrollThumb" TargetType="Thumb">
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Thumb">
+                    <Border Background="#33FFFFFF"
+                            CornerRadius="{StaticResource RadiusPill}"
+                            Margin="3,2" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="ScrollBar">
+        <Setter Property="Width" Value="9" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ScrollBar">
+                    <Grid Background="Transparent">
+                        <Track x:Name="PART_Track" IsDirectionReversed="True">
+                            <Track.Thumb>
+                                <Thumb Style="{StaticResource ScrollThumb}" />
+                            </Track.Thumb>
+                            <!-- Zero-opacity page buttons: click-in-track paging still works,
+                                 but nothing is drawn. RepeatButton has no template here, so
+                                 without these the stock one renders. -->
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton Command="ScrollBar.PageDownCommand" Opacity="0"
+                                              Focusable="False" IsTabStop="False" />
+                            </Track.IncreaseRepeatButton>
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton Command="ScrollBar.PageUpCommand" Opacity="0"
+                                              Focusable="False" IsTabStop="False" />
+                            </Track.DecreaseRepeatButton>
+                        </Track>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Orientation" Value="Horizontal">
+                            <Setter Property="Height" Value="9" />
+                            <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ====================== Progress ====================== -->
+    <Style x:Key="ThinProgress" TargetType="ProgressBar">
+        <Setter Property="Height" Value="3" />
+        <Setter Property="Foreground" Value="{StaticResource Accent}" />
+        <Setter Property="Background" Value="#1AFFFFFF" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ProgressBar">
+                    <Border Background="{TemplateBinding Background}"
+                            CornerRadius="{StaticResource RadiusPill}"
+                            ClipToBounds="True">
+                        <!-- PART_Indicator is aligned left and sized by the control itself;
+                             PART_Track must exist for ProgressBar to measure against. -->
+                        <Grid>
+                            <Rectangle x:Name="PART_Track" />
+                            <Border x:Name="PART_Indicator"
+                                    Background="{TemplateBinding Foreground}"
+                                    CornerRadius="{StaticResource RadiusPill}"
+                                    HorizontalAlignment="Left" />
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ====================== Library rail ====================== -->
+    <Style x:Key="GameList" TargetType="ListBox">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="KeyboardNavigation.DirectionalNavigation" Value="Cycle" />
+    </Style>
+
+    <!-- A shelf, not a stack of cards: no border and no gap, with a hairline between rows
+         and an accent bar marking the selected one. Twenty bordered cards is twenty boxes
+         competing with the artwork behind them. -->
+    <Style x:Key="GameListItem" TargetType="ListBoxItem">
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBoxItem">
+                    <Grid>
+                        <Border x:Name="Shell" Background="Transparent" CornerRadius="4">
+                            <Grid>
+                                <!-- Fades out across the row, so the accent reads as light
+                                     coming off the edge and the game's name stays on a
+                                     neutral background where it is still legible. Opacity is
+                                     animated rather than swapped so selection does not snap. -->
+                                <Border x:Name="Wash" CornerRadius="4" Opacity="0">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                            <GradientStop Offset="0" Color="#4DE23E2C" />
+                                            <GradientStop Offset="1" Color="#00E23E2C" />
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                </Border>
+
+                                <Border x:Name="Edge" Width="3" HorizontalAlignment="Left"
+                                        Background="{StaticResource Accent}"
+                                        CornerRadius="2" Opacity="0" />
+
+                                <ContentPresenter Margin="{TemplateBinding Padding}" />
+                            </Grid>
+                        </Border>
+
+                        <Border Height="1" VerticalAlignment="Bottom" Background="#12FFFFFF"
+                                Margin="12,0" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Shell" Property="Background" Value="#14FFFFFF" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Shell" Property="Background" Value="#1AFFFFFF" />
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Wash"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="1" Duration="0:0:0.16" />
+                                        <DoubleAnimation Storyboard.TargetName="Edge"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="1" Duration="0:0:0.16" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Wash"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="0" Duration="0:0:0.13" />
+                                        <DoubleAnimation Storyboard.TargetName="Edge"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="0" Duration="0:0:0.13" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- The initial shown on the coloured plate when a game has no cached box art. -->
+    <Style x:Key="GameTileText" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource DisplayFont}" />
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="Foreground" Value="#D9FFFFFF" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+</ResourceDictionary>

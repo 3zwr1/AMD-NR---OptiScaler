@@ -1,0 +1,61 @@
+AMD NR Launcher - Source-Available Licence
+Copyright (c) 2026 3zwr1 (AMDNR). All rights reserved.
+
+This is not an open-source licence. The source code of AMD NR Launcher ("the Software") is
+published so that anyone can read it and check exactly what the launcher does on their PC.
+Publishing it grants no right beyond what this document expressly allows.
+
+1. What you may do
+   a. Download and use the official AMD NR Launcher builds released by 3zwr1 (AMDNR).
+   b. Read and study this source code, and quote short excerpts of it when reporting a bug or
+      discussing the launcher, with attribution to 3zwr1 (AMDNR).
+   c. Build it, unmodified, on your own PC, to check that the official release matches this
+      source or to run it yourself.
+
+2. What you may not do without prior written permission from 3zwr1
+   a. Copy, adapt, translate, modify, merge, port or create derivative works of the Software,
+      in whole or in part, in any programming language or form.
+   b. Use any part of the Software - its code, structure, user-interface design, layout,
+      wording, graphics, icons, assets, manifest format, install records or installation
+      logic - in another program, installer, launcher, mod manager, script, website or
+      service, whether free or paid, open or closed.
+   c. Use the Software as a template, reference or starting point for software with the same
+      or a similar purpose, or make software that is substantially similar to it in code,
+      structure, user interface or look and feel by drawing on it.
+   d. Publish, distribute, sublicense, sell or rent the Software or any modified or rebuilt
+      version of it, in source or binary form, or present any other software as AMD NR
+      Launcher.
+   e. Use the names "AMDNR", "AMD NR Launcher" or the AMDNR logo and artwork, except to refer
+      to the official project.
+   f. Use the Software to train, fine-tune, evaluate or prompt any machine-learning or AI
+      model, or include it in any dataset gathered for such purposes.
+   g. Remove or alter this licence, the copyright notices, the credits or the attributions
+      in the Software.
+
+3. Third-party components and the programs the launcher installs
+   a. Libraries the Software is built with - the .NET runtime, WPF and Microsoft's packages -
+      remain under their own licences.
+   b. The Software downloads and places other people's programs: the AMDNR mod (a GPL-3.0
+      build of OptiScaler), OptiScaler AMD pre-SR by TheAutomatic, the lmxxf runtime (MIT),
+      and DLSS-NR on AMD by Daniel Blanco (danielblnc), shipped unmodified with his
+      permission. Each of those keeps its own licence and credits, which this licence does
+      not change, extend or restrict. This licence covers the launcher's own code and assets
+      only. The forwarder nvngx.dll_dlssnr.dll published beside the launcher belongs to the
+      AMDNR mod and keeps the mod's licence.
+
+4. Trademarks
+   AMD and the AMD arrow logo are trademarks of Advanced Micro Devices, Inc.; NVIDIA and DLSS
+   of NVIDIA Corporation; Discord of Discord Inc.; Steam of Valve Corporation; Xbox of
+   Microsoft Corporation. AMD NR Launcher is not affiliated with or endorsed by any of them,
+   and nothing in this licence grants any right to those marks.
+
+5. No warranty
+   The Software is provided "as is", without warranty of any kind, express or implied. It
+   changes files inside game folders at your request, and you use it at your own risk. In no
+   event shall the author be liable for any claim, damages or other liability arising from
+   the Software or its use.
+
+6. Reservation of rights and permission requests
+   Every right not expressly granted above is reserved. Any use outside this licence ends the
+   permissions it grants. To ask for permission, use the AMD NR Discord server
+   (https://discord.gg/AMDNR) or https://github.com/3zwr1/AMD-NR---OptiScaler.

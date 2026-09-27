@@ -1,0 +1,122 @@
+<!-- Copyright (c) 2026 3zwr1 (AMDNR). All rights reserved. Source published to be read, not reused: see LICENSE.txt. -->
+<!--
+    The window shell: caption buttons and the ambient lighting behind the header.
+
+    The caption is drawn by the launcher rather than by Windows, through WindowChrome
+    rather than WindowStyle="None". The difference matters: WindowChrome keeps the real
+    non-client frame underneath, so Aero Snap, the drag-to-maximise gesture, the resize
+    borders, the system menu and the taskbar thumbnail all still work — while the pixels
+    are ours. WindowStyle="None" hands all of that back to be re-implemented by hand.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Caption buttons follow the Windows metrics (46x32) so muscle memory still works,
+         even though every pixel is redrawn. Close is the only one that turns red. -->
+    <Style x:Key="CaptionButton" TargetType="Button">
+        <Setter Property="Width" Value="46" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Foreground" Value="{StaticResource TextSecondary}" />
+        <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Shell" Background="{TemplateBinding Background}">
+                        <!-- A Path, not a glyph from Segoe MDL2: the icon font is missing on
+                             stripped Server SKUs, and a missing glyph renders as a box in the
+                             corner of the window. Geometry cannot fail to be present. -->
+                        <Path x:Name="Icon"
+                              Data="{TemplateBinding Content}"
+                              Stroke="{TemplateBinding Foreground}"
+                              StrokeThickness="1"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"
+                              SnapsToDevicePixels="True" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Shell" Property="Background"
+                                    Value="{StaticResource SurfaceRaised}" />
+                            <Setter TargetName="Icon" Property="Stroke"
+                                    Value="{StaticResource TextPrimary}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="CloseCaptionButton" TargetType="Button" BasedOn="{StaticResource CaptionButton}">
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#C42B1C" />
+                <Setter Property="Foreground" Value="#FFFFFF" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- The three caption glyphs, as geometry. Drawn on a 10x10 box so they line up. -->
+    <!-- A caption button whose glyph is a filled shape rather than a line: the Discord mark
+         that opens the owner's server. Same size and hover as the window buttons, so it reads
+         as part of the caption and not as a badge stuck on it. -->
+    <Style x:Key="LinkCaptionButton" TargetType="Button" BasedOn="{StaticResource CaptionButton}">
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Shell" Background="{TemplateBinding Background}">
+                        <Path x:Name="Icon"
+                              Data="{TemplateBinding Content}"
+                              Fill="{TemplateBinding Foreground}"
+                              Stretch="Uniform" Width="18" Height="14"
+                              HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Shell" Property="Background"
+                                    Value="{StaticResource SurfaceRaised}" />
+                            <Setter TargetName="Icon" Property="Fill"
+                                    Value="{StaticResource TextPrimary}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Geometry x:Key="GlyphMinimise">M 0,5 H 10</Geometry>
+    <Geometry x:Key="GlyphMaximise">M 0.5,0.5 H 9.5 V 9.5 H 0.5 Z</Geometry>
+    <Geometry x:Key="GlyphRestore">M 0.5,2.5 H 7.5 V 9.5 H 0.5 Z M 2.5,2.5 V 0.5 H 9.5 V 7.5 H 7.5</Geometry>
+    <Geometry x:Key="GlyphClose">M 0,0 L 10,10 M 10,0 L 0,10</Geometry>
+
+    <!-- Discord's mark, as their brand guidelines allow for linking to a server, in their
+         24 x 24 frame; the path is Simple Icons' (CC0) with every flag separated for WPF's parser.
+         Drawn filled by LinkCaptionButton, which is why it is not a stroked glyph like the three above. -->
+    <Geometry x:Key="DiscordMark">F1 M 20.317 4.3698 a 19.7913 19.7913 0 0 0 -4.8851 -1.5152 .0741 .0741 0 0 0 -.0785 .0371 c -.211 .3753 -.4447 .8648 -.6083 1.2495 -1.8447 -.2762 -3.68 -.2762 -5.4868 0 -.1636 -.3933 -.4058 -.8742 -.6177 -1.2495 a .077 .077 0 0 0 -.0785 -.037 19.7363 19.7363 0 0 0 -4.8852 1.515 .0699 .0699 0 0 0 -.0321 .0277 C .5334 9.0458 -.319 13.5799 .0992 18.0578 a .0824 .0824 0 0 0 .0312 .0561 c 2.0528 1.5076 4.0413 2.4228 5.9929 3.0294 a .0777 .0777 0 0 0 .0842 -.0276 c .4616 -.6304 .8731 -1.2952 1.226 -1.9942 a .076 .076 0 0 0 -.0416 -.1057 c -.6528 -.2476 -1.2743 -.5495 -1.8722 -.8923 a .077 .077 0 0 1 -.0076 -.1277 c .1258 -.0943 .2517 -.1923 .3718 -.2914 a .0743 .0743 0 0 1 .0776 -.0105 c 3.9278 1.7933 8.18 1.7933 12.0614 0 a .0739 .0739 0 0 1 .0785 .0095 c .1202 .099 .246 .1981 .3728 .2924 a .077 .077 0 0 1 -.0066 .1276 12.2986 12.2986 0 0 1 -1.873 .8914 .0766 .0766 0 0 0 -.0407 .1067 c .3604 .698 .7719 1.3628 1.225 1.9932 a .076 .076 0 0 0 .0842 .0286 c 1.961 -.6067 3.9495 -1.5219 6.0023 -3.0294 a .077 .077 0 0 0 .0313 -.0552 c .5004 -5.177 -.8382 -9.6739 -3.5485 -13.6604 a .061 .061 0 0 0 -.0312 -.0286 z M 8.02 15.3312 c -1.1825 0 -2.1569 -1.0857 -2.1569 -2.419 0 -1.3332 .9555 -2.4189 2.157 -2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332 -.9555 2.4189 -2.1569 2.4189 z m 7.9748 0 c -1.1825 0 -2.1569 -1.0857 -2.1569 -2.419 0 -1.3332 .9554 -2.4189 2.1569 -2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332 -.946 2.4189 -2.1568 2.4189 Z</Geometry>
+
+    <!-- The arrow from the owner's logo, on a 100 x 100 box: the right and bottom bars of a
+         square with their ends cut at 45 degrees, and the top-left corner piece cut the same
+         way, so the gap between the two is the arrow, pointing up and left. tools\make-icon.ps1
+         draws the same two polygons for the exe's icon. -->
+    <Geometry x:Key="AmdArrowMark">M 100,0 V 100 H 0 L 25,75 H 75 V 25 Z M 0,0 H 75 L 50,25 H 25 V 50 L 0,75 Z</Geometry>
+
+    <!-- Ambient light. A single wide, very low-opacity radial wash bled in from the top
+         left, which is what stops a dark UI from reading as a flat black rectangle. It is
+         behind everything and hit-test invisible, so it can never intercept a click. -->
+    <RadialGradientBrush x:Key="AmbientGlow" GradientOrigin="0.5,0.5"
+                         Center="0.5,0.5" RadiusX="0.5" RadiusY="0.5">
+        <GradientStop Offset="0"    Color="#38E23E2C" />
+        <GradientStop Offset="0.55" Color="#12E23E2C" />
+        <GradientStop Offset="1"    Color="#00E23E2C" />
+    </RadialGradientBrush>
+
+    <RadialGradientBrush x:Key="AmbientGlowCool" GradientOrigin="0.5,0.5"
+                         Center="0.5,0.5" RadiusX="0.5" RadiusY="0.5">
+        <GradientStop Offset="0"    Color="#2A4B7FD4" />
+        <GradientStop Offset="0.6"  Color="#0C4B7FD4" />
+        <GradientStop Offset="1"    Color="#004B7FD4" />
+    </RadialGradientBrush>
+
+</ResourceDictionary>

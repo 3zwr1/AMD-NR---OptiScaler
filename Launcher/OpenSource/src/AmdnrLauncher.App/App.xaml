@@ -1,0 +1,27 @@
+﻿<!-- Copyright (c) 2026 3zwr1 (AMDNR). All rights reserved. Source published to be read, not reused: see LICENSE.txt. -->
+<Application x:Class="AmdnrLauncher.App.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:AmdnrLauncher.App"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <!-- Order matters: Controls.xaml resolves the token keys at parse time, so the
+                 palette has to already be in the dictionary when it is merged. -->
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/Palette.xaml" />
+                <ResourceDictionary Source="Themes/Controls.xaml" />
+                <ResourceDictionary Source="Themes/Chrome.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+            <local:NullToVisibilityConverter x:Key="NullToVisibility" />
+            <local:NullToInverseVisibilityConverter x:Key="NullToInverseVisibility" />
+            <local:ZeroToVisibilityConverter x:Key="ZeroToVisibility" />
+            <local:NameToTileBrushConverter x:Key="NameToTileBrush" />
+            <local:PathToImageConverter x:Key="PathToImage" />
+            <local:PathToBlurredImageConverter x:Key="PathToBlurredImage" />
+            <local:BoolToInverseVisibilityConverter x:Key="BoolToInverseVisibility" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

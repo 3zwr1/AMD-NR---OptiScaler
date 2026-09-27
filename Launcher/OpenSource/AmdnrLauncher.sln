@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3EAD6454-2BD1-4AC9-B238-EB5399820402}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AmdnrLauncher.Core", "src\AmdnrLauncher.Core\AmdnrLauncher.Core.csproj", "{426328CB-0E1C-49BC-A543-4C951ADFC659}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{42C94B0D-046E-4F97-BDF3-3ECDBC200A56}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AmdnrLauncher.Core.Tests", "tests\AmdnrLauncher.Core.Tests\AmdnrLauncher.Core.Tests.csproj", "{8BE9756E-F3CA-4CA1-B222-7D6E8D692A0F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AmdnrLauncher.App", "src\AmdnrLauncher.App\AmdnrLauncher.App.csproj", "{A866507B-0064-4CE7-B4B9-88CCF0DB45B4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AmdnrLauncher.App.Tests", "tests\AmdnrLauncher.App.Tests\AmdnrLauncher.App.Tests.csproj", "{B24A45D7-8B88-430E-A796-DED701F34A14}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AmdnrLauncher.Fixtures.OptiScaler", "tests\AmdnrLauncher.Fixtures.OptiScaler\AmdnrLauncher.Fixtures.OptiScaler.csproj", "{2D94A555-66FC-4FBF-851A-39CC13343FA8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{426328CB-0E1C-49BC-A543-4C951ADFC659}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{426328CB-0E1C-49BC-A543-4C951ADFC659}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{426328CB-0E1C-49BC-A543-4C951ADFC659}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{426328CB-0E1C-49BC-A543-4C951ADFC659}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8BE9756E-F3CA-4CA1-B222-7D6E8D692A0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8BE9756E-F3CA-4CA1-B222-7D6E8D692A0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8BE9756E-F3CA-4CA1-B222-7D6E8D692A0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8BE9756E-F3CA-4CA1-B222-7D6E8D692A0F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A866507B-0064-4CE7-B4B9-88CCF0DB45B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A866507B-0064-4CE7-B4B9-88CCF0DB45B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A866507B-0064-4CE7-B4B9-88CCF0DB45B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A866507B-0064-4CE7-B4B9-88CCF0DB45B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B24A45D7-8B88-430E-A796-DED701F34A14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B24A45D7-8B88-430E-A796-DED701F34A14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B24A45D7-8B88-430E-A796-DED701F34A14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B24A45D7-8B88-430E-A796-DED701F34A14}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D94A555-66FC-4FBF-851A-39CC13343FA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D94A555-66FC-4FBF-851A-39CC13343FA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D94A555-66FC-4FBF-851A-39CC13343FA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D94A555-66FC-4FBF-851A-39CC13343FA8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{426328CB-0E1C-49BC-A543-4C951ADFC659} = {3EAD6454-2BD1-4AC9-B238-EB5399820402}
+		{8BE9756E-F3CA-4CA1-B222-7D6E8D692A0F} = {42C94B0D-046E-4F97-BDF3-3ECDBC200A56}
+		{A866507B-0064-4CE7-B4B9-88CCF0DB45B4} = {3EAD6454-2BD1-4AC9-B238-EB5399820402}
+		{B24A45D7-8B88-430E-A796-DED701F34A14} = {42C94B0D-046E-4F97-BDF3-3ECDBC200A56}
+		{2D94A555-66FC-4FBF-851A-39CC13343FA8} = {42C94B0D-046E-4F97-BDF3-3ECDBC200A56}
+	EndGlobalSection
+EndGlobal

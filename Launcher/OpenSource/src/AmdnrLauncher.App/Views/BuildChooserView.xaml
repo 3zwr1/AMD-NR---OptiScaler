@@ -1,0 +1,292 @@
+<!-- Copyright (c) 2026 3zwr1 (AMDNR). All rights reserved. Source published to be read, not reused: see LICENSE.txt. -->
+<UserControl x:Class="AmdnrLauncher.App.Views.BuildChooserView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:views="clr-namespace:AmdnrLauncher.App.Views"
+             xmlns:local="clr-namespace:AmdnrLauncher.App">
+
+    <!-- The chooser sits over the art like the rest of the launcher: type on a scrim, no
+         panels. The selected build is marked the way the selected game is in the rail — an
+         accent edge and a wash of light — so the two read as the same kind of choice. -->
+    <UserControl.Resources>
+        <!-- Keyed as well as implicit: a Hyperlink is not a Control, so an implicit style
+             does not reach one inside a DataTemplate, and the build homepages would come out
+             in the stock blue. -->
+        <Style x:Key="Link" TargetType="Hyperlink">
+            <Setter Property="Foreground" Value="{StaticResource TextSecondary}" />
+            <Setter Property="TextDecorations" Value="{x:Null}" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+                    <Setter Property="TextDecorations" Value="Underline" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="Hyperlink" BasedOn="{StaticResource Link}" />
+
+        <!-- danielblnc's name and project, in the colour the chooser already gives an author's
+             byline: his attribution is a condition of shipping his runtime, and it should be
+             what the eye lands on in the line, not what it passes over. -->
+        <Style x:Key="AuthorLink" TargetType="Hyperlink" BasedOn="{StaticResource Link}">
+            <Setter Property="Foreground" Value="{StaticResource Accent}" />
+        </Style>
+
+        <Style x:Key="SectionHeading" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource DisplayFont}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Foreground" Value="{StaticResource TextSecondary}" />
+        </Style>
+
+        <Style x:Key="BuildOption" TargetType="ListBoxItem">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Grid x:Name="Shell" Background="Transparent" Margin="0,0,14,0">
+                            <Border x:Name="Wash" CornerRadius="4" Opacity="0">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Offset="0" Color="#4DE23E2C" />
+                                        <GradientStop Offset="1" Color="#00E23E2C" />
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
+                            <Border x:Name="Edge" Width="3" HorizontalAlignment="Left"
+                                    Background="{StaticResource Accent}" CornerRadius="2" Opacity="0" />
+                            <ContentPresenter x:Name="Body" Margin="20,16,16,18" Opacity="0.55" />
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Body" Property="Opacity" Value="0.8" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Wash" Property="Opacity" Value="1" />
+                                <Setter TargetName="Edge" Property="Opacity" Value="1" />
+                                <Setter TargetName="Body" Property="Opacity" Value="1" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- The Yes / No answers use AnswerRadio from Themes/Controls.xaml, which the stage's
+             DLL-name picker shares: one accent edge, not two stock radio circles. -->
+    </UserControl.Resources>
+
+    <!-- Two rows: the page, which scrolls when the window is short, and the buttons, which never
+         do. At the window's default height the page ran longer than the window, and CONTINUE —
+         the one control a first run has to find — sat below the fold with a scrollbar as the
+         only hint. -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <Grid Margin="48,30,48,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" MaxWidth="760" HorizontalAlignment="Left">
+                    <!-- The owner's wordmark over the page: the pictures once they are in the build
+                         (Assets\brand\wordmark.png and logo.png), the vector until then. -->
+                    <views:BrandWordmark FontSize="30" HorizontalAlignment="Left" Margin="0,0,0,18"
+                                         Picture="{x:Static local:Brand.Wordmark}"
+                                         Mark="{x:Static local:Brand.Logo}" />
+                    <TextBlock Text="{Binding Heading}" Style="{StaticResource SectionHeading}" />
+
+                    <!-- The card the runtime will be chosen for, said before the question it bears
+                         on. The line under it is amber and only ever a note: it never takes
+                         CONTINUE away, because the probe is best effort and the manifest decides. -->
+                    <TextBlock Text="{Binding DetectedGpu}" Style="{StaticResource SecondaryText}"
+                               FontSize="{StaticResource TextBody}" Margin="0,6,0,0" />
+                    <TextBlock Text="{Binding GpuNote}" Foreground="{StaticResource StatusWarn}"
+                               FontSize="{StaticResource TextBody}" Margin="0,4,0,0" TextWrapping="Wrap"
+                               MaxWidth="620" HorizontalAlignment="Left"
+                               Visibility="{Binding HasGpuNote, Converter={StaticResource BoolToVisibility}}" />
+
+                    <TextBlock Text="Which build should the launcher install?" Margin="0,6,0,20"
+                               FontFamily="{StaticResource DisplayFont}" FontSize="34" TextWrapping="Wrap" />
+
+                    <!-- Two large choices side by side, each the whole of its column: the name
+                         is what people recognise, and the author is what tells them apart. -->
+                    <ListBox ItemsSource="{Binding Options}" SelectedItem="{Binding SelectedOption}"
+                             IsSynchronizedWithCurrentItem="False"
+                             ItemContainerStyle="{StaticResource BuildOption}">
+                        <!-- Items only. The stock template adds a border, and a scroll viewer that
+                             swallows the mouse wheel meant for the page around it. -->
+                        <ListBox.Template>
+                            <ControlTemplate TargetType="ListBox">
+                                <ItemsPresenter />
+                            </ControlTemplate>
+                        </ListBox.Template>
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Rows="1" />
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Name}" FontFamily="{StaticResource DisplayFont}"
+                                               FontSize="28" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding Byline}" Margin="0,2,0,0"
+                                               FontFamily="{StaticResource DisplayFont}" FontSize="15"
+                                               Foreground="{StaticResource Accent}" />
+                                    <TextBlock Text="{Binding Summary}" Margin="0,10,0,0"
+                                               Style="{StaticResource SecondaryText}"
+                                               FontSize="{StaticResource TextBody}" />
+                                    <TextBlock Margin="0,10,0,0" FontSize="{StaticResource TextSmall}"
+                                               Visibility="{Binding Homepage, Converter={StaticResource NullToVisibility}}">
+                                        <Hyperlink NavigateUri="{Binding Homepage}" RequestNavigate="OnLink"
+                                                   Style="{StaticResource Link}">
+                                            <Run Text="{Binding HomepageText, Mode=OneWay}" />
+                                        </Hyperlink>
+                                    </TextBlock>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <TextBlock Text="{Binding NoOptionsNote}" Style="{StaticResource SecondaryText}"
+                               FontSize="{StaticResource TextBody}" Margin="0,4,0,0"
+                               Visibility="{Binding HasOptions, Converter={StaticResource BoolToInverseVisibility}}" />
+
+                    <TextBlock Text="DLSSNR AMD FILES" Style="{StaticResource SectionHeading}" Margin="0,26,0,0" />
+
+                    <!-- The question and its Yes / No only when the selected build lists a runtime
+                         for this card. Otherwise Yes would download nothing, so the line below
+                         says so in the question's place. The question names the runtime's author
+                         in full and links his repository, which is his condition for letting it
+                         ship; the size is its own line, so the question stays exactly that. -->
+                    <TextBlock Margin="0,6,0,0" TextWrapping="Wrap" FontSize="{StaticResource TextSubhead}"
+                               Visibility="{Binding OffersRuntime, Converter={StaticResource BoolToVisibility}}">
+                        <Run Text="{Binding RuntimeQuestionLead, Mode=OneWay}" />
+                        <Hyperlink NavigateUri="{Binding RuntimeProjectUrl, Mode=OneWay}" RequestNavigate="OnLink"
+                                   Style="{StaticResource AuthorLink}">
+                            <Run Text="{Binding RuntimeProject, Mode=OneWay}" />
+                        </Hyperlink>
+                        <Run Text="{Binding RuntimeQuestionTail, Mode=OneWay}" />
+                    </TextBlock>
+                    <TextBlock Text="{Binding RuntimeSize}" Style="{StaticResource SecondaryText}"
+                               FontSize="{StaticResource TextBody}" Margin="0,4,0,0"
+                               Visibility="{Binding HasRuntimeSize, Converter={StaticResource BoolToVisibility}}" />
+
+                    <!-- One radio per runtime the selected build lists for this card, in the
+                         manifest's order with the first marked RECOMMENDED — following it is the
+                         default, and moves with the manifest — then NO. The same picker as the
+                         stage's DLL names: IsChecked one-way, the click runs the command, the
+                         list is rebuilt, so the radios never disagree with the choice. -->
+                    <ItemsControl ItemsSource="{Binding RuntimeOptions}" Margin="0,10,0,0"
+                                  Visibility="{Binding OffersRuntime, Converter={StaticResource BoolToVisibility}}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <RadioButton Content="{Binding Label}" GroupName="RuntimeChoice"
+                                             Style="{StaticResource AnswerRadio}" Margin="0,0,12,0"
+                                             IsChecked="{Binding IsSelected, Mode=OneWay}"
+                                             Command="{Binding DataContext.PickRuntimeCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                             CommandParameter="{Binding Id}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Text="{Binding NoRuntimeNote}" Margin="0,6,0,0" TextWrapping="Wrap"
+                               FontSize="{StaticResource TextSubhead}" MaxWidth="620" HorizontalAlignment="Left"
+                               Visibility="{Binding OffersRuntime, Converter={StaticResource BoolToInverseVisibility}}" />
+
+                    <TextBlock Text="{Binding RuntimeNote}" Style="{StaticResource SecondaryText}"
+                               FontSize="{StaticResource TextBody}" Margin="0,12,0,0" MaxWidth="620"
+                               HorizontalAlignment="Left" />
+                    <TextBlock Text="{Binding RuntimeWarning}" Foreground="{StaticResource StatusWarn}"
+                               FontSize="{StaticResource TextBody}" Margin="0,8,0,0" TextWrapping="Wrap"
+                               Visibility="{Binding ShowRuntimeWarning, Converter={StaticResource BoolToVisibility}}" />
+
+                    <TextBlock Text="{Binding ChangeNote}" Style="{StaticResource SecondaryText}"
+                               FontSize="{StaticResource TextBody}" Margin="0,18,0,0" MaxWidth="620"
+                               HorizontalAlignment="Left"
+                               Visibility="{Binding IsChange, Converter={StaticResource BoolToVisibility}}" />
+                </StackPanel>
+
+                <!-- ABOUT lives in Settings only. On the first run it would be one more thing to
+                     read before the one question that has to be answered. -->
+                <StackPanel Grid.Column="1" Width="290" Margin="56,4,0,0"
+                            Visibility="{Binding IsChange, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Text="ABOUT" Style="{StaticResource SectionHeading}" />
+                    <!-- The mark, with the owner's square picture standing in for the arrow once it
+                         is in the build, then the owner's handle in the quieter colour: NR already
+                         carries the accent on the line. -->
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <views:BrandWordmark FontSize="20" VerticalAlignment="Center"
+                                             Mark="{x:Static local:Brand.Logo}" />
+                        <TextBlock Text="by 3zwr1" Margin="8,0,0,0" VerticalAlignment="Center"
+                                   FontFamily="{StaticResource DisplayFont}" FontSize="20"
+                                   Foreground="{StaticResource TextSecondary}" />
+                    </StackPanel>
+                    <TextBlock Style="{StaticResource PathText}" Margin="0,3,0,0">
+                        <Run Text="Launcher" />
+                        <Run Text="{Binding LauncherVersion, Mode=OneWay}" />
+                    </TextBlock>
+                    <TextBlock Text="{Binding LauncherCopyright}" Style="{StaticResource SecondaryText}" Margin="0,6,0,0" />
+                    <!-- Not open source: read, not reused. LICENSE.txt has the terms; this is the line. -->
+                    <TextBlock Text="{x:Static local:Brand.LicenceNotice}" Style="{StaticResource SecondaryText}"
+                               Foreground="{StaticResource TextMuted}" Margin="0,4,0,0" TextWrapping="Wrap" />
+
+                    <TextBlock Margin="0,12,0,0" FontSize="{StaticResource TextBody}">
+                        <Hyperlink NavigateUri="https://github.com/3zwr1/AMD-NR---OptiScaler" RequestNavigate="OnLink">GitHub</Hyperlink>
+                        <Run Text="  ·  " Foreground="{StaticResource BorderStrong}" />
+                        <Hyperlink NavigateUri="{x:Static local:Brand.DiscordUri}" RequestNavigate="OnLink">Discord</Hyperlink>
+                        <Run Text="  ·  " Foreground="{StaticResource BorderStrong}" />
+                        <Hyperlink NavigateUri="https://ko-fi.com/3zinr" RequestNavigate="OnLink">Ko-fi</Hyperlink>
+                    </TextBlock>
+
+                    <TextBlock Text="CREDITS" Style="{StaticResource SectionHeading}" Margin="0,26,0,0" />
+                    <!-- danielblnc first and in full. His runtime ships on his condition that he is
+                         named, his repository linked, and the files said to be his, unmodified and
+                         shipped with his permission — never presented as AMDNR's work. -->
+                    <TextBlock Style="{StaticResource SecondaryText}" Margin="0,8,0,0" LineHeight="20">
+                        <Hyperlink NavigateUri="{Binding RuntimeProjectUrl, Mode=OneWay}" RequestNavigate="OnLink"
+                                   Style="{StaticResource AuthorLink}">
+                            <Run Text="{Binding RuntimeAuthor, Mode=OneWay}" />
+                        </Hyperlink>
+                        <Run Text="— DLSS-NR on AMD, the DLSSNR AMD files" /><LineBreak />
+                        <Run Text="{Binding RuntimeCopyright, Mode=OneWay}" /><LineBreak />
+                        <Run Text="lmxxf" Foreground="{StaticResource TextPrimary}" />
+                        <Run Text="— HIP runtime (MIT)" /><LineBreak />
+                        <Run Text="TheAutomatic" Foreground="{StaticResource TextPrimary}" />
+                        <Run Text="— pre-SR build, its releases and asset layout" /><LineBreak />
+                        <Run Text="Matheus" Foreground="{StaticResource TextPrimary}" />
+                        <Run Text="— dlss-5-amd" /><LineBreak />
+                        <Run Text="Nukem9" Foreground="{StaticResource TextPrimary}" />
+                        <Run Text="— dlssg-to-fsr3 (GPLv3)" /><LineBreak />
+                        <Run Text="OptiScaler" Foreground="{StaticResource TextPrimary}" />
+                        <Run Text="— the upscaler all of this builds on" />
+                    </TextBlock>
+                    <TextBlock Text="OptiScaler is GPL-3.0." Style="{StaticResource SecondaryText}" Margin="0,10,0,0" />
+
+                    <TextBlock Text="Not affiliated with or endorsed by AMD or NVIDIA. Use at your own risk."
+                               Style="{StaticResource SecondaryText}" Foreground="{StaticResource TextMuted}"
+                               Margin="0,26,0,0" />
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="48,14,48,26">
+            <Button Content="CONTINUE" MinWidth="168" Style="{StaticResource PrimaryButton}"
+                    Command="{Binding ContinueCommand}" />
+            <Button Content="CANCEL" Margin="22,0,0,0" Style="{StaticResource GhostButton}"
+                    Command="{Binding CancelCommand}"
+                    Visibility="{Binding IsChange, Converter={StaticResource BoolToVisibility}}" />
+        </StackPanel>
+    </Grid>
+</UserControl>

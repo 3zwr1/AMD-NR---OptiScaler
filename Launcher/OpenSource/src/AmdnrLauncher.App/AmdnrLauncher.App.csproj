@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\AmdnrLauncher.Core\AmdnrLauncher.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The update's file swap and its one-per-process latch are implementation detail, not API,
+         but they are the part of the self-updater that can be tested without starting a process
+         or shutting the app down. -->
+    <InternalsVisibleTo Include="AmdnrLauncher.App.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The owner's brand pictures, once dropped into Assets\brand: logo.png, the square mark,
+         and wordmark.png, the line "NEURAL RENDERING - AMD". Compiled into the exe as WPF
+         resources and found there by Brand.cs; while absent, the wordmark is drawn. Nothing
+         generates them. -->
+    <Resource Include="Assets\brand\*.png" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- Drawn and packed by tools\make-icon.ps1; the tests parse the file and ask the built
+         assembly for its icon group. -->
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <AssemblyName>AMDNR-Launcher</AssemblyName>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <Version>0.3.4</Version>
+    <!-- The exe's Details tab. The holder string is the owner's, as the owner wrote it: a
+         handle and the project's name, never a real name or an e-mail address. ABOUT shows
+         the same string from Attribution.cs, and a test holds the two to one value. The
+         name is the owner's, as two words; Brand.cs carries it for the window and every
+         dialog, and the same test holds Product and AssemblyTitle to it. -->
+    <AssemblyTitle>AMD NR Launcher</AssemblyTitle>
+    <Product>AMD NR Launcher</Product>
+    <Company>3zwr1 (AMDNR)</Company>
+    <Copyright>Copyright (c) 2026 3zwr1 (AMDNR)</Copyright>
+  </PropertyGroup>
+
+</Project>

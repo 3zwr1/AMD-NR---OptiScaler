@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "launcher": {
-    "version": "0.3.4.1",
-    "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.4.1/AMDNR-Launcher.exe",
-    "sha256": "9a1f28eaa069772f807f17b59c367175776848050f6ef2e3b1fb46b2e8bac090"
+    "version": "0.3.5",
+    "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.4.2/AMDNR-Launcher.exe",
+    "sha256": "fdf26eff70c9ee0b9732ccbcc79570ca13a39ddfc8f228de8248f90adc4d9bfe"
   },
   "sources": [
     {
@@ -72,10 +72,10 @@
   "packages": [
     {
       "id": "amdnr",
-      "version": "0.3.4.1",
-      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.4.1/AMDNR-v0.3.4.1.zip",
-      "sha256": "de7a2a1749cc44a5885034821ea33a7412ee9596df276d9b9cefad0d7ff78e63",
-      "size": 603486024,
+      "version": "0.3.4.2",
+      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.4.2/AMDNR-v0.3.4.2.zip",
+      "sha256": "013081a3a225ef927d96d8996b64910d62f796022b20bef6a6ea102670b0cb63",
+      "size": 603542981,
       "exclude": []
     },
     {

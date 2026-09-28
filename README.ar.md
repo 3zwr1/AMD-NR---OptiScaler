@@ -1,4 +1,4 @@
-# AMDNR — DLSS 5 Neural Rendering على AMD (نسخة OptiScaler) — v0.3.4.1
+# AMDNR — DLSS 5 Neural Rendering على AMD (نسخة OptiScaler) — v0.3.4.2
 
 [English](README.md) | [中文](README.zh-CN.md) | [Português](README.pt-BR.md) | [Español](README.es.md) | **العربية** | [Français](README.fr.md) | [Italiano](README.it.md) | [Русский](README.ru.md) | [Polski](README.pl.md)
 
@@ -23,6 +23,16 @@
 > <https://github.com/danielblnc/DLSS-NR-on-AMD>. Copyright (c) 2026 Daniel Blanco, all rights reserved.
 > يوزّعها AMDNR دون أي تعديل وبإذن منه؛ وهي ليست من عمل AMDNR. رجاءً ادعم مشروعه.
 > وتجد الشكر الكامل لجميع المساهمين الآخرين في نهاية هذه الصفحة.
+
+> **الجديد في 0.3.4.2 (إصدار إصلاحي، hotfix):** القائمة في Assetto Corsa: مفتاح القائمة يبدّل حالتها مرة واحدة مع كل ضغطة،
+> والنقرات الأقصر من إطار واحد لم تعد تضيع، ونافذة اختيار بيئة التشغيل تستجيب للمفاتيح `1` / `2` / `Enter` / `Esc` ولها زر X
+> في شريط العنوان، وإغلاق القائمة يُحسب "Decide later". لم تعد نافذة اختيار بيئة التشغيل تفتح القائمة من تلقاء نفسها
+> (إشعار واحد بدلًا من ذلك)، ولم يعد قسم **Ray Regeneration** في تبويب Neural يختفي — فهو ظاهر دائمًا الآن، ويوضّح سطر
+> باهت سببَ عدم عمله — ونص Wine / Proton يقول الآن إن Ray Regeneration مشكلة معروفة هناك. وAMDNR كذلك **يقبل مخطّطًا (layout) إضافيًا
+> لبيئة تشغيل danielblnc**، فتستطيع نسخة أحدث من danielblnc أن تعمل هنا دون أي تحديث لـ AMDNR. **Neural Rendering مطابق
+> بايتًا ببايت للإصدار 0.3.4.1 باستثناء ذلك السطر الواحد من المخطّطات المقبولة** (المسار العصبي وبيئتا التشغيل وملف pak
+> دون تغيير): قادمًا من 0.3.4.1 أو 0.3.4، استبدل
+> `OptiScaler.dll` وحده؛ ومستخدمو Launcher: يحدّث لكم تلقائيًا. التفاصيل: `CHANGELOG.md`.
 
 > **الجديد في 0.3.4.1 (إصدار إصلاحي، hotfix):** صارت Ray Regeneration أقل نعومة على Windows (شحذ الصورة بمقدار 0.25
 > عندما لا ترسل اللعبة قيمة شحذ خاصة بها؛ ولإيقافه: Image > Sharpness، فعّل Override، واضبط شريط التمرير على 0)؛ ولم تعد
@@ -50,12 +60,12 @@
 ### 1. حمّل الملفات
 
 حمّل هذه الملفات من أحدث إصدار على GitHub (<https://github.com/3zwr1/AMD-NR---OptiScaler/releases>؛
-الإصدار 0.3.4.1 هو الوسم Alpha0.3.4.1):
+الإصدار 0.3.4.2 هو الوسم Alpha0.3.4.2):
 
-* `AMDNR-vX.X.X.zip` (للإصدار 0.3.4.1: `AMDNR-v0.3.4.1.zip`)، ويضم بيئة تشغيل lmxxf كاملة.
-* لبيئة تشغيل danielblnc، ملف zip واحد لبيئة التشغيل يناسب بطاقة الرسوميات لديك: على **RX 9000**، `v0.4.1-Runtime.zip`
-  (الأحدث) أو `v0.4.0-Runtime.zip` من Alpha0.3.4.1؛ وعلى **RX 7000**، `v0.3.3-Runtime.zip`، الذي يبقى في
-  [إصدار Alpha0.3.4](https://github.com/3zwr1/AMD-NR---OptiScaler/releases/tag/Alpha0.3.4). بيئة تشغيل lmxxf موجودة
+* `AMDNR-vX.X.X.zip` (للإصدار 0.3.4.2: `AMDNR-v0.3.4.2.zip`)، ويضم بيئة تشغيل lmxxf كاملة.
+* لبيئة تشغيل danielblnc، ملف zip واحد لبيئة التشغيل: على **RX 9000** و**RX 7000** معًا، `v0.4.3-Runtime.zip`
+  (المُوصى به) من Alpha0.3.4.1؛ ولا يزال `v0.4.1-Runtime.zip` و`v0.4.0-Runtime.zip` من الإصدار نفسه مقبولين.
+  بيئة تشغيل lmxxf موجودة
   في `AMDNR-vX.X.X.zip` ولا تحتاج إلى أي ملف zip لبيئة التشغيل على RX 7000 وRX 9000؛ أما معالجات APU في الأجهزة المحمولة
   فتستخدم lmxxf فقط. ويختار AMDNR Launcher ملف zip المناسب لبطاقة الرسوميات لديك. راجع قسم "محتويات الأرشيفات".
 
@@ -68,14 +78,13 @@
 أولًا، انسخ جميع الملفات من `AMDNR-vX.X.X` إلى المجلد الرئيسي للعبة — وهو المجلد نفسه الذي يوجد
 فيه ملف `.exe` الخاص باللعبة.
 
-بعد ذلك، كرر الأمر نفسه مع جميع الملفات من ملف zip الخاص ببيئة التشغيل (مثل `v0.4.1-Runtime` على RX 9000،
-و`v0.3.3-Runtime` على RX 7000).
+بعد ذلك، كرر الأمر نفسه مع جميع الملفات من ملف zip الخاص ببيئة التشغيل (مثل `v0.4.3-Runtime` على RX 9000 وRX 7000).
 
 > **هل تحدّث من إصدار أقدم من AMDNR؟** انسخ كل شيء من جديد مع الاستبدال. في 0.3.4 تغيّرت ثلاثة ملفات معًا:
 > `OptiScaler.dll` (استبدل الملف الذي غيّرت اسمه، مثل `dxgi.dll`، بالملف الجديد بعد إعطائه الاسم نفسه)،
 > و`LmxxfNrRuntime.dll`، و`LmxxfNrRuntime.pak` (440 MB، جديد في 0.3.4). لا تخلطها بنسخ أقدم.
 > ويمكنك الإبقاء على ملف `OptiScaler.ini` الخاص بك: الإعدادات الجديدة تأخذ قيمها الافتراضية.
-> **من 0.3.4 إلى 0.3.4.1 لم يتغير إلا `OptiScaler.dll`:** استبدل هذا الملف وحده؛ أما `LmxxfNrRuntime.dll`
+> **من 0.3.4 إلى 0.3.4.1 و0.3.4.2 لم يتغير إلا `OptiScaler.dll`:** استبدل هذا الملف وحده؛ أما `LmxxfNrRuntime.dll`
 > و`LmxxfNrRuntime.pak` والملفات التي نسختها من ملف zip الخاص ببيئة التشغيل فتبقى كما هي. ويتولى AMDNR Launcher ذلك
 > عنك: اضغط REPAIR / UPDATE على اللعبة التي يظهر لها "Update available".
 
@@ -98,8 +107,11 @@
 * `winmm.dll`
 * `version.dll`
 * `dbghelp.dll`
+* `winhttp.dll`
+* `wininet.dll`
 
-جرّب اسمًا واحدًا في كل مرة. لا تنشئ عدة نسخ من `OptiScaler.dll`.
+جرّب اسمًا واحدًا في كل مرة. لا تنشئ عدة نسخ من `OptiScaler.dll`. هذه هي الأسماء التي يعمل المود تحتها (إضافة إلى
+`OptiScaler.asi` مع محمّل ASI)؛ أما `d3d11.dll` فليس منها.
 
 > **لعبة Resident Evil Requiem (ونسخة الديمو منها) تحتاج إلى REFramework.** هذا متطلب معروف وليس خطأً في AMDNR: يعتمد عليه OptiScaler
 > لتجاوز حماية Capcom ضد التلاعب (anti-tamper) ([ويكي OptiScaler](https://github.com/optiscaler/OptiScaler/wiki/Resident-Evil-9-Requiem)). وبدونه تنهار اللعبة بعد 15-60 ثانية
@@ -222,6 +234,10 @@ output وEncoding وResidual edge fade وGame exposure وFast mode، وقراء�
 - ترى الشبكة صورة أصغر قليلًا (عند 1440p Quality نحو 6% بكسلات أقل في كل ضلع)، لذا قد تصبح التفاصيل الدقيقة
   أنعم قليلًا. الخيار `[DlssNr] AmdLmxxfTierSnap=false` يعيد أحجام 0.3.3.2. وتبقى سلسلة RX 9000 على أحجام 0.3.3.2
   إلا إذا ضبطته على `true`.
+- **RX 9000:** الخيار `[DlssNr] AmdLmxxfTierSnap=true` (معطّل افتراضيًا هناك) ينقل حجم NR في lmxxf إلى حجم شبكة عند كل دقة
+  رسم: بعض الأحجام تهبط مستوى (1440p FSR Quality، 1707x960 -> حجم 900: زمن الشبكة 14.08 -> 9.96 ms لكل تشغيل على
+  RX 9070 XT، مقيس خارج اللعبة، وصورة أنعم قليلًا)، وأحجام أخرى تكبر داخل مستواها (80% من رسم 1080p -> 1600x900: التكلفة
+  نفسها وتفاصيل أكثر قليلًا). إن تُرك دون ضبط، تبقى RX 9000 على أحجام 0.3.3.2.
 - ابدأ بضبط NR resolution على 70% أو أقل (المستوى 720 مع دقة رسم 1080p؛ والإعداد المسبق Performance يساوي 70%).
   التكلفة المعروضة بجانب NR resolution محسوبة بحسب المستوى الذي تعمل عليه الشبكة، ويذكر التلميح الخاص بها اسم
   المستوى.
@@ -260,7 +276,7 @@ Handheld)، 62 ms في المتوسط لكل تشغيل للشبكة بحجم 36
   0.3.4).
 - **التعريف (driver):** استخدم تعريف Adrenalin الرسمي من AMD. يحتاج lmxxf إلى HIP (`amdhip64_7.dll`)، وبعض تعريفات
   الشركات المصنعة للأجهزة المحمولة لا تتضمنه؛ وعندها يذكر `amd_bridge.log` أن HIP غير متاح.
-- **استخدم ملفات 0.3.4 معًا** (لا يغيّر 0.3.4.1 إلا `OptiScaler.dll`): وحدات الأجهزة المحمولة موجودة في ملف pak الخاص
+- **استخدم ملفات 0.3.4 معًا** (لا يغيّر 0.3.4.1 و0.3.4.2 إلا `OptiScaler.dll`): وحدات الأجهزة المحمولة موجودة في ملف pak الخاص
   بـ 0.3.4 فقط، وملف `LmxxfNrRuntime.dll` من 0.3.4 يرفض العمل على جهاز محمول إذا كان `OptiScaler.dll` أقدم من 0.3.4
   ("this handheld needs OptiScaler.dll 0.3.4 or newer").
 - **للمختبرين الذين يملكون جهازًا محمولًا:** اطلبوا حزمة اختبار الأجهزة المحمولة (`handheld-test.zip`) على Discord.
@@ -306,8 +322,8 @@ Windows يمكن تشغيله تحت Proton (تجريبي، ولم نختبره 
 
 **التثبيت اليدوي** (دون AMDNR Launcher):
 
-1. حمّل `AMDNR-vX.X.X.zip` من صفحة الإصدارات (للإصدار 0.3.4.1: `AMDNR-v0.3.4.1.zip`). أما ملفات zip الخاصة ببيئة تشغيل
-   danielblnc (`v0.4.1-Runtime.zip` وغيرها) فلا يستخدمها إلا Neural Rendering، لذا لا تحتاج إليها على Linux
+1. حمّل `AMDNR-vX.X.X.zip` من صفحة الإصدارات (للإصدار 0.3.4.2: `AMDNR-v0.3.4.2.zip`). أما ملفات zip الخاصة ببيئة تشغيل
+   danielblnc (`v0.4.3-Runtime.zip` وغيرها) فلا يستخدمها إلا Neural Rendering، لذا لا تحتاج إليها على Linux
    (ولا ضرر من نسخ أحدها).
 2. فك ضغط الملف وانسخ كل شيء إلى مجلد اللعبة، بجانب ملف `.exe` الخاص باللعبة.
 3. غيّر اسم `OptiScaler.dll` إلى `dxgi.dll`.
@@ -372,10 +388,10 @@ Windows يمكن تشغيله تحت Proton (تجريبي، ولم نختبره 
 
 | الملف | ما هو |
 |---|---|
-| `OptiScaler.dll` | OptiScaler مع واجهة AMD الخلفية لـ DLSS-NR (AMDNR 0.3.4.1). غيّر اسمه كما يوضح الدليل. |
+| `OptiScaler.dll` | OptiScaler مع واجهة AMD الخلفية لـ DLSS-NR (AMDNR 0.3.4.2). غيّر اسمه كما يوضح الدليل. |
 | `OptiScaler.ini` | الإعدادات. Neural Rendering مفعّل؛ والتسجيل (logging) مفعّل حتى يكون لديك ما ترفقه ببلاغ الخطأ. |
-| `LmxxfNrRuntime.dll` | بيئة التشغيل العصبية lmxxf (الإصدار 0.3.4، دون تغيير في 0.3.4.1: kernels الخاصة بـ lmxxf ومنها kernels الإصدار 0.31، وc32w kernels من AMDNR، وأحجام الشبكة الصغيرة، وقناع الشخصيات الأصلي). لا تُستخدم إلا عند اختيارها؛ وتقرأ `LmxxfNrRuntime.pak` الموجود بجانبها، راجع قسم "بيئة تشغيل lmxxf". |
-| `LmxxfNrRuntime.pak` | أوزان بيئة تشغيل lmxxf ووحدات HIP والـ shaders الخاصة بها في ملف واحد مشفّر (440 MB، دون تغيير في 0.3.4.1؛ الجديد في 0.3.4: وحدات الأجهزة المحمولة وkernels الإصدار 0.31 من lmxxf). لا تقرؤه إلا بيئة تشغيل lmxxf؛ ولا ضرر من إبقائه مع بيئة تشغيل danielblnc. |
+| `LmxxfNrRuntime.dll` | بيئة التشغيل العصبية lmxxf (الإصدار 0.3.4، دون تغيير في 0.3.4.1 و0.3.4.2: kernels الخاصة بـ lmxxf ومنها kernels الإصدار 0.31، وc32w kernels من AMDNR، وأحجام الشبكة الصغيرة، وقناع الشخصيات الأصلي). لا تُستخدم إلا عند اختيارها؛ وتقرأ `LmxxfNrRuntime.pak` الموجود بجانبها، راجع قسم "بيئة تشغيل lmxxf". |
+| `LmxxfNrRuntime.pak` | أوزان بيئة تشغيل lmxxf ووحدات HIP والـ shaders الخاصة بها في ملف واحد مشفّر (440 MB، دون تغيير في 0.3.4.1 و0.3.4.2؛ الجديد في 0.3.4: وحدات الأجهزة المحمولة وkernels الإصدار 0.31 من lmxxf). لا تقرؤه إلا بيئة تشغيل lmxxf؛ ولا ضرر من إبقائه مع بيئة تشغيل danielblnc. |
 | `OptiScaler\` | FSR وXeSS ومزيل التشويش FidelityFX وD3D12 Agility SDK التي يستخدمها OptiScaler. |
 | `OptiScaler/amdnr_dlssg_fsr3.dll` | أداة dlssg-to-fsr3 من Nukem9، دون تعديل مع إعادة تسميتها: تُلبّى استدعاءات DLSS Frame Generation الصادرة من اللعبة بواسطة توليد الإطارات في FSR 3، وعلى Vulkan أيضًا (`FGNvngxReplacement=Nukems`). برخصة GPLv3، راجع `Licenses/`. |
 | `Licenses\`، `LICENSE` | تراخيص الأطراف الثالثة، وإشعار AMDNR (`AMDNR_NOTICE.txt`)، وترخيص GPL-3.0 لهذه النسخة. |
@@ -383,16 +399,22 @@ Windows يمكن تشغيله تحت Proton (تجريبي، ولم نختبره 
 
 **ملفات zip الخاصة ببيئة تشغيل danielblnc** (DLSS-NR on AMD by Daniel Blanco، دون تعديل، وبإذن منه؛ استخدم واحدًا منها)
 
-أيّها تستخدم: على **RX 9000**، `v0.4.1-Runtime.zip` (أو `v0.4.0-Runtime.zip`) من Alpha0.3.4.1؛ وعلى **RX 7000**،
-`v0.3.3-Runtime.zip` من [إصدار Alpha0.3.4](https://github.com/3zwr1/AMD-NR---OptiScaler/releases/tag/Alpha0.3.4). ولا تحتاج بيئة
+أيّها تستخدم: على **RX 9000** و**RX 7000** معًا، `v0.4.3-Runtime.zip` (المُوصى به) من Alpha0.3.4.1؛ ولا يزال
+`v0.4.1-Runtime.zip` و`v0.4.0-Runtime.zip` من الإصدار نفسه مقبولين. ولا تحتاج بيئة
 تشغيل lmxxf إلى أي ملف zip لبيئة التشغيل على RX 7000 وRX 9000؛ أما معالجات APU في الأجهزة المحمولة فتستخدم lmxxf فقط.
+ويوفّر AMDNR Launcher الإصدارات 0.4.3 (المُوصى به) و0.4.1 و0.4.0، ويختار المناسب لك.
 
 | ملف zip | إصدار GitHub | بيئة تشغيل danielblnc |
 |---|---|---|
-| `v0.4.1-Runtime.zip` | Alpha0.3.4.1 (وAlpha0.3.4 أيضًا) | 0.4.1، الأحدث، لـ RX 9000. تظهر Network style وTone curve وBlack lift وGame exposure رمادية معها |
-| `v0.4.0-Runtime.zip` | Alpha0.3.4.1 (وAlpha0.3.4 أيضًا) | 0.4.0، لـ RX 9000؛ إعدادات بيئة تشغيل danielblnc تعمل معها |
-| `v0.3.3-Runtime.zip` | [Alpha0.3.4](https://github.com/3zwr1/AMD-NR---OptiScaler/releases/tag/Alpha0.3.4) | 0.3.3، لـ RX 7000؛ إعدادات بيئة تشغيل danielblnc تعمل معها |
+| `v0.4.3-Runtime.zip` | Alpha0.3.4.1 | 0.4.3، **المُوصى به على RX 9000 وRX 7000**؛ إعدادات بيئة تشغيل danielblnc تعمل معها |
+| `v0.4.1-Runtime.zip` | Alpha0.3.4.1 (وAlpha0.3.4 أيضًا) | 0.4.1، لا يزال مقبولًا. تظهر Network style وTone curve وBlack lift وGame exposure رمادية معها |
+| `v0.4.0-Runtime.zip` | Alpha0.3.4.1 (وAlpha0.3.4 أيضًا) | 0.4.0، لا يزال مقبولًا؛ إعدادات بيئة تشغيل danielblnc تعمل معها |
+| `v0.3.3-Runtime.zip` | [Alpha0.3.4](https://github.com/3zwr1/AMD-NR---OptiScaler/releases/tag/Alpha0.3.4) | 0.3.3، متقاعد: لم يعد مُوصى به. ويظل يعمل إن كان لديك بالفعل؛ إعدادات بيئة تشغيل danielblnc تعمل معها |
 | `Runtime.zip` | Alpha0.3.4 | 0.3.1؛ إعدادات بيئة تشغيل danielblnc تظهر رمادية معها |
+
+**بيئة تشغيل danielblnc 0.4.3 (نُشرت في 2026-09-28) مدعومة من اليوم الأول:** فمخطّطها كان مقبولًا في المضيف سلفًا، لذا
+تشغّلها AMDNR 0.3.4 و0.3.4.1 و0.3.4.2 جميعها دون أي تحديث لـ AMDNR. وأرقامه هو لهذه النسخة: +20% Reference و+18% Fast
+مقارنةً بـ 0.4.2، وهذا قياسه.
 
 يضم كل منها:
 
@@ -430,7 +452,8 @@ Windows يمكن تشغيله تحت Proton (تجريبي، ولم نختبره 
   Network style وTone curve وBlack lift الخاصة بـ danielblnc)، و**Exposure and highlights** (Auto-exposure وسقف
   المناطق الساطعة فيه، وHighlight colour guard، وGame exposure)، و**Appearance filter** (مع كلمة off / on بعد اسمه). وكلمة "default" أو "custom" الباهتة بعد اسم
   القسم المطوي تبيّن هل غيّرت شيئًا بداخله.
-- **Ray Regeneration**: قسم مستقل، لا يظهر إلا أثناء استخدام اللعبة لـ FSR Ray Regeneration.
+- **Ray Regeneration**: قسم مستقل. ومنذ 0.3.4.2 صار ظاهرًا دائمًا: فحين لا تعمل FSR Ray Regeneration يوضّح سطر باهت
+  السبب، وتبقى عناصر الضبط على الشاشة معطّلة حتى تعمل.
 - **صف الأدوات**، ويكون مغلقًا عند البدء: **Diagnostics** (Network output وDebug view وعرض تصحيح RR وEdit shaper
   A/B وNR cost وقراءات الظلال المتخلفة والضبط الذاتي وسطر GPU و**Save report**)، و**Runtime options** (Encoding وEvery-frame NR وNR
   slots وHighlight proxy)، و**Experimental** (AMDNR Screen-space GI، بنسخة preview).
@@ -499,7 +522,9 @@ Sharpness وTextures وInit Flags وMagnifier. ويبدأ Frame Gen بـ FG Inpu
   DLSS Ray Reconstruction (Cyberpunk 2077، Alan Wake 2)، بشرط أن تكون اللعبة تشغّل DLSS (مع تفعيل spoofing)، وأن يكون تتبع الأشعة وRay
   Reconstruction مفعّلين في إعدادات اللعبة نفسها. عندها يعمل Neural Rendering بعدها، على مخرجاتها، وهذا
   يكلّف أكثر: اخفض NR resolution إذا انخفض معدل الإطارات. عناصر التحكم الخاصة بها صار لها قسم مستقل، **Neural >
-  Ray Regeneration**، لا يظهر إلا أثناء تشغيل اللعبة لـ Ray Reconstruction. أما **ملف تعريف تتبع المسار
+  Ray Regeneration**، وهو ظاهر دائمًا منذ 0.3.4.2: فحين لا تعمل Ray Regeneration يوضّح سطر باهت السبب (اللعبة لم تفعّل
+  Ray Reconstruction، أو أن Ray Regeneration تخلّت عن هذه اللعبة والسبب، أو كم ثانية مضت على آخر تشغيل لها)، وإذا كان لبطاقتك ما تضيفه فسيقوله سطر
+  باهت ثالث، وتبقى عناصر الضبط على الشاشة معطّلة حتى تعمل. أما **ملف تعريف تتبع المسار
   (path-traced profile)** (حبيبات أقل على الوجوه مع path tracing) فهو اختياري منذ 0.3.3.1: فعّله من هناك لتجربته
   في Resident Evil Requiem أو PRAGMATA. وفي القسم نفسه ستجد قوة bias mask و**تنعيم البشرة (skin smoothing)**
   (تجريبي، للألعاب التي توفّر خامة توجيه SSS (SSS guide)؛ معطّل افتراضيًا، لكنه مفعّل افتراضيًا في Resident Evil
@@ -509,7 +534,10 @@ Sharpness وTextures وInit Flags وMagnifier. ويبدأ Frame Gen بـ FG Inpu
   `[FSR-RR] FfxDenoiserAllowPreRdna4=false` يقصره على RDNA 4، ولا تحصل عليه RX 6000 والأقدم إلا مع `true` (تبويب
   Upscaling: **Offer FSR Ray Regeneration on this GPU (restart)**). **الشحذ بعد RR (Sharpening after RR)** (0.3.4.1):
   عندما لا ترسل اللعبة قيمة حدّة (sharpness)، يشحذ AMDNR الصورة بمقدار 0.25 بعد RR على Windows (وبمقدار 0 على
-  Linux / Proton)؛ ولإيقافه: Image > Sharpness، فعّل Override، واضبط شريط التمرير على 0.
+  Linux / Proton)؛ ولإيقافه: Image > Sharpness، فعّل Override، واضبط شريط التمرير على 0. ومنذ 0.3.4.2 صار هذا الرقم مفتاحًا
+  خاصًا به في ini، وهو `[Sharpness] RrDefaultSharpness` (القيمة الافتراضية نفسها 0.25): اكتب فيه 0.15 أو 0.10 أو 0
+  دون الحاجة إلى Override، وأي قيمة حفظها ملف ini عندك تحت `[Sharpness] Sharpness` مع إطفاء Override تظهر في
+  القائمة موسومة بأنها في الانتظار.
 - **AMDNR Screen GI** (preview، جديد في 0.3.4، معطّل افتراضيًا؛ Neural > Experimental، أو `[AmdGi] Enabled=true`) — الضوء المرتد وحجب الإضاءة المحيطة (ambient occlusion) في مساحة الشاشة من صنع AMDNR، من عمق اللعبة، قبل NR والـ upscaler؛ يعمل مع NR مفعّلًا أو معطّلًا؛ نحو 1 ms على High مع رسم بدقة 1080p على RX 9070 XT (مقيس خارج لعبة). وهو يعمل في مساحة الشاشة: الضوء القادم من خارج الشاشة غير موجود. راجع `CHANGELOG.md`.
 - **Save report** (Neural > Diagnostics أو Advanced > Logging) — ملف zip واحد فيه كل ملفات السجل وملفات ini للبلاغ؛ راجع قسم "إذا لم يعمل"
   أعلاه.
@@ -527,16 +555,18 @@ Sharpness وTextures وInit Flags وMagnifier. ويبدأ Frame Gen بـ FG Inpu
 **هل يظهر NR frames 0/s، ويقول تبويب Neural أو `amd_presr.log` إن ملف DLL الخاص بالتمريرة نسخة لا
 يشغّلها هذا الإصدار من AMDNR؟** ملفات `dlssnr_amd_pass1..3.dll` لديك هي نسخة من danielblnc لا يعرفها هذا الإصدار من AMDNR
 (رُصدت مجموعة من الإصدار 0.2.16 متداولة بين اللاعبين)، أو أن أحد الملفات الثلاثة مفقود. منذ 0.3.3.2 يذكر تبويب Neural
-اسم الملف وإصداره ويخبرك بما عليك فعله. استخدم بيئة التشغيل المناسبة لبطاقة الرسوميات لديك، على أن تكون ملفات DLL
-الثلاثة كلها من ملف zip نفسه: على **RX 9000**، `v0.4.1-Runtime.zip` (الأحدث) أو `v0.4.0-Runtime.zip` من هذا
-الإصدار (حجم `dlssnr_amd_pass1.dll` الموجود في `v0.4.1-Runtime.zip` هو 9,916,928 بايت، وبصمة SHA256 الخاصة به
-تبدأ بـ `823063eb`؛ وفي `v0.4.0-Runtime.zip`: 10,027,008 بايت، و`d62be3d8`)؛ وعلى **RX 7000**، `v0.3.3-Runtime.zip`
-من [إصدار Alpha0.3.4](https://github.com/3zwr1/AMD-NR---OptiScaler/releases/tag/Alpha0.3.4) (حجم
-`dlssnr_amd_pass1.dll` فيه 7,607,296 بايت، وبصمة SHA256 الخاصة به تبدأ بـ `907b30a6`).
-النسخ المدعومة: 0.2.17، 0.3.0، 0.3.1، 0.3.2، 0.3.3، 0.4.0، 0.4.1، و0.4.x قبل
-صدورها. لا تثبّت برنامج الإعداد الخاص
+اسم الملف وإصداره ويخبرك بما عليك فعله. استخدم بيئة التشغيل المُوصى بها، على أن تكون ملفات DLL
+الثلاثة كلها من ملف zip نفسه: على **RX 9000** و**RX 7000** معًا، `v0.4.3-Runtime.zip` من Alpha0.3.4.1
+(حجمه 116,484,918 بايت، وبصمة SHA256 الخاصة به تبدأ بـ `07dd7774`)؛ ولا يزال `v0.4.1-Runtime.zip`
+و`v0.4.0-Runtime.zip` من الإصدار نفسه مقبولين (حجم `dlssnr_amd_pass1.dll` الموجود في `v0.4.1-Runtime.zip` هو
+9,916,928 بايت، وبصمة SHA256 الخاصة به تبدأ بـ `823063eb`؛ وفي `v0.4.0-Runtime.zip`: 10,027,008 بايت، و`d62be3d8`).
+النسخ المدعومة: 0.2.17، 0.3.0، 0.3.1، 0.3.2، 0.3.3، 0.4.0، وملفات zip لبيئة التشغيل المذكورة أعلاه، والنسخ الأحدث
+المقبولة هنا سلفًا قبل صدورها. لا تثبّت برنامج الإعداد الخاص
 بـ danielblnc ولا ملفاته `dxgi.dll` / `version.dll` / `winhttp.dll` بجانب AMDNR: فـ AMDNR يشغّل بيئة
-التشغيل الخاصة به بالفعل.
+التشغيل الخاصة به بالفعل. **يقبل 0.3.4.2 مخطّطًا إضافيًا:** فتستطيع نسخة أحدث من
+danielblnc أن تعمل هنا دون انتظار تحديث لـ AMDNR — ويذكر تبويب Neural اسم الملف وإصداره كالمعتاد، وتعمل
+معها الإعدادات الخاصة بـ danielblnc وحدها (Network style وTone curve وBlack lift وGame exposure وFast mode). ولا
+يتغيّر شيء لملفات بيئة التشغيل الموجودة عندك أصلًا.
 
 **هل lmxxf لا يفعل شيئًا، أو يتوقف فورًا، على جهاز فيه رسوميات مدمجة؟** أُصلح في 0.3.3.2. على جهاز
 مكتبي بمعالج Ryzen مع تفعيل رسومياته المدمجة، أو حاسوب محمول فيه معالج AMD APU مع بطاقة Radeon، أو جهاز
@@ -547,6 +577,14 @@ Sharpness وTextures وInit Flags وMagnifier. ويبدأ Frame Gen بـ FG Inpu
 lmxxf يتوقف، فتبويب Neural يخبرك الآن بالسبب؛ أرسل `lmxxf_backend.log` و`amd_bridge.log` (فهو يسرد
 أجهزة HIP).
 
+**جهاز فيه رسوميات مدمجة وبطاقة Radeon (جهاز مكتبي بمعالج Ryzen مع تفعيل رسومياته المدمجة، أو حاسوب محمول): لا يبدأ NR
+أبدًا، ويذكر تبويب Neural أو سطر GPU بطاقة الرسوميات المدمجة؟** يعمل المسار العصبي في AMDNR على بطاقة الرسوميات التي
+ترسم بها اللعبة. إذا شغّل Windows اللعبة على الرسوميات المدمجة، فلن يعمل NR على بطاقة Radeon إطلاقًا. اضبط اللعبة على
+البطاقة المنفصلة: إعدادات Windows > النظام > الشاشة > الرسومات، أضف ملف `.exe` الخاص باللعبة، ثم الخيارات، ثم الأداء
+العالي؛ ثم أعد تشغيل اللعبة وتحقق من سطر GPU في Neural > Diagnostics، فهو يذكر المحوّل (adapter) الذي يعمل عليه NR
+(ويحوي `OptiScaler.log` سطر `AMD neural: NR runs on ...` عندما لا يكون هذا المحوّل هو بطاقة الرسوميات الرئيسية). شوهد
+ذلك في Starfield على جهاز مكتبي بمعالج Ryzen.
+
 **هل يعرض سطر حالة lmxxf القيمة `c32w=off:nofile` على RX 9070 / 9070 XT؟** يوجد مجلد قديم
 `DLSS5-AMD\native-game-tiled-assets` بجانب ملف `.exe` الخاص باللعبة (متبقٍّ من إعداد سابق لـ lmxxf)، وهو
 يُستخدم بدلًا من `LmxxfNrRuntime.pak`. لا يحتوي هذا المجلد على c32w kernels، لذا يعمل lmxxf بالسرعة
@@ -555,7 +593,7 @@ lmxxf يتوقف، فتبويب Neural يخبرك الآن بالسبب؛ أرس
 وظهور `fk=fff-` في السطر نفسه يعني الشيء نفسه (ملف pak قديم أو مجلد منفصل): يبقى lmxxf عاملًا، لكن
 بالسرعة القديمة.
 
-**هل ما زال نمط NR في danielblnc يتغير عندما تبتعد NR resolution عن 100%؟** ما زالت مفتوحة في 0.3.4 و0.3.4.1، والقيمة
+**هل ما زال نمط NR في danielblnc يتغير عندما تبتعد NR resolution عن 100%؟** ما زالت مفتوحة في 0.3.4 و0.3.4.1 و0.3.4.2، والقيمة
 الافتراضية لم تتغير. عند 100% تعطي Residual strength بقيمة 0.99 نسبة 99% من 1.00 (أُصلح في 0.3.3.2)؛ أما بعيدًا عن
 100% (وكذلك في خطوات Dynamic NR والإعدادين المسبقين Balanced / Performance) فما زالت strength وlimit وedge fade
 تؤثر في النتيجة كلها، لذا قد يتغير المظهر. يضيف 0.3.4 مقارنة A/B للعثور على الإصلاح الصحيح:
@@ -569,8 +607,21 @@ Neural > Diagnostics > **Edit shaper (A/B, not saved)** مع Literal وF1 وF2،
 (`[Hotfix] MenuToggleDebounceMs`، والقيمة 0 = السلوك القديم)، وأثناء فتح القائمة يُتخطى خطاف (hook) لوحة المفاتيح
 أو الفأرة منخفض المستوى الخاص باللعبة، لكن الضغطة تصل إلى Windows كما هي
 (`[Hotfix] MenuLowLevelHookPassThrough=false` = السلوك القديم). لم يُؤكَّد بعد في Assetto Corsa: إذا تكرر ذلك،
-فأرسل ملف zip الخاص بالتقرير. وهناك بلاغ أحدث، عن عدم عمل الفأرة داخل القائمة في Assetto Corsa، ما زال قيد
-الدراسة؛ ولم يُصلح في 0.3.4.1.
+فأرسل ملف zip الخاص بالتقرير.
+
+**هل انفتحت القائمة من تلقاء نفسها على نافذة اختيار بيئة التشغيل، أو لم تستجب النقرات، أو كان مفتاح القائمة يخفيها
+فقط ما دمت ضاغطًا عليه (Assetto Corsa)؟** أُصلح في 0.3.4.2: مفتاح القائمة يبدّل حالتها مرة واحدة مع كل ضغطة فعلية
+(وتُتجاهل رسالة المفتاح التي تصل متأخرة)، وتُعاد النقرات ومفاتيح القائمة الأقصر من إطار واحد، ونافذة اختيار بيئة
+التشغيل تستجيب للمفاتيح `1` / `2` / `Enter` / `Esc` ولزر X في شريط عنوانها، وإغلاق القائمة يُحسب "Decide later"؛ ولم تعد
+النافذة تفتح القائمة من تلقاء نفسها. لم يؤكده لاعب Assetto Corsa بعد: إذا تكرر ذلك فأرسل ملف zip الخاص
+بالتقرير. لاستعادة سلوك مفتاح القائمة والنقرات كما في 0.3.4.1: أضف بنفسك `DiagInputHooksSkip=presslatch,clickreplay`
+تحت `[Hotfix]` في ملف `OptiScaler.ini` (دون مفتاح ini جديد؛ الملف المرفق يشرح السطر في تعليق فقط).
+
+**هل تنهار لعبة Uncharted: Legacy of Thieves Collection بعد ثوانٍ من بدئها على RX 9000 مع تفعيل Neural Rendering؟**
+مشكلة معروفة، لم تُصلح في 0.3.4.2: تشغّل اللعبة مهامها على fibers صغيرة حجمها 192 KiB، والتهيئة الأولى لـ HIP (يترجم
+التعريف kernels المساعدة الخاصة به داخل اللعبة) تُفيض هذه المكدّسة (stack) عند أول إطار NR. أبقِ `[DlssNr] Enabled=false`
+في ملف `OptiScaler.ini` الخاص بهذه اللعبة حتى الإصدار 0.3.5. تبديل بيئة التشغيل لا يفيد: كلتا البيئتين تبدآن HIP على
+الخيط (thread) نفسه.
 
 **هل تتوقف لعبة Vulkan (Indiana Jones and the Great Circle) عند البدء برسالة "Could not create the Vulkan
 device (VK_ERROR_EXTENSION_NOT_PRESENT)"؟** أُصلح في 0.3.2: كان المسار العصبي الموروث من NVIDIA يطلب من
@@ -601,6 +652,30 @@ device (VK_ERROR_EXTENSION_NOT_PRESENT)"؟** أُصلح في 0.3.2: كان ال�
 أن هذا هو السبب في NBA 2K27. يسجّل `OptiScaler.log` الآن سطور `slInit returned ...` و`[SLINIT]`: أرسل
 ملف السجل مع البلاغ.
 
+**لا تجد إعدادات Ray Regeneration؟** منذ 0.3.4.2 صار القسم موجودًا في القائمة دائمًا: اضغط **Insert**، وافتح تبويب
+**Neural**، وانزل إلى **Ray Regeneration** (في 0.3.4.1 وما قبلها كان القسم يُرسم فقط أثناء عمل Ray Regeneration، أو
+حين تكون قد تخلّت عن اللعبة، وهذا ما واجهه أحد اللاعبين على RX 7000). وحين لا تعمل، يوضّح سطر باهت تحت العنوان السبب:
+اللعبة لم تفعّل Ray Reconstruction، أو أن Ray Regeneration تخلّت عن هذه اللعبة والسبب، أو كم ثانية مضت على آخر تشغيل
+لها. وعلى RX 7000 يضيف سطر باهت ثالث أنها معروضة هناك افتراضيًا لكن التعريف قد يرفضها (فتبقى اللعبة على مزيل التشويش
+الخاص بها)؛ وعلى RX 6000 وما قبلها يقول إنها غير معروضة على هذه البطاقة، وأن AMD تصدر مزيل التشويش لـ RDNA 4، وأن
+`[FSR-RR] FfxDenoiserAllowPreRdna4=true` يعرضها مع ذلك. وتبقى عناصر الضبط على الشاشة معطّلة، وتعود للعمل بمجرد أن تعمل هي. ولتشغيلها، من إعدادات الرسوميات في اللعبة نفسها: اختر
+**DLSS** كأداة رفع الدقة (لا FSR ولا XeSS)، وفعّل **تتبع الأشعة** أو تتبع المسار، وفعّل **Ray Reconstruction**
+(DLSS-RR)؛ عندها يظهر في تبويب Upscaling اسم "FSR Ray Regeneration". وأي إعداد تغيّره لأي مشكلة تجده في دليل إعدادات Ray Regeneration
+**RR-BEST-SETTINGS.md** (وهو ليس في ملف zip).
+
+**تبدو صورة Ray Regeneration محبّبة أو فيها تشويش (noise)؟** احكم عليها أولًا و**Neural Rendering مطفأ** (أزل علامة **Enable Neural Rendering** في أعلى تبويب Neural، أو اضغط Home أثناء اللعب، أو اضبط
+`[DlssNr] Enabled=false`): فالمسار العصبي يعمل بعد Ray Regeneration، على مخرجاتها، ولهذا فصورة
+ملتقطة مع تشغيل NR لا تقول شيئًا عن مزيل التشويش. وبعد ذلك، وبحسب نوع الحبيبات — حبيبات تزحف في مشهد ساكن، أو نقاط
+لامعة، أو حبيبات على الوجوه، أو آثار خلف الأشخاص المتحرّكين — تجد الإعدادات التي يمكن تجربتها في الدليل نفسه، **RR-BEST-SETTINGS.md**. **ولم تتغيّر في 0.3.4.2 أي قيمة افتراضية لمزيل التشويش ولا للشحذ**:
+الأرقام هي أرقام 0.3.4.1 نفسها. والذي تغيّر فعلًا أن الشحذ الذي يضيفه AMDNR بعد Ray Regeneration صار مفتاحًا خاصًا
+به في ini، وهو `[Sharpness] RrDefaultSharpness` (القيمة الافتراضية نفسها 0.25)، فصار 0.15 أو 0.10 أو 0 تعديلًا في
+ini لا إصدارًا جديدًا. وراجع ملف ini عندك قبل أن تطارد الحبيبات بشريط الشحذ: فالقيمة الموجودة تحت
+`[Sharpness] Sharpness` لا تفعل شيئًا ما دام `OverrideSharpness` مطفأ، وتصبح فعّالة في اللحظة التي تفعّل فيها
+**Override** من القائمة — ولهذا صار Image > Sharpness يسمها الآن ("ini Sharpness 1.00 waits for Override"). وأمران لن نتجمّلهما: جزء من الحبيبات هو من أخذ العيّنات الشعاعي في اللعبة نفسها — مزيل التشويش
+من AMD غير مصمّم لإصلاح تشويش يصل مترابطًا، واللعبة التي توفّر DLSS Ray Reconstruction تطفئ مزيل التشويش الخاص بها
+وتسلّمنا الإشارة الخام — والحبيبات التي تزحف في مشهد ساكن لها عندنا سبب بنيوي لا يزيله أي شريط تمامًا. وهذه مشكلة معروفة،
+والعمل عليها في 0.3.5.
+
 **هل Ray Reconstruction مفعّل في اللعبة لكن تبويب Neural يقول "Ray Regeneration is off in this title"؟**
 اللعبة لا توفّر ما تحتاج إليه FSR Ray Regeneration: إضافة DLSS فيها تمرّر مصفوفات كاميرا فارغة (Satisfactory)،
 ويعدّها Ray Reconstruction من NVIDIA اختيارية بينما تحتاج إليها FSR Ray Regeneration. يعمل رفع الدقة FSR بدلًا
@@ -621,7 +696,15 @@ device (VK_ERROR_EXTENSION_NOT_PRESENT)"؟** أُصلح في 0.3.2: كان ال�
 
 ## خارطة الطريق
 
-- **0.3.4.1** (هذه النسخة) — إصدار إصلاحي (hotfix): شحذ Ray Regeneration عندما لا ترسل اللعبة قيمة شحذ (على Windows؛
+- **0.3.4.2** (هذه النسخة) — إصدار إصلاحي (hotfix): قائمة Assetto Corsa (مفتاح القائمة يبدّل حالتها مرة واحدة مع كل
+  ضغطة، وتُعاد النقرات الأقصر من إطار واحد، ونافذة اختيار بيئة التشغيل تستجيب للمفاتيح، وإغلاق القائمة يُحسب
+  "Decide later")، ونافذة اختيار بيئة التشغيل لم تعد تفتح القائمة من تلقاء نفسها، وقسم Ray Regeneration ظاهر دائمًا في
+  تبويب Neural ويوضّح سبب عدم عمله، وقبول مخطّط إضافي لبيئة تشغيل danielblnc، وتصحيحات نص Wine / Proton،
+  وإضافات
+  في README (أسماء الوكيل (proxy)، وUncharted، والأجهزة الهجينة، و`AmdLmxxfTierSnap` على RX 9000، ومدخلان في الأسئلة
+  الشائعة عن Ray Regeneration)؛ وNR مطابق بايتًا
+  ببايت للإصدار 0.3.4.1 باستثناء ذلك السطر الواحد من المخطّطات المقبولة.
+- **0.3.4.1** — إصدار إصلاحي (hotfix): شحذ Ray Regeneration عندما لا ترسل اللعبة قيمة شحذ (على Windows؛
   ولا شحذ افتراضيًا على Linux / Proton)، وإزالة النافذة المنبثقة الخاطئة "Upscaler failed to run!" في Control Resonant،
   وربط القائمة بنافذة اللعبة على Linux / Proton، وذكر vkd3d-proton / DXVK في Save report؛ وAMDNR Launcher 0.3.4.1
   (تسع لغات، والبحث، والمفضلة، والإخفاء، وإعادة التسمية، وCHOOSE GAME .EXE، وPLAY، وUNINSTALL كامل)؛ وNR دون
@@ -684,8 +767,8 @@ device (VK_ERROR_EXTENSION_NOT_PRESENT)"؟** أُصلح في 0.3.2: كان ال�
 نختبره بأنفسنا بعد: راجع قسم "Linux / Proton"). يثبّت AMDNR ويحدّثه لكل لعبة على حدة: يعثر على ألعابك
 (Steam وEpic وتطبيق Xbox وUbisoft Connect وتطبيق EA وGOG وRockstar وBattle.net وAmazon Games)، ويختار اسم ملف DLL،
 ويحمّل النسخة وبيئة تشغيل danielblnc التي تختارها، ويفحص كل تثبيت بأداة Doctor الخاصة به، ويحدّث نفسه. نزّل
-`AMDNR-Launcher.exe` (0.3.4.1) من إصدار Alpha0.3.4.1:
-<https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.4.1/AMDNR-Launcher.exe>
+`AMDNR-Launcher.exe`، أي AMDNR Launcher من أحدث إصدار، من صفحة الإصدارات:
+<https://github.com/3zwr1/AMD-NR---OptiScaler/releases>
 
 **الجديد في Launcher 0.3.4.1: طلبتموه فبنيناه** (من أولى ملاحظاتكم في Discord):
 

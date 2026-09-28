@@ -3,6 +3,132 @@
 Many thanks to **TheAutomatic** (DLSS 5 AMD project) — the releases, the HIP toolchain and the asset
 layout that the lmxxf runtime integration in 0.3.0 builds on.
 
+## 0.3.4.2 — 2026-09-28
+
+Hotfix for the menu in Assetto Corsa (the menu key toggles once per press, clicks land, and the runtime chooser can
+no longer trap you), the runtime chooser no longer opens the menu by itself, the **Ray Regeneration** section of the
+Neural tab is always there now and says why it is not running, and the Wine / Proton text says what the 0.3.4.1 notes
+say. AMDNR also **accepts one more danielblnc runtime layout**, so a newer danielblnc
+build can be driven without an AMDNR update. **Neural Rendering is byte-identical to 0.3.4.1 except that one
+accepted-layout row: the neural pass, both runtimes and the pak are unchanged; only `OptiScaler.dll` and the
+documents change.** Coming from 0.3.4.1 or 0.3.4, replace `OptiScaler.dll` only (the file you renamed, e.g.
+`dxgi.dll`); `LmxxfNrRuntime.dll`, `LmxxfNrRuntime.pak` and your danielblnc runtime files stay as they are. Launcher
+users: it updates for you.
+
+### Fixed
+- **Assetto Corsa: the menu.** The second report (an RX 7800 XT at a low frame rate): the menu opened by itself on
+  the runtime chooser, clicks did nothing, and Insert hid the menu only while it was held.
+  - **The menu key toggles once per physical press.** It acts on a fresh press, never on the release, and a key
+    message that arrives late (Assetto Corsa hands them over up to about 2 s late) is stale and ignored. The 0.3.4
+    400 ms debounce stays as a backstop, and a key that closed the menu is held back from the game until it is
+    released.
+  - **Clicks and menu keys shorter than a frame are no longer lost.** At a low frame rate a click could begin and
+    end between two frames, so the menu never saw it. Both edges are now kept and replayed inside one frame, for the
+    mouse buttons and the menu's navigation keys while the menu is open.
+  - **The runtime chooser** ("Choose the neural runtime") answers to the keys `1` / `2` (pick a runtime), `Enter`
+    (use it) and `Esc` (Decide later), has an X in its title bar, preselects the runtime that is running now, and
+    **closing the menu (Insert) counts as Decide later**. It comes back at the next game start until you pick one.
+  - **Found in review, fixed before release:** with `[Menu] OverlayMenu=false` and frame generation on, the menu's
+    input poll ran between frames, so a replayed click could arrive twice (a double-click); the replay now counts
+    presses since the key's previous poll. Also from that review: a menu key message sent from another thread is
+    timed correctly (the key could look dead), and while the menu key is still held after closing the menu it is
+    hidden from the game's DirectInput reads and keyboard hooks too, until it is released.
+  - To get 0.3.4.1's menu key and clicks back (no new key): add `DiagInputHooksSkip=presslatch,clickreplay` under
+    `[Hotfix]` in your `OptiScaler.ini` yourself; the shipped ini only describes the line in a comment.
+    The fix is built and covered by this release's tests; confirmation from the Assetto Corsa player who
+    reported it is still pending.
+- **The runtime chooser no longer opens the menu by itself.** With files for both runtimes present and
+  `[DlssNr] NrBackend` not set, 0.3.4 and 0.3.4.1 opened the menu on the chooser at the first NR frame, which trapped players at a low
+  frame rate (Assetto Corsa, F1 25). Now the menu stays closed and one notice per game start says which runtime runs
+  until you pick one and which key opens the menu ("A second neural runtime was found. <runtime> runs until you pick
+  one: open the menu (<key>) ..."); the chooser appears the first time you open the menu, and Decide later still
+  works. Which runtime runs while no choice is made is exactly 0.3.4.1's rule.
+- **The Ray Regeneration settings could not be found.** An RX 7000 player went looking for the **Ray Regeneration**
+  section in the Neural tab and there was nothing there: the section was drawn only while FSR Ray Regeneration had
+  denoised a frame in the last 3 seconds, or when Ray Regeneration had given the game up, so a game that never turned
+  Ray Reconstruction on, and a driver that refused the denoiser, both left an empty page and no explanation. The
+  section is now **always** there, with one dim line that says which of four cases it is: it is denoising now, the
+  game has not turned Ray Reconstruction on (that line gives the three steps in the game), Ray Regeneration gave this
+  title up and why, or it last ran N seconds ago. A card that needs a word about itself gets a third dim line: on
+  RX 7000 Ray Regeneration is offered by default but the driver may refuse it (then the game keeps its own denoiser);
+  on RX 6000 and older it is not offered, because AMD ships it for RDNA 4, and
+  `[FSR-RR] FfxDenoiserAllowPreRdna4=true` offers it anyway. The controls stay on screen, greyed out, while it is not
+  denoising, and act again as soon as it runs. No setting and no default changed with this.
+
+### Ray Regeneration
+- **The sharpening AMDNR adds after Ray Regeneration is a real ini key now:** `[Sharpness] RrDefaultSharpness`,
+  **default unchanged at 0.25**. That is the number AMDNR uses when the game itself sends no sharpness (Resident Evil
+  Requiem sends none), applied by FSR to the denoised picture. Sharpening after a denoiser also lifts the grain the
+  denoiser left, so if you see grain on faces or textures you can now set 0.15, 0.10 or 0 in the ini (or in the
+  menu's Image > Sharpness with Override, as before) instead of rebuilding anything. A game that sends its own value
+  keeps it, an explicit Override still wins over both, on Wine / Proton nothing is added whatever the key says, and
+  Save Settings keeps your number.
+- **A `[Sharpness] Sharpness` your ini kept while Override is off is named as waiting.** It does nothing at all until
+  you tick Override, and then it applies at once: one Ray Regeneration report carried 1.00 there, four times the RR
+  default, with no way for the player to see it. Image > Sharpness now shows a dim tag on the Ray Regeneration path
+  ("ini Sharpness 1.00 waits for Override"), and the `[RR_POST]` log line says the same.
+- **No denoiser tuning changed and no default moved**: every Ray Regeneration number in this build is 0.3.4.1's.
+
+### Neural Rendering
+- **danielblnc 0.4.3 (published 2026-09-28) is supported day one.** His new public runtime needs no AMDNR update:
+  its layout was already accepted in the host, so AMDNR 0.3.4, 0.3.4.1 and 0.3.4.2 all drive it. It is now the
+  **recommended danielblnc runtime on RX 9000 and RX 7000** - `v0.4.3-Runtime.zip` on the Alpha0.3.4.1 release,
+  which the AMDNR Launcher offers as the recommended one; `v0.4.1-Runtime.zip` and `v0.4.0-Runtime.zip` stay
+  accepted, and 0.3.3 is retired (no longer recommended for RX 7000). His own numbers for it: +20% Reference /
+  +18% Fast vs 0.4.2, his measurement. Nothing in this build changed for it.
+- **This build accepts one more danielblnc runtime layout.** AMDNR recognises a danielblnc pass DLL by the file
+  itself (its size and its SHA256) and reads its knobs from a table of accepted layouts; a build that is not in that
+  table is not driven at all. This release adds one more row to that table, so a newer danielblnc build can be driven
+  here without waiting for an AMDNR update: the Neural tab names the file and its version as usual, and Network
+  style, Tone curve, Black lift, Game exposure and Fast mode work with it. The layouts accepted before
+  are untouched and no default moved, so the runtime you have today behaves exactly as it did in 0.3.4.1. That one
+  row is the only change on the neural side of `OptiScaler.dll`: the neural pass itself, `LmxxfNrRuntime.dll`,
+  `LmxxfNrRuntime.pak` and the danielblnc runtime zips are the 0.3.4.1 files, byte for byte.
+
+### Linux / Proton
+- **Text corrections.** The Neural tab's Wine / Proton line and the `[RR_DIAG]` log line still said that FSR
+  Ray Regeneration works there. Both now say what the 0.3.4.1 notes say: FSR upscaling works under Wine / Proton, and
+  FSR Ray Regeneration is a known issue there (pink / magenta patches in some games). Nothing else changed on Proton.
+
+### Diagnostics
+- For support, the log names the overlay DLL a game loads (Steam, Discord, Epic, GOG Galaxy, Overwolf, Ubisoft and
+  the like) and the caller of `D3D11CreateDevice` at INFO, once per distinct name (DEBUG after that). An overlay
+  AMDNR blocks instead of loading keeps its line at DEBUG (`[Menu] DisableOverlays=true`, or the Epic overlay while
+  frame generation is running).
+- Menu input at INFO (from the Assetto Corsa fix): one line per menu-key edge (up to 40 per game start), one line
+  per second while the menu is visible (after two minutes every 30 s), a summary per open, and, per source, how many
+  clicks and keys arrived and how late the game's own messages were.
+
+### Docs
+- README, "Rename OptiScaler.dll": the list now names every proxy name the mod accepts (`dxgi.dll`, `d3d12.dll`,
+  `winmm.dll`, `version.dll`, `dbghelp.dll`, `winhttp.dll`, `wininet.dll`, plus `OptiScaler.asi` with an ASI loader).
+  `d3d11.dll` is not one of them: the mod never loads under that name.
+- README FAQ: **Uncharted: Legacy of Thieves Collection** crashes at the first NR frame on RX 9000 (a stack overflow
+  at HIP's first initialisation on the game's 192 KiB job fiber). Keep `[DlssNr] Enabled=false` in that game until
+  0.3.5; switching runtime does not help.
+- README FAQ: **hybrid PCs** (a Ryzen with integrated graphics and a Radeon): if the game renders on the integrated
+  GPU, NR never runs. Set the game to the discrete GPU in Windows Settings > System > Display > Graphics; the GPU
+  line in Neural > Diagnostics names the adapter NR runs on.
+- README: one line on `[DlssNr] AmdLmxxfTierSnap=true` on RX 9000 (off by default; the lmxxf NR size moves to a
+  network size at every render resolution: some sizes drop a tier, 1440p Quality's 1707x960 -> the 900 size,
+  network 14.08 -> 9.96 ms per run measured outside a game, a slightly softer image). The cost hover beside NR
+  resolution (Neural > Performance) carries the same hint on RX 9000 while the snap is off and no tier cap is set.
+- README FAQ: **"You cannot find the Ray Regeneration settings?"** - where the section is, what its dim line says while
+  Ray Regeneration is not running, and the three switches a game needs (DLSS as the upscaler, ray tracing or path
+  tracing, Ray Reconstruction). All nine languages.
+- README: the sharpening after Ray Regeneration names its new key, and the ini documents it.
+- README FAQ: **Ray Regeneration looks grainy or noisy** - judge it with Neural Rendering switched off, because the
+  neural pass runs after Ray Regeneration, on its output, so a shot taken with NR on says nothing about RR. Which
+  setting to try for which kind of grain is in the Ray Regeneration settings guide **RR-BEST-SETTINGS.md**
+  (not in the zip). One ini trap is named there too: a value under `[Sharpness] Sharpness`
+  does nothing while `OverrideSharpness` is off, and it applies the moment you tick Override in the menu (the menu
+  tags it now). **No denoiser default and no sharpening default moved in 0.3.4.2** - the numbers are 0.3.4.1's. And two honest limits: a part of the grain is
+  the game's own ray sampling, which AMD's denoiser is not built to repair (a game that offers DLSS Ray
+  Reconstruction switches its own denoiser off and hands us the raw signal), and the grain that crawls in a still
+  scene has a structural cause on our side that no slider removes completely - that one is a known issue, and the
+  work for it is 0.3.5.
+- Proton: Ray Regeneration stays a known issue (magenta patches in some games); the README and the Neural tab say so.
+
 ## 0.3.4.1 — 2026-09-27
 
 Hotfix: Ray Regeneration is less soft on Windows, Control Resonant no longer shows a false "Upscaler failed to run!"

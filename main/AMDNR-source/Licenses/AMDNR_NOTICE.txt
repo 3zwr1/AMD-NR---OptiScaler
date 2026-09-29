@@ -1,0 +1,148 @@
+AMDNR - NOTICE
+==============
+
+Copyright (c) 2026 3zwr1 (AMDNR)
+Project:  https://github.com/3zwr1/AMD-NR---OptiScaler
+Discord:  https://discord.gg/AMDNR
+
+AMDNR runs DLSS 5 Neural Rendering on AMD Radeon GPUs. It is a fork of OptiScaler
+and is distributed under the GNU General Public License version 3 or later
+(see LICENSE), with the additional permitted terms in section 3 below.
+
+
+1. What this notice covers
+--------------------------
+
+The following is AMDNR's own work, Copyright (c) 2026 3zwr1 (AMDNR):
+
+  * every source file, shader and script written for AMDNR;
+  * AMDNR's modifications to OptiScaler's files and to the other upstream code
+    listed in section 5;
+  * the release texts, menus and documentation written for AMDNR.
+
+It covers every AMDNR release from 0.1.0 onward, as recorded in Changelog.md.
+Highlights:
+
+  * AMDNR's AMD Neural Rendering pipeline: model interleave (Guided fill and the
+    self-tuning interleave), the temporal stability pass, the residual controls
+    (strength, limit, edge fade) with the Catmull-Rom resample and its ringing
+    bound on the upstream residual resolve, NR resolution above 100% and dynamic
+    NR resolution (the 25-100% NR resolution is upstream), the detail/colour and
+    sharpen passes, the highlight proxy and its decode by the original, NR style
+    presets, the HOME toggle default with its notice and input fix (the
+    ToggleKey binding is upstream), the NR capture tool and the Neural tab.
+  * The lmxxf runtime inside OptiScaler (0.3.0 and later): AMDNR's integration of
+    lmxxf's network into OptiScaler's AMD path, the LmxxfNrRuntime.pak format,
+    network history and passes, the edit shaper, auto-exposure, self-healing,
+    the Vulkan-bridge warm-up, and the UE5 queue and command-list robustness.
+  * The lmxxf RDNA 3 (RX 7000) backend (0.3.3; see AMDNR_RDNA3_BACKEND.txt).
+  * The "c32w" one-wave C32 kernels for the lmxxf network on RDNA 4 (0.3.3.2),
+    Copyright (c) 2026 3zwr1 (AMDNR). They run lmxxf's network (Kien, MIT; see
+    lmxxf_LICENSE.txt). Acknowledgement: AMD's public RDNA 4 WMMA documentation
+    (AMD GPUOpen, the ROCm matrix instruction calculator), used for ideas only;
+    no code was taken from it.
+  * The integration of RenoDX's colour composition into both AMD runtimes (0.3.3;
+    the maths is RenoDX's and the dlssnr.hlsl lineage's - Dagherbou, wilsjo2 - see
+    RenoDX_ATTRIBUTION.txt and the CREDITS in dlssnr/amd/NrCompose.h).
+  * The FSR Ray Regeneration path-traced profile, the SSS-guided skin smoothing
+    and the Ray Regeneration A/B and diagnostic tools (0.3.3).
+  * The graphics-state hooks and restore (GraphicsSnapshotHooks.h) on the
+    upstream snapshot bookkeeping (GraphicsSnapshot.h).
+  * AMDNR Screen GI (dlssnr/gi), a clean-room screen-space global illumination
+    module written from published papers (see dlssnr/gi/CLEANROOM.md).
+  * The AMDNR menu: its layout, design, texts and the code AMDNR added for it.
+  * The AMDNR Launcher (published separately, under its own licence).
+
+
+2. Where the credit lives
+-------------------------
+
+  * This file and AMDNR_RDNA3_BACKEND.txt in the Licenses folder.
+  * The copyright and SPDX lines at the top of AMDNR's source files, and the
+    "Modifications Copyright (c) 2026 3zwr1 (AMDNR)" lines in the upstream files
+    that AMDNR changed.
+  * The version resource of OptiScaler.dll (Properties > Details).
+  * The credit notice at the start of LmxxfNrRuntime.pak, which the runtime
+    authenticates.
+
+
+3. Additional terms (GNU GPL v3, section 7)
+-------------------------------------------
+
+For the material that AMDNR added to this work, the following additional terms
+apply. They are the terms permitted by section 7(b), 7(c) and 7(e) of the GNU
+General Public License version 3, and nothing more: they add no restriction to
+the permissions the GPL grants you. If you do not wish to accept them you may
+remove them from any copy you convey, as section 7 allows.
+
+  (b) Preservation of attribution. Any copy, fork, port or derivative work that
+      contains AMDNR material, in source or binary form, must preserve this
+      notice, the copyright lines in AMDNR's source files, and the credit
+
+          AMDNR by 3zwr1 - https://github.com/3zwr1/AMD-NR---OptiScaler
+
+      together with the credits of the authors listed in section 5, in its
+      README (or equivalent documentation) and wherever it shows credits or an
+      About section.
+
+  (c) Misrepresentation of origin. Modified versions must be marked as changed
+      in a reasonable way, and must not be presented as the original AMDNR.
+
+  (e) Names and logos. No rights are granted to the names or trademarks
+      "AMDNR" or "3zwr1", or to the AMDNR logo. Use of them to endorse or
+      promote a modified version needs permission; removing them from a
+      modified version is always allowed.
+
+
+4. The AMDNR menu
+-----------------
+
+The AMDNR menu - its layout, design, texts and the code AMDNR added for it - is
+Copyright (c) 2026 3zwr1 (AMDNR) and is part of this GPL-3.0-or-later fork. It is
+covered by the additional terms in section 3 and by no other condition: the GPL's
+permissions to use, study, modify, copy and redistribute it apply to the menu
+exactly as they do to the rest of this work.
+
+
+5. What this notice does NOT cover
+----------------------------------
+
+AMDNR claims no copyright over the work of others. They keep their rights and
+licences:
+
+  * OptiScaler - the OptiScaler contributors (GPL-3.0).
+  * Dagherbou (OptiScaler_DLSSNR), wilsjo2 (OptiScaler-DLSSNR-PreSR-Multipass),
+    Matheus (dlss-5-amd) and TheAutomatic (dlss-5-amd-project) - the DLSS-NR and
+    pre-SR code that AMDNR's base derives from, including the 25-100% NR
+    resolution and its residual resolve, the graphics-state snapshot bookkeeping
+    and the ToggleKey binding (GPL-3.0).
+  * danielblnc (Daniel Blanco) - DLSS-NR on AMD, a closed-source runtime. It is a
+    separate program, distributed with its author's permission under his own
+    terms, and is not part of this repository.
+  * lmxxf (Kien) - the lmxxf network port, kernels and runtime (MIT; see
+    lmxxf_LICENSE.txt), including the portions contributed to lmxxf by
+    TheAutomatic (MIT). The lmxxf-based runtime is a separate package and is not
+    part of this repository; only the API header the host compiles against is.
+  * RenoDX by clshortfuse (Carlos Lopez Jr.) - the colour composition maths (MIT;
+    see RenoDX_ATTRIBUTION.txt).
+  * Zach Hembree (DarkHelmet) - FSR Ray Regeneration for OptiScaler (branch
+    ffx-denoise-experimental), the origin of AMDNR's Ray Regeneration path;
+    burak113 - the continuation of that branch AMDNR ported from (commit 3da4808,
+    2026-09-19). Both GPL-3.0.
+  * Coldwood1026 - XeFGUnlock, the base of the built-in XeFG multi-frame unlock
+    (GPL-3.0).
+  * Nukem9 - dlssg-to-fsr3 (GPL-3.0).
+  * Dear ImGui (Omar Cornut) and the other third-party libraries under external/
+    and OptiScaler/include/ - under their own licences, as shipped by their
+    authors.
+  * AMD FidelityFX, Intel XeSS and Microsoft DirectX - under their own licences.
+  * NVIDIA - DLSS and the neural network's design and weights belong to NVIDIA.
+    AMDNR is not affiliated with NVIDIA or AMD.
+
+
+6. Source code
+--------------
+
+This repository is the corresponding source of the AMDNR build of OptiScaler.dll.
+The neural runtimes are separate programs with their own licences and are not
+included; see README.md for what that means and where they come from.

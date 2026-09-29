@@ -18,6 +18,10 @@
       "runtimeNote": "Recommended on every GPU. On RX 7000 and RX 9000, AMDNR can also use its built-in lmxxf runtime.",
       "runtimes": [
         {
+          "package": "runtime-050",
+          "gpus": ["rdna4", "rdna3"]
+        },
+        {
           "package": "runtime-043",
           "gpus": ["rdna4", "rdna3"]
         },
@@ -55,6 +59,10 @@
       ],
       "runtimes": [
         {
+          "package": "runtime-050",
+          "gpus": ["rdna4", "rdna3"]
+        },
+        {
           "package": "runtime-043",
           "gpus": ["rdna4", "rdna3"]
         },
@@ -87,6 +95,25 @@
       "exclude": ["Setup.bat", "Setup.ps1", "Uninstall_OptiScaler_NR.bat", "Uninstall_OptiScaler_NR.ps1"]
     },
     {
+      "id": "runtime-050",
+      "version": "0.5.0",
+      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.4.2/v0.5.0-Runtime.zip",
+      "sha256": "7a49ab0e7bea27c4b204c0d254ece305ddd87e88701f761692aa25a5e56ed46f",
+      "size": 149550553,
+      "passSha256": [
+        "bc97f3b06718e19042acaf227bfe15d1e43d4977f9dc2e39994fcc511445ff4e",
+        "8321cae728d28cb7632d0d58d3d913e91132bf7645c126505698fbe4cd5a0138",
+        "b108d6407eb7f094a4f9111edd778eee7b978b648d413a9fc7aeedfdd914c154",
+        "b92f7481bc03fa41f443b1e1e54b502789df2bbbcefe48c680df7bb02a33fc1e",
+        "907b30a61644a6d7e43e58a43a9d97a04a24b1a764a88bdef3954ac807e8d112",
+        "d62be3d8b9fbb3c6c81982c4ddb3dfa00eb9662e3206925cbe5b7e1bc6798b80",
+        "823063eb4c76b1334fd1800c41798873ae61d4016af0406f1f0b9dce57b1d376",
+        "8aa2dcc5b6596aca97995dbfd4e0a9790d8c15108495e0ed154dd15dbb5b465a",
+        "d1e320862a8763ac39e7ce194536d4b6c55ba61bae9e8a92753cec32df67a457",
+        "cddfb09e019347957bf7b96c95c0e900e8d3062dfaed697a8a96b0a039aec31a"
+      ]
+    },
+    {
       "id": "runtime-043",
       "version": "0.4.3",
       "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.4.1/v0.4.3-Runtime.zip",
@@ -101,7 +128,8 @@
         "d62be3d8b9fbb3c6c81982c4ddb3dfa00eb9662e3206925cbe5b7e1bc6798b80",
         "823063eb4c76b1334fd1800c41798873ae61d4016af0406f1f0b9dce57b1d376",
         "8aa2dcc5b6596aca97995dbfd4e0a9790d8c15108495e0ed154dd15dbb5b465a",
-        "d1e320862a8763ac39e7ce194536d4b6c55ba61bae9e8a92753cec32df67a457"
+        "d1e320862a8763ac39e7ce194536d4b6c55ba61bae9e8a92753cec32df67a457",
+        "cddfb09e019347957bf7b96c95c0e900e8d3062dfaed697a8a96b0a039aec31a"
       ]
     },
     {
@@ -119,7 +147,8 @@
         "d62be3d8b9fbb3c6c81982c4ddb3dfa00eb9662e3206925cbe5b7e1bc6798b80",
         "823063eb4c76b1334fd1800c41798873ae61d4016af0406f1f0b9dce57b1d376",
         "8aa2dcc5b6596aca97995dbfd4e0a9790d8c15108495e0ed154dd15dbb5b465a",
-        "d1e320862a8763ac39e7ce194536d4b6c55ba61bae9e8a92753cec32df67a457"
+        "d1e320862a8763ac39e7ce194536d4b6c55ba61bae9e8a92753cec32df67a457",
+        "cddfb09e019347957bf7b96c95c0e900e8d3062dfaed697a8a96b0a039aec31a"
       ]
     },
     {
@@ -137,7 +166,8 @@
         "d62be3d8b9fbb3c6c81982c4ddb3dfa00eb9662e3206925cbe5b7e1bc6798b80",
         "823063eb4c76b1334fd1800c41798873ae61d4016af0406f1f0b9dce57b1d376",
         "8aa2dcc5b6596aca97995dbfd4e0a9790d8c15108495e0ed154dd15dbb5b465a",
-        "d1e320862a8763ac39e7ce194536d4b6c55ba61bae9e8a92753cec32df67a457"
+        "d1e320862a8763ac39e7ce194536d4b6c55ba61bae9e8a92753cec32df67a457",
+        "cddfb09e019347957bf7b96c95c0e900e8d3062dfaed697a8a96b0a039aec31a"
       ]
     },
     {
@@ -155,7 +185,8 @@
         "d62be3d8b9fbb3c6c81982c4ddb3dfa00eb9662e3206925cbe5b7e1bc6798b80",
         "823063eb4c76b1334fd1800c41798873ae61d4016af0406f1f0b9dce57b1d376",
         "8aa2dcc5b6596aca97995dbfd4e0a9790d8c15108495e0ed154dd15dbb5b465a",
-        "d1e320862a8763ac39e7ce194536d4b6c55ba61bae9e8a92753cec32df67a457"
+        "d1e320862a8763ac39e7ce194536d4b6c55ba61bae9e8a92753cec32df67a457",
+        "cddfb09e019347957bf7b96c95c0e900e8d3062dfaed697a8a96b0a039aec31a"
       ]
     },
     {
@@ -173,7 +204,8 @@
         "d62be3d8b9fbb3c6c81982c4ddb3dfa00eb9662e3206925cbe5b7e1bc6798b80",
         "823063eb4c76b1334fd1800c41798873ae61d4016af0406f1f0b9dce57b1d376",
         "8aa2dcc5b6596aca97995dbfd4e0a9790d8c15108495e0ed154dd15dbb5b465a",
-        "d1e320862a8763ac39e7ce194536d4b6c55ba61bae9e8a92753cec32df67a457"
+        "d1e320862a8763ac39e7ce194536d4b6c55ba61bae9e8a92753cec32df67a457",
+        "cddfb09e019347957bf7b96c95c0e900e8d3062dfaed697a8a96b0a039aec31a"
       ]
     },
     {
@@ -238,6 +270,8 @@
       "reason": "the root holds only the launcher; the game is one folder per product under Products"
     }
   ],
+  "routes": [],
+  "anywhere": null,
   "unsupportedGames": [
     {
       "steamAppId": "359320",

@@ -59,15 +59,11 @@
       ],
       "runtimes": [
         {
-          "package": "runtime-043",
-          "gpus": ["rdna4", "rdna3"]
-        },
-        {
           "package": "runtime-050",
           "gpus": ["rdna4", "rdna3"]
         },
         {
-          "package": "runtime-051",
+          "package": "runtime-043",
           "gpus": ["rdna4", "rdna3"]
         },
         {

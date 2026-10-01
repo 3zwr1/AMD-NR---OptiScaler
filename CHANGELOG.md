@@ -26,6 +26,7 @@ Adrenalin Edition 26.9.1 or newer.
   launcher, nothing written into the game folder, with either runtime; since the first test builds it is paced to
   what the network can answer, shows each frame a steady time after its capture, leaves dark screens alone, runs
   its work off the host's render thread, and shows a hitch counter.
+- **Sharper NR with lmxxf:** the game's fine detail is kept under the edit (`AmdDetailLift`).
 - **Faster:** lmxxf 0.37 on by default on RX 9000 (the RX 9060 / 9060 XT experimental, with off switches); about 10
   percent less network time on RX 7000 and Z1 Extreme-class handhelds, same picture.
 - **Ray Regeneration** has its own tab; on RX 7000 it is off by default (an unsupported experimental opt-in).
@@ -105,14 +106,15 @@ Adrenalin Edition 26.9.1 or newer.
 - **Timestamp pacing:** each frame is presented at its picture's capture time plus a steady latency (the 95th
   percentile of the pipeline's own capture-to-present time, moving at most 0.5 ms at a time), never past the next
   frame's slot; a repeated frame is never held. `[DlssNr] AnywhereTimestampPacing` (default true, ini only).
-- [PENDING j13] **Fine detail kept sharp:** the NR edit is lifted with a detail-aware upsample and output smoothing
-  acts on the edit only (the picture's own detail is never softened).
 - **Preview limits:** the host's motion is estimated over a captured window, so a light flicker or judder in fast
   motion can remain (lower the NR tier to 720, cap the game at 60-90 fps with its own limiter, keep Model interleave
   off); the game window must be windowed or borderless; a 1440p or 4K window is fed below the network's ceiling. The
   capture host is fetched from its author's GitHub release, not from ours.
 
 ### Neural Rendering
+- **Sharper NR with lmxxf:** the edit is now the network's answer minus exactly what it was fed, lifted onto the
+  game's own pixels with a detail-aware upsample, so the game's fine detail is kept (it was being replaced by the
+  stretched network answer above the network's size). `[DlssNr] AmdDetailLift=false` restores the old edit.
 - **Neural pass after upscaling.** `[DlssNr] AmdPlacement = pre | post` (Neural tab > Performance > Placement, both
   runtimes, through the shared bridge). `post` runs the network on the upscaler's finished display-resolution
   picture instead of the render-resolution input, and writes its answer back into it: sharper, because the upscaler
@@ -372,7 +374,9 @@ Adrenalin Edition 26.9.1 or newer.
 - AMDNR Anywhere is a preview (its limits are listed above). In heavy, uncapped games (GTA V) cap the game with
   Radeon Chill (Min = Max) for steady fps.
 - Capture adds delay: inside Anywhere each frame is shown a little after the game drew it.
-- Fast mode and a high Output smoothing make the picture softer.
+- Fast mode makes the NR's own detail softer.
+- Anywhere: changing Fast mode or the NR size mid-game, or the automatic smaller tier, can freeze the picture for
+  about a second once (fixed in the next update).
 - Frame generation needs the game's own frame generation as the input (DLSS FG or FSR 3.1 FG), or OptiFG in a DX12
   game without any; DX11: OptiFG only; Vulkan: no FSR FG / XeFG output. XeFG needs borderless, not exclusive
   fullscreen. No fps gain = FG is off (the tab and the log say which step), not broken.

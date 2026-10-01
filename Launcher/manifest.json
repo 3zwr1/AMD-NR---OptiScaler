@@ -26,10 +26,6 @@
           "gpus": ["rdna4", "rdna3"]
         },
         {
-          "package": "runtime-051",
-          "gpus": ["rdna4", "rdna3"]
-        },
-        {
           "package": "runtime-041",
           "gpus": ["rdna4", "rdna3"]
         },

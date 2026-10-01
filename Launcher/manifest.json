@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "launcher": {
-    "version": "0.3.5",
-    "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.4.2/AMDNR-Launcher.exe",
-    "sha256": "fdf26eff70c9ee0b9732ccbcc79570ca13a39ddfc8f228de8248f90adc4d9bfe"
+    "version": "0.3.5.1",
+    "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5/AMDNR-Launcher.exe",
+    "sha256": "12c241c548c796e642263331f06bcaa269fd14970c3288930f374def0c2b85ac"
   },
   "sources": [
     {
@@ -18,11 +18,15 @@
       "runtimeNote": "Recommended on every GPU. On RX 7000 and RX 9000, AMDNR can also use its built-in lmxxf runtime.",
       "runtimes": [
         {
+          "package": "runtime-043",
+          "gpus": ["rdna4", "rdna3"]
+        },
+        {
           "package": "runtime-050",
           "gpus": ["rdna4", "rdna3"]
         },
         {
-          "package": "runtime-043",
+          "package": "runtime-051",
           "gpus": ["rdna4", "rdna3"]
         },
         {
@@ -59,11 +63,15 @@
       ],
       "runtimes": [
         {
+          "package": "runtime-043",
+          "gpus": ["rdna4", "rdna3"]
+        },
+        {
           "package": "runtime-050",
           "gpus": ["rdna4", "rdna3"]
         },
         {
-          "package": "runtime-043",
+          "package": "runtime-051",
           "gpus": ["rdna4", "rdna3"]
         },
         {
@@ -80,10 +88,10 @@
   "packages": [
     {
       "id": "amdnr",
-      "version": "0.3.4.2",
-      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.4.2/AMDNR-v0.3.4.2.zip",
-      "sha256": "013081a3a225ef927d96d8996b64910d62f796022b20bef6a6ea102670b0cb63",
-      "size": 603542981,
+      "version": "0.3.5",
+      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5/AMDNR-v0.3.5.zip",
+      "sha256": "677c6844787bef6b637787422c5232cc57a705308aa8c3be4d8cbdcc07ff2c96",
+      "size": 616269737,
       "exclude": []
     },
     {
@@ -110,7 +118,28 @@
         "823063eb4c76b1334fd1800c41798873ae61d4016af0406f1f0b9dce57b1d376",
         "8aa2dcc5b6596aca97995dbfd4e0a9790d8c15108495e0ed154dd15dbb5b465a",
         "d1e320862a8763ac39e7ce194536d4b6c55ba61bae9e8a92753cec32df67a457",
-        "cddfb09e019347957bf7b96c95c0e900e8d3062dfaed697a8a96b0a039aec31a"
+        "cddfb09e019347957bf7b96c95c0e900e8d3062dfaed697a8a96b0a039aec31a",
+        "493b4a3b80a21f7255109172ab7bb01ba08d35f2941718f441768f1abfc48acd"
+      ]
+    },
+    {
+      "id": "runtime-051",
+      "version": "0.5.1",
+      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5/v0.5.1-Runtime.zip",
+      "sha256": "ed4c4debeced9a39c438ee992988dd2d3ad550a4d1d749437363d60e84129292",
+      "size": 149298852,
+      "passSha256": [
+        "bc97f3b06718e19042acaf227bfe15d1e43d4977f9dc2e39994fcc511445ff4e",
+        "8321cae728d28cb7632d0d58d3d913e91132bf7645c126505698fbe4cd5a0138",
+        "b108d6407eb7f094a4f9111edd778eee7b978b648d413a9fc7aeedfdd914c154",
+        "b92f7481bc03fa41f443b1e1e54b502789df2bbbcefe48c680df7bb02a33fc1e",
+        "907b30a61644a6d7e43e58a43a9d97a04a24b1a764a88bdef3954ac807e8d112",
+        "d62be3d8b9fbb3c6c81982c4ddb3dfa00eb9662e3206925cbe5b7e1bc6798b80",
+        "823063eb4c76b1334fd1800c41798873ae61d4016af0406f1f0b9dce57b1d376",
+        "8aa2dcc5b6596aca97995dbfd4e0a9790d8c15108495e0ed154dd15dbb5b465a",
+        "d1e320862a8763ac39e7ce194536d4b6c55ba61bae9e8a92753cec32df67a457",
+        "cddfb09e019347957bf7b96c95c0e900e8d3062dfaed697a8a96b0a039aec31a",
+        "493b4a3b80a21f7255109172ab7bb01ba08d35f2941718f441768f1abfc48acd"
       ]
     },
     {
@@ -129,7 +158,8 @@
         "823063eb4c76b1334fd1800c41798873ae61d4016af0406f1f0b9dce57b1d376",
         "8aa2dcc5b6596aca97995dbfd4e0a9790d8c15108495e0ed154dd15dbb5b465a",
         "d1e320862a8763ac39e7ce194536d4b6c55ba61bae9e8a92753cec32df67a457",
-        "cddfb09e019347957bf7b96c95c0e900e8d3062dfaed697a8a96b0a039aec31a"
+        "cddfb09e019347957bf7b96c95c0e900e8d3062dfaed697a8a96b0a039aec31a",
+        "493b4a3b80a21f7255109172ab7bb01ba08d35f2941718f441768f1abfc48acd"
       ]
     },
     {
@@ -148,7 +178,8 @@
         "823063eb4c76b1334fd1800c41798873ae61d4016af0406f1f0b9dce57b1d376",
         "8aa2dcc5b6596aca97995dbfd4e0a9790d8c15108495e0ed154dd15dbb5b465a",
         "d1e320862a8763ac39e7ce194536d4b6c55ba61bae9e8a92753cec32df67a457",
-        "cddfb09e019347957bf7b96c95c0e900e8d3062dfaed697a8a96b0a039aec31a"
+        "cddfb09e019347957bf7b96c95c0e900e8d3062dfaed697a8a96b0a039aec31a",
+        "493b4a3b80a21f7255109172ab7bb01ba08d35f2941718f441768f1abfc48acd"
       ]
     },
     {
@@ -167,7 +198,8 @@
         "823063eb4c76b1334fd1800c41798873ae61d4016af0406f1f0b9dce57b1d376",
         "8aa2dcc5b6596aca97995dbfd4e0a9790d8c15108495e0ed154dd15dbb5b465a",
         "d1e320862a8763ac39e7ce194536d4b6c55ba61bae9e8a92753cec32df67a457",
-        "cddfb09e019347957bf7b96c95c0e900e8d3062dfaed697a8a96b0a039aec31a"
+        "cddfb09e019347957bf7b96c95c0e900e8d3062dfaed697a8a96b0a039aec31a",
+        "493b4a3b80a21f7255109172ab7bb01ba08d35f2941718f441768f1abfc48acd"
       ]
     },
     {
@@ -186,7 +218,8 @@
         "823063eb4c76b1334fd1800c41798873ae61d4016af0406f1f0b9dce57b1d376",
         "8aa2dcc5b6596aca97995dbfd4e0a9790d8c15108495e0ed154dd15dbb5b465a",
         "d1e320862a8763ac39e7ce194536d4b6c55ba61bae9e8a92753cec32df67a457",
-        "cddfb09e019347957bf7b96c95c0e900e8d3062dfaed697a8a96b0a039aec31a"
+        "cddfb09e019347957bf7b96c95c0e900e8d3062dfaed697a8a96b0a039aec31a",
+        "493b4a3b80a21f7255109172ab7bb01ba08d35f2941718f441768f1abfc48acd"
       ]
     },
     {
@@ -205,15 +238,24 @@
         "823063eb4c76b1334fd1800c41798873ae61d4016af0406f1f0b9dce57b1d376",
         "8aa2dcc5b6596aca97995dbfd4e0a9790d8c15108495e0ed154dd15dbb5b465a",
         "d1e320862a8763ac39e7ce194536d4b6c55ba61bae9e8a92753cec32df67a457",
-        "cddfb09e019347957bf7b96c95c0e900e8d3062dfaed697a8a96b0a039aec31a"
+        "cddfb09e019347957bf7b96c95c0e900e8d3062dfaed697a8a96b0a039aec31a",
+        "493b4a3b80a21f7255109172ab7bb01ba08d35f2941718f441768f1abfc48acd"
       ]
     },
     {
       "id": "forwarder",
       "version": "0.2.1",
-      "url": "https://cdn.discordapp.com/attachments/1551061796440383499/1551260100360929291/nvngx.dll_dlssnr.dll?ex=6abdd94c&is=6abc87cc&hm=63daaa40e894efc1469aeb8480733e23ae04dcf58a0c9414fe0b11c0be6d6f84&",
+      "url": "https://2020.filemail.com/api/file/get?filekey=bKdG35yFdj1fmfNLfdJ6kQ_ECZSFRdCcn0xXnpCJSB-9uLOo2IQZwWbhJ90--uI",
       "sha256": "27f17f9a2bb136b0755dfe5259ab9f40ce62ec47d28895458506f074a9696cb0",
       "size": 1254400
+    },
+    {
+      "id": "anywhere-host",
+      "version": "0.6.8-experimental.1",
+      "url": "https://github.com/SAOG0721/Magpie/releases/download/v0.6.8-experimental.1/Magpie-Experimental-x64.zip",
+      "sha256": "efb41e5177a628c0742566a887660a5a50e159f824cbfbf9f0620b2cc3b6803c",
+      "size": 489787536,
+      "exclude": ["nvngx_*.dll", "sl.*.dll", "nvofapi*.dll", "NvLowLatency*.dll", "nvsdk_ngx*.dll"]
     }
   ],
   "compatibility": [],
@@ -248,6 +290,12 @@
       "exe": "Stray-Win64-Shipping.exe",
       "proxy": "dxgi.dll",
       "reason": "loads as dxgi.dll in the owner's own install"
+    },
+    {
+      "exe": "Cyberpunk2077.exe",
+      "steamAppId": "1091500",
+      "proxy": "dxgi.dll",
+      "reason": "RED4ext holds winmm.dll and Cyber Engine Tweaks holds version.dll; the game loads dxgi.dll and wininet.dll"
     }
   ],
   "proxyByEngine": [
@@ -270,13 +318,87 @@
       "reason": "the root holds only the launcher; the game is one folder per product under Products"
     }
   ],
-  "routes": [],
-  "anywhere": null,
+  "routes": [
+    {
+      "steamAppId": "3240220",
+      "folder": "Grand Theft Auto V Enhanced",
+      "route": "in-game",
+      "reason": "GTA V Enhanced: install without NVIDIA spoofing; pick FSR 3.1 in the game, NR runs on it; keep the game's own frame generation",
+      "evidence": "RX 9070 XT report 2026-09-29 (ERR_GFX_STATE with the spoof on); RX 7800 XT log 2026-09-26 (NR on the game's FSR 3.1)",
+      "date": "2026-09-29"
+    }
+  ],
+  "anywhere": {
+    "package": "anywhere-host"
+  },
   "unsupportedGames": [
     {
       "steamAppId": "359320",
       "folder": "Elite Dangerous",
       "reason": "Elite Dangerous offers only FSR 1, which gives AMDNR no motion vectors or depth to work with"
+    },
+    {
+      "steamAppId": "2208920",
+      "folder": "Assassin's Creed Valhalla",
+      "reason": "Assassin's Creed Valhalla offers only FSR 1, which gives AMDNR no motion vectors or depth to work with"
+    },
+    {
+      "steamAppId": "1222690",
+      "folder": "Dragon Age Inquisition",
+      "exe": "DragonAgeInquisition.exe",
+      "reason": "Dragon Age: Inquisition ships no upscaler of its own"
+    },
+    {
+      "steamAppId": "1259970",
+      "reason": "eFootball PES 2021 (and Football Life, built on it) ships no upscaler of its own"
+    },
+    {
+      "steamAppId": "489830",
+      "reason": "Skyrim Special Edition ships no upscaler of its own"
+    },
+    {
+      "steamAppId": "72850",
+      "reason": "Skyrim (2011) is a 32-bit DirectX 9 game with no upscaler"
+    },
+    {
+      "steamAppId": "22320",
+      "reason": "Morrowind is a 32-bit DirectX 8 game with no upscaler"
+    },
+    {
+      "steamAppId": "22330",
+      "reason": "Oblivion (2006) is a 32-bit DirectX 9 game with no upscaler"
+    },
+    {
+      "steamAppId": "22300",
+      "reason": "Fallout 3 is a 32-bit DirectX 9 game with no upscaler"
+    },
+    {
+      "steamAppId": "22380",
+      "reason": "Fallout: New Vegas is a 32-bit DirectX 9 game with no upscaler"
+    },
+    {
+      "steamAppId": "377160",
+      "reason": "Fallout 4 ships no upscaler of its own"
+    },
+    {
+      "steamAppId": "1328670",
+      "reason": "Mass Effect Legendary Edition ships no upscaler of its own"
+    },
+    {
+      "steamAppId": "374320",
+      "reason": "Dark Souls III ships no upscaler of its own"
+    },
+    {
+      "steamAppId": "814380",
+      "reason": "Sekiro ships no upscaler of its own"
+    },
+    {
+      "steamAppId": "1245620",
+      "reason": "Elden Ring ships no upscaler of its own"
+    },
+    {
+      "steamAppId": "271590",
+      "reason": "GTA V Legacy offers only FSR 1, which gives AMDNR no motion vectors or depth to work with"
     }
   ],
   "hiddenSteamAppIds": []

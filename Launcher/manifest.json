@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "launcher": {
     "version": "0.3.5.4",
-    "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/tag/Alpha0.3.5.1/AMDNR-Launcher.exe",
+    "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.1/AMDNR-Launcher.exe",
     "sha256": "7f9ef4046fea8e8a32994643fb43c993ffcc6a7101acde5d0d871fd48893a5d6"
   },
   "sources": [

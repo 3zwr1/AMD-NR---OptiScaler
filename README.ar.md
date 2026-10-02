@@ -29,8 +29,10 @@
 > **الجديد في 0.3.5:** **AMDNR Anywhere** (preview): تقنية Neural Rendering للألعاب التي لا تملك DLSS أو XeSS أو
 > FSR 2 خاصًا بها - زر واحد **PLAY ANYWHERE** في AMDNR Launcher، ودون كتابة أي شيء في مجلد اللعبة؛ على RX 9000
 > (RDNA 4) في هذا الإصدار (راجع قسم "AMDNR Anywhere"). **صار لـ Ray Regeneration تبويب خاص بها**، بعد Upscaling
-> مباشرة، وتوضّح أسطر الحالة فيه، لكل بطاقة ولكل واجهة برمجية (API)، ما الذي يعمل ولماذا لا يعمل ما لا يعمل؛ وعلى RX 7000 لم تعد
-> تُعرض افتراضيًا (تبقى اللعبة على مزيل التشويش الخاص بها)، ويوجد خيار تجريبي غير مدعوم.
+> مباشرة، وتوضّح أسطر الحالة فيه، لكل بطاقة ولكل واجهة برمجية (API)، ما الذي يعمل ولماذا لا يعمل ما لا يعمل؛ وعلى RX 7000 صارت
+> تُعرض من جديد منذ 0.3.5.1 كمعاينة (preview) مفعّلة افتراضيًا (مزيل التشويش من AMD لا يملك مزوّدًا لـ RDNA 3، فتُرفع دقة
+> الصورة دون إزالة التشويش؛ وتوقفها خانة تبويب Upscaling أو `[FSR-RR] FfxDenoiserAllowPreRdna4=false` فتبقى اللعبة على
+> مزيل التشويش الخاص بها).
 > **يمكن للتمريرة العصبية أن تعمل بعد رفع الدقة** (`[DlssNr] AmdPlacement=post`، Neural > Performance > Placement؛
 > والقيمة الافتراضية `pre` لم تتغير). **يوضّح تبويب Frame Gen سبب عدم توليد أي إطار** ويسمّي الخطوات الخمس (راجع
 > سؤال توليد الإطارات في الأسئلة الشائعة). **أسرع على RX 7000 وعلى الأجهزة المحمولة من فئة Z1 Extreme:** وقت شبكة
@@ -467,7 +469,7 @@ Windows يمكن تشغيله تحت Proton (تجريبي، ولم نختبره 
 | `OptiScaler.dll` | OptiScaler مع واجهة AMD الخلفية لـ DLSS-NR (AMDNR 0.3.5). غيّر اسمه كما يوضح الدليل. |
 | `OptiScaler.ini` | الإعدادات. Neural Rendering مفعّل؛ والتسجيل (logging) مفعّل حتى يكون لديك ما ترفقه ببلاغ الخطأ. |
 | `LmxxfNrRuntime.dll` | بيئة التشغيل العصبية lmxxf (0.3.5: تتحقق من كل وحدة HIP في ملف pak مقابل قائمة البصمات (digest) الخاصة بالملف نفسه قبل استخدامها، وتذكر الطرفين كليهما عندما لا يطابق أي محوّل HIP بطاقة رسوميات اللعبة، وتُمسك خطوات الدقة الديناميكية دون إعادة بناء الشبكة، ولم تعد تقرأ متغيرات البيئة الخاصة بـ lmxxf التي تغيّر الصورة؛ kernels الخاصة بـ lmxxf ومنها kernels الإصدار 0.31، وc32w kernels من AMDNR، وأحجام الشبكة الصغيرة، وقناع الشخصيات الأصلي). لا تُستخدم إلا عند اختيارها؛ وتقرأ `LmxxfNrRuntime.pak` الموجود بجانبها، راجع قسم "بيئة تشغيل lmxxf". |
-| `LmxxfNrRuntime.pak` | أوزان بيئة تشغيل lmxxf ووحدات HIP والـ shaders الخاصة بها في ملف واحد مشفّر (440 MB؛ 0.3.5: مجموعة الوحدات الخاصة بـ RX 7000 وبالأجهزة المحمولة من فئة Z1 Extreme - Z1 Extreme وZ2 وRadeon 780M - أسرع بنحو 10 بالمئة، مع الصورة نفسها؛ وتحصل RX 9000 على وحدات lmxxf 0.37 من Kien (برخصة MIT) بجانب مجموعتها الأساسية التي لم تتغير؛ ووحدات Z2 Extreme / 890M / 880M وStrix Halo دون تغيير). لا تقرؤه إلا بيئة تشغيل lmxxf؛ ولا ضرر من إبقائه مع بيئة تشغيل danielblnc. |
+| `LmxxfNrRuntime.pak` | أوزان بيئة تشغيل lmxxf ووحدات HIP والـ shaders الخاصة بها في ملف واحد مشفّر (465 MB؛ 0.3.5: مجموعة الوحدات الخاصة بـ RX 7000 وبالأجهزة المحمولة من فئة Z1 Extreme - Z1 Extreme وZ2 وRadeon 780M - أسرع بنحو 10 بالمئة، مع الصورة نفسها؛ وتحصل RX 9000 على وحدات lmxxf 0.37 / 0.39 من Kien (برخصة MIT) بجانب مجموعتها الأساسية التي لم تتغير؛ ووحدات Z2 Extreme / 890M / 880M وStrix Halo دون تغيير). لا تقرؤه إلا بيئة تشغيل lmxxf؛ ولا ضرر من إبقائه مع بيئة تشغيل danielblnc. |
 | `OptiScaler\` | FSR وXeSS ومزيل التشويش FidelityFX وD3D12 Agility SDK التي يستخدمها OptiScaler. |
 | `OptiScaler/amdnr_dlssg_fsr3.dll` | أداة dlssg-to-fsr3 من Nukem9، دون تعديل مع إعادة تسميتها: تُلبّى استدعاءات DLSS Frame Generation الصادرة من اللعبة بواسطة توليد الإطارات في FSR 3، وعلى Vulkan أيضًا (`FGNvngxReplacement=Nukems`). برخصة GPLv3، راجع `Licenses/`. |
 | `Licenses\`، `LICENSE` | تراخيص الأطراف الثالثة، وإشعار AMDNR (`AMDNR_NOTICE.txt`)، وترخيص GPL-3.0 لهذه النسخة. |
@@ -614,7 +616,7 @@ AMDNR Anywhere. ويضم Image كلًّا من Sharpness وTextures وInit Flags
   360 Hz أو أعلى وتحديد سقف لمعدل الإطارات يساوي معدل التحديث / 10؛ زمن الاستجابة (latency) مرتفع،
   ويحجز المزوّد نحو 128 MiB إضافية من VRAM بدقة 4K.
   لم يتم تأكيد 7X-10X في أي لعبة بعد: نرجو من المختبرين إرسال `OptiScaler.log`.
-- **تقنية FSR Ray Regeneration** — متاحة على RX 9000 (RDNA 4)؛ أما على RX 7000 (RDNA 3) فهي خيار تجريبي فقط وغير مدعوم (انظر أدناه)؛ وتعمل فقط في الألعاب التي تستخدم
+- **تقنية FSR Ray Regeneration** — متاحة على RX 9000 (RDNA 4)؛ أما على RX 7000 (RDNA 3) فهي معاينة (preview) مفعّلة افتراضيًا ودون مزيل تشويش (انظر أدناه)؛ وتعمل فقط في الألعاب التي تستخدم
   DLSS Ray Reconstruction (Cyberpunk 2077، Alan Wake 2)، بشرط أن تكون اللعبة تشغّل DLSS (مع تفعيل spoofing)، وأن يكون تتبع الأشعة وRay
   Reconstruction مفعّلين في إعدادات اللعبة نفسها. عندها يعمل Neural Rendering بعدها، على مخرجاتها، وهذا
   يكلّف أكثر: اخفض NR resolution إذا انخفض معدل الإطارات. ومنذ 0.3.5 صارت عناصر التحكم الخاصة بها في تبويب **Ray
@@ -628,12 +630,13 @@ AMDNR Anywhere. ويضم Image كلًّا من Sharpness وTextures وInit Flags
   Resident Evil Requiem أو PRAGMATA. وفي التبويب نفسه ستجد قوة bias mask و**تنعيم البشرة (skin smoothing)** (تجريبي،
   للألعاب التي توفّر خامة توجيه SSS (SSS guide)؛ معطّل افتراضيًا، لكنه مفعّل افتراضيًا في Resident Evil Requiem منذ
   0.3.3.2)؛ أما أشرطة الضبط الزمني ففي *More Ray Regeneration options*، وعرض تصحيح RR ورقم التشويش (الحبيبات الداخلة
-  والخارجة، والوميض مع الكاميرا الثابتة) في قسم Diagnostics الخاص بالتبويب. وعلى RX 7000 (RDNA 3) تقنية Ray Regeneration
-  غير مدعومة، ومنذ 0.3.5 لم تعد تُعرض افتراضيًا: مزيل التشويش من AMD لا يملك مزوّدًا لـ RDNA 3، فتبقى اللعبة على
-  مزيل التشويش الخاص بها. وخانة تبويب Upscaling **Experimental: Ray Regeneration on this card (restart)** (وعليها
-  وسم "experimental - not supported") للتجربة فقط: إذا فعّلتها يرفض مزيل التشويش أن يبدأ وتحصل اللعبة على FSR دون
-  إزالة التشويش، وقد تبدو الصورة أكثر تشويشًا مما يعطيه مزيل التشويش الخاص باللعبة. ومزيل تشويش خاص بـ AMDNR
-  لبطاقات RX 7000 مخطط له. ولا تحصل عليه RX 6000 والأقدم إلا مع `[FSR-RR] FfxDenoiserAllowPreRdna4=true` (تبويب
+  والخارجة، والوميض مع الكاميرا الثابتة) في قسم Diagnostics الخاص بالتبويب. وعلى RX 7000 (RDNA 3) تُعرض تقنية Ray Regeneration
+  كمعاينة (preview) (في 0.3.5.1؛ أما 0.3.5 فلم تعرضها افتراضيًا): تستطيع اللعبة تفعيل Ray Reconstruction وتظهر إعدادات
+  Ray Regeneration، لكن مزيل التشويش من AMD لا يملك مزوّدًا لـ RDNA 3، فيرفض مزيل التشويش أن يبدأ وتُرفع دقة صورة
+  Ray Reconstruction دون إزالة التشويش، وقد تبدو أكثر تشويشًا مما يعطيه مزيل التشويش الخاص باللعبة؛ وتوضّح صفحة
+  Ray Regeneration ما الذي يعمل. وخانة تبويب Upscaling **Preview: Ray Regeneration on this card (restart)** (وعليها
+  وسم "preview - on by default") مفعّلة افتراضيًا؛ ألغِ تفعيلها، أو اضبط `[FSR-RR] FfxDenoiserAllowPreRdna4=false`،
+  فتبقى اللعبة على مزيل التشويش الخاص بها. ومزيل تشويش خاص بـ AMDNR لبطاقات RX 7000 مخطط له. ولا تحصل عليه RX 6000 والأقدم إلا مع `[FSR-RR] FfxDenoiserAllowPreRdna4=true` (تبويب
   Upscaling: **Offer FSR Ray Regeneration on this GPU (restart)**). **الشحذ بعد RR (Sharpening after RR)** (0.3.4.1):
   عندما لا ترسل اللعبة قيمة حدّة (sharpness)، يشحذ AMDNR الصورة بمقدار 0.25 بعد RR على Windows (وبمقدار 0 على
   Linux / Proton)؛ ولإيقافه: Image > Sharpness، فعّل Override، واضبط شريط التمرير على 0. ومنذ 0.3.4.2 صار هذا الرقم مفتاحًا
@@ -808,9 +811,10 @@ device (VK_ERROR_EXTENSION_NOT_PRESENT)"؟** أُصلح في 0.3.2: كان ال�
 ويُرسم ما دامت Ray Regeneration تعمل في اللعبة (ويبقى طوال الجلسة بمجرد أن تكون قد عملت)؛ وعندها يعرض سطر **Ray
 Regeneration** في تبويب Neural زر **Open Ray Regeneration**. وحين لا تعمل، لا يُرسم التبويب، ويوضّح ذلك السطر في
 تبويب Neural السبب: اللعبة لم تفعّل Ray Reconstruction، أو أن Ray Regeneration تخلّت عن هذه اللعبة والسبب، أو كم ثانية
-مضت على آخر تشغيل لها. وعلى RX 7000 يضيف سطر باهت آخر أنها غير معروضة هناك: مزيل التشويش من AMD لا يملك مزوّدًا لـ RDNA 3، فتبقى
-اللعبة على مزيل التشويش الخاص بها؛ ويوجد خيار تجريبي في تبويب Upscaling
-(**Experimental: Ray Regeneration on this card (restart)**)، لكنه غير مدعوم. وعلى RX 6000 وما قبلها يقول إنها غير معروضة على هذه البطاقة، وأن AMD تصدر مزيل
+مضت على آخر تشغيل لها. وعلى RX 7000 يضيف سطر باهت آخر أنها معروضة هناك كمعاينة (preview): مزيل التشويش من AMD لا يملك مزوّدًا لـ RDNA 3،
+فبمجرد أن تفعّل اللعبة Ray Reconstruction تُرفع دقة صورتها دون إزالة التشويش، ويوقف `[FSR-RR] FfxDenoiserAllowPreRdna4=false`
+(أو إلغاء تفعيل خانة تبويب Upscaling **Preview: Ray Regeneration on this card (restart)**) هذه المعاينة فتبقى اللعبة على
+مزيل التشويش الخاص بها. وعلى RX 6000 وما قبلها يقول إنها غير معروضة على هذه البطاقة، وأن AMD تصدر مزيل
 التشويش لـ RDNA 4، وأن `[FSR-RR] FfxDenoiserAllowPreRdna4=true` يعرضها مع ذلك. ولتشغيلها، من إعدادات الرسوميات في اللعبة نفسها: اختر
 **DLSS** كأداة رفع الدقة (لا FSR ولا XeSS)، وفعّل **تتبع الأشعة** أو تتبع المسار، وفعّل **Ray Reconstruction**
 (DLSS-RR)؛ عندها يظهر في تبويب Upscaling اسم "FSR Ray Regeneration". وأي إعداد تغيّره لأي مشكلة تجده في دليل إعدادات Ray Regeneration
@@ -919,7 +923,7 @@ Reconstruction غير مدعوم فتبقى على مزيل التشويش ال�
 - **lmxxf** (Kien) — https://github.com/lmxxf/dlss5-on-amd-9070xt-porting (منفذ الشبكة وkernels وبيئة تشغيل HIP، برخصة MIT)
 - **TheAutomatic** — `LmxxfNrRuntime.cpp` و`LmxxfNrApi.h` و`LmxxfProductionOptions.h`: portions contributed to lmxxf by TheAutomatic (MIT)
 - **kernels الإصدار 0.31 من lmxxf** في `LmxxfNrRuntime.pak` (the ViT projection (lmxxf031-vit-wide-deep), the C512 QKV and mix kernels (lmxxf031-c512-m32-mh, lmxxf031-c512-m32-deep) and one-wave-per-head attention (lmxxf031-c64-wave2)) — من عمل lmxxf (Kien، برخصة MIT)، بناها AMDNR من مصادر lmxxf ووصفة البناء الخاصة به؛ ودور AMDNR هو التحميل وبصمات SHA-256 المثبتة والتصفية حسب بطاقة الرسوميات والبدائل
-- **kernels الإصدار 0.37 من lmxxf** في `LmxxfNrRuntime.pak` (وحدات lmxxf037-* الخاصة بـ RX 9000) وشيفرة تشغيلها في `LmxxfNrRuntime.dll` — lmxxf 0.37 by Kien (MIT)، تُشحن كما بناها lmxxf؛ ودور AMDNR هو تحميلها كمجموعة واحدة مثبتة، وبصمات SHA-256 المثبتة، والقيم الافتراضية حسب بطاقة الرسوميات، ومفاتيح الإيقاف، والبدائل
+- **kernels الإصدارين 0.37 و0.39 من lmxxf** في `LmxxfNrRuntime.pak` (وحدات lmxxf037-* وlmxxf039-* الخاصة بـ RX 9000) وشيفرة تشغيلها في `LmxxfNrRuntime.dll` — lmxxf 0.37 / 0.39 by Kien (MIT)، تُشحن كما بناها lmxxf؛ ودور AMDNR هو تحميلها كمجموعة واحدة مثبتة، وبصمات SHA-256 المثبتة، والقيم الافتراضية حسب بطاقة الرسوميات، ومفاتيح الإيقاف، والبدائل
 - **c32w kernels** (0.3.3.2) — kernels خاصة بـ AMDNR تعمل بموجة واحدة (one-wave) على RDNA 4 لشبكة lmxxf، Copyright (c) 2026 3zwr1 (AMDNR)؛ والأفكار مستقاة من وثائق AMD العامة عن WMMA في RDNA 4 (GPUOpen، وأداة ROCm matrix instruction calculator)
 - **واجهة RDNA 3 الخلفية الخاصة بـ AMDNR** (0.3.3؛ ونسخ الأجهزة المحمولة gfx1103 / gfx1150 في 0.3.4)، وسياسة مستويات حجم الشبكة، وأحجام الشبكة الصغيرة (0.3.4) — Copyright (c) 2026 3zwr1 (AMDNR)
 - **Matheus / dlss-5-amd** — https://github.com/MatheusGViana/dlss-5-amd-project

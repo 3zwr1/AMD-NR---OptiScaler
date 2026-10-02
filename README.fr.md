@@ -26,8 +26,10 @@ de test.
 > **Nouveautés de la 0.3.5 :** **AMDNR Anywhere** (preview) : Neural Rendering pour les jeux qui n'ont ni DLSS, ni
 > XeSS, ni FSR 2 propres - un seul bouton **PLAY ANYWHERE** dans l'AMDNR Launcher, rien n'est écrit dans le dossier
 > du jeu ; RX 9000 (RDNA 4) dans cette release (voir « AMDNR Anywhere »). **Ray Regeneration a son propre onglet**,
-> juste après Upscaling, et ses lignes d'état disent, par carte et par API, ce qui tourne et pourquoi pas ; sur RX 7000, elle n'est
-> plus proposée par défaut (le jeu garde son propre débruiteur), avec une option expérimentale non prise en charge. **La
+> juste après Upscaling, et ses lignes d'état disent, par carte et par API, ce qui tourne et pourquoi pas ; sur RX 7000, elle est,
+> depuis la 0.3.5.1, de nouveau proposée en preview, activée par défaut (le débruiteur d'AMD n'a pas de fournisseur pour
+> RDNA 3, donc l'image est mise à l'échelle sans débruiteur ; la case de l'onglet Upscaling ou
+> `[FSR-RR] FfxDenoiserAllowPreRdna4=false` la coupe et le jeu garde son propre débruiteur). **La
 > passe neuronale peut tourner après l'upscaling** (`[DlssNr] AmdPlacement=post`, Neural > Performance > Placement ;
 > la valeur par défaut `pre` est inchangée). **L'onglet Frame Gen dit pourquoi rien n'est généré** et nomme les cinq
 > étapes (voir l'entrée de la FAQ sur la frame generation). **Plus rapide sur RX 7000 et sur les consoles portables
@@ -498,7 +500,7 @@ votre version de Proton.
 | `OptiScaler.dll` | OptiScaler avec le backend AMD DLSS-NR (AMDNR 0.3.5). Renommez-le comme indiqué dans le guide. |
 | `OptiScaler.ini` | Paramètres. Neural Rendering est activé ; les logs sont activés pour qu'un rapport de bug ait quelque chose à joindre. |
 | `LmxxfNrRuntime.dll` | Le runtime neuronal lmxxf (0.3.5 : il vérifie chaque module HIP du pak par rapport à la liste d'empreintes du pak lui-même avant usage, nomme les deux côtés quand aucun adaptateur HIP ne correspond au GPU du jeu, conserve les pas de résolution dynamique sans reconstruire le réseau, et ne lit plus les variables d'environnement de lmxxf qui changent l'image ; les kernels de lmxxf, y compris ceux de lmxxf 0.31, les kernels c32w d'AMDNR, les petites tailles de réseau et le masque de personnages natif). Utilisé uniquement s'il est choisi ; lit `LmxxfNrRuntime.pak` placé à côté, voir « Le runtime lmxxf ». |
-| `LmxxfNrRuntime.pak` | Les poids, les modules HIP et les shaders du runtime lmxxf dans un seul fichier chiffré (440 Mo ; 0.3.5 : le jeu de modules pour RX 7000 et pour les consoles portables de la classe Z1 Extreme - Z1 Extreme, Z2, Radeon 780M - est environ 10 % plus rapide, même image ; les RX 9000 reçoivent les modules de lmxxf 0.37 de Kien (MIT) à côté de leur jeu de base inchangé ; les modules Z2 Extreme / 890M / 880M et Strix Halo sont inchangés). Seul le runtime lmxxf le lit ; on peut le garder sans risque avec le runtime danielblnc. |
+| `LmxxfNrRuntime.pak` | Les poids, les modules HIP et les shaders du runtime lmxxf dans un seul fichier chiffré (465 Mo ; 0.3.5 : le jeu de modules pour RX 7000 et pour les consoles portables de la classe Z1 Extreme - Z1 Extreme, Z2, Radeon 780M - est environ 10 % plus rapide, même image ; les RX 9000 reçoivent les modules de lmxxf 0.37 / 0.39 de Kien (MIT) à côté de leur jeu de base inchangé ; les modules Z2 Extreme / 890M / 880M et Strix Halo sont inchangés). Seul le runtime lmxxf le lit ; on peut le garder sans risque avec le runtime danielblnc. |
 | `OptiScaler\` | FSR, XeSS, le denoiser FidelityFX et le D3D12 Agility SDK utilisés par OptiScaler. |
 | `OptiScaler/amdnr_dlssg_fsr3.dll` | dlssg-to-fsr3 de Nukem9, non modifié et renommé : les appels DLSS Frame Generation du jeu sont traités par la frame generation FSR 3, y compris sous Vulkan (`FGNvngxReplacement=Nukems`). GPLv3, voir `Licenses/`. |
 | `Licenses\`, `LICENSE` | Licences tierces, les mentions d'AMDNR (`AMDNR_NOTICE.txt`) et la licence GPL-3.0 de ce build. |
@@ -654,7 +656,7 @@ réflexe utile est de changer une seule chose à la fois.
   la copie de XeSS 3 propre au jeu reste limitée à 6X. Le 10X nécessite un écran 360 Hz ou plus et une limite de FPS
   réglée sur la fréquence de rafraîchissement / 10 ; la latence est élevée, et le provider réserve environ 128 Mio de VRAM
   en plus en 4K. Le 7X-10X n'est pas encore confirmé en jeu : testeurs, merci d'envoyer `OptiScaler.log`.
-- **FSR Ray Regeneration** — RX 9000 (RDNA 4) ; sur RX 7000 (RDNA 3), seulement en option expérimentale, non prise en charge (voir plus bas) ; et seulement dans les jeux qui utilisent DLSS Ray Reconstruction (Cyberpunk 2077,
+- **FSR Ray Regeneration** — RX 9000 (RDNA 4) ; sur RX 7000 (RDNA 3), en preview, activée par défaut, sans débruiteur (voir plus bas) ; et seulement dans les jeux qui utilisent DLSS Ray Reconstruction (Cyberpunk 2077,
   Alan Wake 2), le jeu devant tourner en DLSS (spoofing activé), avec le ray tracing et Ray Reconstruction
   activés dans ses propres paramètres. Neural Rendering s'exécute alors après lui, sur sa sortie, ce qui coûte
   davantage : baissez la NR resolution si le framerate chute. Depuis la 0.3.5, ses réglages se trouvent dans son
@@ -672,11 +674,13 @@ réflexe utile est de changer une seule chose à la fois.
   Evil Requiem depuis la 0.3.3.2) ; les réglages temporels sont sous *More Ray Regeneration options*, et la vue de
   debug RR et le chiffre de bruit (grain en entrée et en sortie, scintillement caméra immobile) sont dans le bloc
   Diagnostics propre à l'onglet. Sur RX 7000 (RDNA 3), Ray Regeneration
-  n'est pas prise en charge et, depuis la 0.3.5, n'est plus proposée par défaut : le débruiteur d'AMD n'a pas de
-  fournisseur pour RDNA 3, donc le jeu garde son propre débruiteur. La case de l'onglet Upscaling
-  **Experimental: Ray Regeneration on this card (restart)** (marquée « experimental - not supported ») sert
-  uniquement aux tests : cochée, le débruiteur refuse de démarrer et le jeu reçoit FSR sans débruiteur, ce qui peut
-  paraître plus bruité que le débruiteur du jeu. Un débruiteur propre à AMDNR pour les RX 7000 est prévu. Les RX 6000
+  est proposée en preview (0.3.5.1 ; la 0.3.5 ne la proposait pas par défaut) : le jeu peut activer Ray Reconstruction
+  et les réglages de Ray Regeneration s'affichent, mais le débruiteur d'AMD n'a pas de fournisseur pour RDNA 3, donc le
+  débruiteur refuse de démarrer et l'image Ray Reconstruction est mise à l'échelle sans débruiteur, ce qui peut
+  paraître plus bruité que le débruiteur du jeu ; la page Ray Regeneration dit ce qui tourne. La case de l'onglet
+  Upscaling **Preview: Ray Regeneration on this card (restart)** (marquée « preview - on by default ») est cochée par
+  défaut ; décochez-la, ou mettez `[FSR-RR] FfxDenoiserAllowPreRdna4=false`, et le jeu garde son propre débruiteur.
+  Un débruiteur propre à AMDNR pour les RX 7000 est prévu. Les RX 6000
   et plus anciennes ne l'ont qu'avec `[FSR-RR] FfxDenoiserAllowPreRdna4=true` (onglet Upscaling :
   **Offer FSR Ray Regeneration on this GPU (restart)**). **Sharpening après RR**
   (0.3.4.1) : quand le jeu n'envoie aucune valeur de sharpness, AMDNR applique un sharpening de 0.25 après RR sous
@@ -863,9 +867,10 @@ pour la session une fois qu'il a tourné) ; la ligne **Ray Regeneration** de l'o
 **Open Ray Regeneration**. Tant qu'il ne tourne pas, l'onglet n'est pas affiché et cette ligne de l'onglet Neural
 dit pourquoi : le jeu n'a pas activé Ray Reconstruction, Ray Regeneration a renoncé à ce titre et pourquoi, ou il y
 a combien de secondes il a tourné pour la dernière fois. Sur une RX 7000, une ligne grisée supplémentaire ajoute
-qu'il n'y est pas proposé : le débruiteur d'AMD n'a pas de fournisseur pour RDNA 3, donc le jeu garde son propre
-débruiteur ; une option expérimentale existe dans l'onglet Upscaling
-(**Experimental: Ray Regeneration on this card (restart)**), mais elle n'est pas prise en charge. Sur
+qu'il y est proposé en preview : le débruiteur d'AMD n'a pas de fournisseur pour RDNA 3, donc dès que le jeu active
+Ray Reconstruction, son image est mise à l'échelle sans débruiteur, et `[FSR-RR] FfxDenoiserAllowPreRdna4=false` (ou
+la case de l'onglet Upscaling **Preview: Ray Regeneration on this card (restart)**, décochée) coupe la preview pour
+que le jeu garde son propre débruiteur. Sur
 RX 6000 et plus ancien, elle dit qu'il n'est pas proposé sur ce GPU, qu'AMD publie le débruiteur pour RDNA 4, et que
 `[FSR-RR] FfxDenoiserAllowPreRdna4=true` le propose quand même. Pour le faire tourner, dans
 les paramètres graphiques du jeu : choisissez **DLSS** comme upscaler (pas FSR, pas XeSS), activez le **ray tracing**
@@ -986,7 +991,7 @@ reviennent aux projets d'origine (upstream).
 - **lmxxf** (Kien) — https://github.com/lmxxf/dlss5-on-amd-9070xt-porting (le portage du réseau, les kernels et le runtime HIP, MIT)
 - **TheAutomatic** — `LmxxfNrRuntime.cpp`, `LmxxfNrApi.h`, `LmxxfProductionOptions.h` : portions contributed to lmxxf by TheAutomatic (MIT)
 - **kernels de lmxxf 0.31** dans `LmxxfNrRuntime.pak` (the ViT projection (lmxxf031-vit-wide-deep), the C512 QKV and mix kernels (lmxxf031-c512-m32-mh, lmxxf031-c512-m32-deep) and one-wave-per-head attention (lmxxf031-c64-wave2)) — ceux de lmxxf (Kien, MIT), compilés par AMDNR à partir des sources et de la recette de compilation de lmxxf ; la part d'AMDNR est le chargement, les empreintes SHA-256, le filtrage par GPU et les solutions de repli
-- **kernels de lmxxf 0.37** dans `LmxxfNrRuntime.pak` (les modules lmxxf037-* pour RX 9000) et leur code de lancement dans `LmxxfNrRuntime.dll` — lmxxf 0.37 by Kien (MIT), livrés tels que lmxxf les a compilés ; la part d'AMDNR est le chargement comme un seul groupe épinglé, les empreintes SHA-256, les réglages par défaut par GPU, les interrupteurs de désactivation et les solutions de repli
+- **kernels de lmxxf 0.37 et 0.39** dans `LmxxfNrRuntime.pak` (les modules lmxxf037-* et lmxxf039-* pour RX 9000) et leur code de lancement dans `LmxxfNrRuntime.dll` — lmxxf 0.37 / 0.39 by Kien (MIT), livrés tels que lmxxf les a compilés ; la part d'AMDNR est le chargement comme un seul groupe épinglé, les empreintes SHA-256, les réglages par défaut par GPU, les interrupteurs de désactivation et les solutions de repli
 - **c32w kernels** (0.3.3.2) — les kernels RDNA 4 à une seule wave propres à AMDNR pour le réseau de lmxxf, Copyright (c) 2026 3zwr1 (AMDNR) ; idées tirées de la documentation publique d'AMD sur WMMA pour RDNA 4 (GPUOpen, ROCm matrix instruction calculator)
 - **Le backend RDNA 3 d'AMDNR** (0.3.3 ; les builds pour consoles portables gfx1103 / gfx1150 en 0.3.4), la politique de paliers de taille du réseau et les petites tailles de réseau (0.3.4) — Copyright (c) 2026 3zwr1 (AMDNR)
 - **Matheus / dlss-5-amd** — https://github.com/MatheusGViana/dlss-5-amd-project

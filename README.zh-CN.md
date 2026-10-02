@@ -22,8 +22,9 @@ DLSS 光线重建游戏的 FSR Ray Regeneration。自 0.3.5 起，**AMDNR Anywhe
 
 > **0.3.5 新内容：** **AMDNR Anywhere**（preview）：为自身没有 DLSS、XeSS 或 FSR 2 的游戏提供神经渲染——AMDNR Launcher
 > 中只需一个 **PLAY ANYWHERE** 按钮，不向游戏目录写入任何东西；本次发布支持 RX 9000（RDNA 4）（见"AMDNR Anywhere"）。
-> **Ray Regeneration 有了自己的选项卡**，紧跟在 Upscaling 之后，其状态行会按显卡、按 API 说明什么在运行、为什么没有运行；在 RX 7000 上它不再默认提供
-> （游戏保留自己的降噪器），实验性选项不受支持。
+> **Ray Regeneration 有了自己的选项卡**，紧跟在 Upscaling 之后，其状态行会按显卡、按 API 说明什么在运行、为什么没有运行；在 RX 7000 上，自 0.3.5.1 起它再次以
+> preview 形式提供并默认开启（AMD 的降噪器没有面向 RDNA 3 的提供程序，因此画面在不带降噪的情况下被升采样；Upscaling 选项卡中的
+> 勾选框或 `[FSR-RR] FfxDenoiserAllowPreRdna4=false` 可将其关闭，游戏便保留自己的降噪器）。
 > **神经通道可以在放大之后运行**（`[DlssNr] AmdPlacement=post`，Neural > Performance > Placement；默认的 `pre` 不变）。
 > **Frame Gen 选项卡会说明为什么没有生成任何帧**，并列出五个步骤（见帧生成的常见问题）。**在 RX 7000 和 Z1 Extreme
 > 级掌机上更快：**网络时间约少 10%，画面逐位相同（`LmxxfNrRuntime.pak` 中的 0.3.5 模块集）。**RX 9000 上默认启用 Kien 的 lmxxf 0.37（MIT）：**
@@ -414,7 +415,7 @@ Mesa 版本和 Proton 版本。
 | `OptiScaler.dll` | 带 DLSS-NR AMD 后端的 OptiScaler（AMDNR 0.3.5）。按指南重命名。 |
 | `OptiScaler.ini` | 设置。神经渲染已启用；日志已开启，以便反馈时有内容可附。 |
 | `LmxxfNrRuntime.dll` | lmxxf 神经运行时（0.3.5：使用前会按 pak 自带的摘要列表校验 pak 中的每个 HIP 模块；当没有 HIP 适配器与游戏的 GPU 匹配时写出双方；动态分辨率的变化步骤会被保持而不重建网络；不再读取 lmxxf 那些会改变画面的环境变量；lmxxf 的内核，包括 lmxxf 0.31 的内核、AMDNR 的 c32w 内核、小网络尺寸以及原生角色遮罩）。仅在选中时使用；读取旁边的 `LmxxfNrRuntime.pak`，见"lmxxf 运行时"。 |
-| `LmxxfNrRuntime.pak` | lmxxf 运行时的权重、HIP 模块和着色器，打包为一个加密文件（440 MB；0.3.5：面向 RX 7000 和 Z1 Extreme 级掌机——Z1 Extreme、Z2、Radeon 780M——的模块集快了约 10%，画面相同；RX 9000 在其未变的基础模块集之外获得 Kien 的 lmxxf 0.37 模块（MIT）；Z2 Extreme / 890M / 880M 和 Strix Halo 的模块未变）。只有 lmxxf 运行时会读取它；与 danielblnc 运行时并存也无妨。 |
+| `LmxxfNrRuntime.pak` | lmxxf 运行时的权重、HIP 模块和着色器，打包为一个加密文件（465 MB；0.3.5：面向 RX 7000 和 Z1 Extreme 级掌机——Z1 Extreme、Z2、Radeon 780M——的模块集快了约 10%，画面相同；RX 9000 在其未变的基础模块集之外获得 Kien 的 lmxxf 0.37 / 0.39 模块（MIT）；Z2 Extreme / 890M / 880M 和 Strix Halo 的模块未变）。只有 lmxxf 运行时会读取它；与 danielblnc 运行时并存也无妨。 |
 | `OptiScaler\` | OptiScaler 使用的 FSR、XeSS、FidelityFX 去噪器和 D3D12 Agility SDK。 |
 | `OptiScaler/amdnr_dlssg_fsr3.dll` | Nukem9 的 dlssg-to-fsr3，未修改、仅重命名：把游戏的 DLSS 帧生成调用交给 FSR 3 帧生成，Vulkan 也可用（`FGNvngxReplacement=Nukems`）。GPLv3，见 `Licenses/`。 |
 | `Licenses\`、`LICENSE` | 第三方许可证、AMDNR 声明（`AMDNR_NOTICE.txt`）以及本构建版的 GPL-3.0 许可证。 |
@@ -542,7 +543,7 @@ Sharpness、Textures、Init Flags 和 Magnifier。Frame Gen 以 FG Input 和 FG 
   高于 6X 需要 OptiScaler 自带的 XeFG 提供程序并开启 Extra pacing；游戏自带的 XeSS 3 副本最多 6X。
   10X 需要 360 Hz 及以上的显示器，并把帧率上限设为刷新率 / 10；延迟较高，且提供程序在 4K 下多占用约
   128 MiB 显存。7X-10X 尚未在游戏中确认：测试者请发送 `OptiScaler.log`。
-- **FSR Ray Regeneration** —— 在 RX 9000（RDNA 4）上提供；在 RX 7000（RDNA 3）上仅作为实验性选项，不受支持（见下文）；仅在使用 DLSS 光线重建的游戏中（Cyberpunk 2077、Alan Wake 2），且游戏
+- **FSR Ray Regeneration** —— 在 RX 9000（RDNA 4）上提供；在 RX 7000（RDNA 3）上作为 preview 提供，默认开启，不带降噪器（见下文）；仅在使用 DLSS 光线重建的游戏中（Cyberpunk 2077、Alan Wake 2），且游戏
   运行 DLSS（开启伪装）、光线追踪和光线重建都在游戏自身设置中启用。此时神经渲染在它之后、对它的
   输出运行，开销更大：帧率下降时调低 NR resolution。自 0.3.5 起，它的控件位于其独立的 **Ray Regeneration** 选项卡上，
   紧跟在 Upscaling 之后，在 Ray Regeneration 于游戏中运行时绘制；Neural 选项卡会指向它，并在 Ray Regeneration 没有运行时
@@ -553,10 +554,12 @@ Sharpness、Textures、Init Flags 和 Magnifier。Frame Gen 以 FG Input 和 FG 
   想在 Resident Evil Requiem 或 PRAGMATA 中试用，请在那里勾选。同一选项卡还有 bias mask 强度和
   **皮肤平滑**（实验性，用于提供 SSS 引导的游戏；默认关闭，但自 0.3.3.2 起在 Resident Evil Requiem 中默认开启）；
   时域调节滑块在 *More Ray Regeneration options* 中，RR 调试视图和噪点数值（输入与输出的颗粒、静止镜头下的闪烁）位于该
-  选项卡自己的 Diagnostics 区块中。在 RX 7000（RDNA 3）上，Ray Regeneration 不受支持，
-  自 0.3.5 起也不再默认提供：AMD 的降噪器没有面向 RDNA 3 的提供程序，因此游戏保留自己的降噪器。Upscaling 选项卡中的
-  **Experimental: Ray Regeneration on this card (restart)**（带有 "experimental - not supported" 标签）仅供测试：勾选后，
-  降噪器会拒绝启动，游戏得到的是不带降噪的 FSR，看起来可能比游戏自己的降噪更嘈杂。AMDNR 自己的 RX 7000 降噪器已在计划中。
+  选项卡自己的 Diagnostics 区块中。在 RX 7000（RDNA 3）上，Ray Regeneration 以 preview 形式提供
+  （0.3.5.1；0.3.5 未默认提供）：游戏可以开启光线重建，Ray Regeneration 的设置也会显示，但 AMD 的降噪器没有面向 RDNA 3
+  的提供程序，因此降噪器会拒绝启动，光线重建画面在不带降噪的情况下被升采样，看起来可能比游戏自己的降噪更嘈杂；
+  Ray Regeneration 页面会说明实际运行的是什么。Upscaling 选项卡中的 **Preview: Ray Regeneration on this card (restart)**
+  （带有 "preview - on by default" 标签）默认勾选；取消勾选，或设为 `[FSR-RR] FfxDenoiserAllowPreRdna4=false`，
+  游戏便保留自己的降噪器。AMDNR 自己的 RX 7000 降噪器已在计划中。
   RX 6000 及更早的显卡只有设为 `[FSR-RR] FfxDenoiserAllowPreRdna4=true` 才会提供（Upscaling
   选项卡：**Offer FSR Ray Regeneration on this GPU (restart)**）。**RR 之后的锐化**（0.3.4.1）：当游戏没有传入锐化值时，
   AMDNR 在 Windows 上会在 RR 之后加 0.25 的锐化（Linux / Proton 上为 0）；关闭方法：Image > Sharpness，勾选
@@ -701,8 +704,9 @@ Streamline 插件钩子可能引发该错误的一条途径，但尚未确认这
 之后，在 Ray Regeneration 于游戏中运行时绘制（一旦运行过，本次会话内会一直保留）；此时 Neural 选项卡中的 **Ray
 Regeneration** 一行会提供一个 **Open Ray Regeneration** 按钮。它没有运行时，该选项卡不会绘制，Neural 选项卡中的那一行
 会说明原因：游戏没有开启光线重建、Ray Regeneration 放弃了这款游戏以及原因，或者它上一次运行是多少秒前。在 RX 7000 上，
-还有一行浅色文字会补上：那里不提供它，AMD 的降噪器没有面向 RDNA 3 的提供程序，因此游戏保留自己的降噪器；Upscaling
-选项卡中有一个实验性选项（**Experimental: Ray Regeneration on this card (restart)**），但它不受支持。在 RX 6000 及更早的显卡上则说明：
+还有一行浅色文字会补上：那里以 preview 形式提供它，AMD 的降噪器没有面向 RDNA 3 的提供程序，因此一旦游戏开启光线重建，其画面就会
+在不带降噪的情况下被升采样，而 `[FSR-RR] FfxDenoiserAllowPreRdna4=false`（或取消勾选 Upscaling 选项卡中的
+**Preview: Ray Regeneration on this card (restart)**）会关闭该 preview，让游戏保留自己的降噪器。在 RX 6000 及更早的显卡上则说明：
 这块显卡上不提供它，AMD 只为 RDNA 4 发布该降噪器，而 `[FSR-RR] FfxDenoiserAllowPreRdna4=true` 仍可让它提供。
 要让它运行，请在游戏自身的画面设置里：把升采样器选为 **DLSS**（不是 FSR，也不是 XeSS），开启**光线追踪**或路径追踪，
 并开启**光线重建**（DLSS-RR）；此时 Upscaling 选项卡会显示 "FSR Ray Regeneration"。哪个问题该调哪个设置，见 Ray Regeneration 设置指南
@@ -794,7 +798,7 @@ OptiScaler 问题：把游戏目录中的 `sl.common.dll` 重命名为 `sl.commo
 - **lmxxf**（Kien）—— https://github.com/lmxxf/dlss5-on-amd-9070xt-porting （网络移植、内核与 HIP 运行时，MIT）
 - **TheAutomatic** —— `LmxxfNrRuntime.cpp`、`LmxxfNrApi.h`、`LmxxfProductionOptions.h`：portions contributed to lmxxf by TheAutomatic (MIT)
 - **lmxxf 0.31 内核**，位于 `LmxxfNrRuntime.pak` 中（the ViT projection (lmxxf031-vit-wide-deep), the C512 QKV and mix kernels (lmxxf031-c512-m32-mh, lmxxf031-c512-m32-deep) and one-wave-per-head attention (lmxxf031-c64-wave2)）—— 属于 lmxxf（Kien，MIT），由 AMDNR 按 lmxxf 的源码与构建方法构建；AMDNR 负责加载、SHA-256 固定校验、按显卡启用与回退
-- **lmxxf 0.37 内核**，位于 `LmxxfNrRuntime.pak` 中（面向 RX 9000 的 lmxxf037-* 模块），其启动代码位于 `LmxxfNrRuntime.dll` 中 —— lmxxf 0.37 by Kien (MIT)，按 lmxxf 构建的原样提供；AMDNR 负责作为一个固定组加载、SHA-256 固定校验、按显卡的默认设置、关闭开关与回退
+- **lmxxf 0.37 和 0.39 内核**，位于 `LmxxfNrRuntime.pak` 中（面向 RX 9000 的 lmxxf037-* 和 lmxxf039-* 模块），其启动代码位于 `LmxxfNrRuntime.dll` 中 —— lmxxf 0.37 / 0.39 by Kien (MIT)，按 lmxxf 构建的原样提供；AMDNR 负责作为一个固定组加载、SHA-256 固定校验、按显卡的默认设置、关闭开关与回退
 - **c32w 内核**（0.3.3.2）—— AMDNR 自有的 RDNA 4 单 wave 内核，用于 lmxxf 的网络，Copyright (c) 2026 3zwr1 (AMDNR)；思路参考 AMD 公开的 RDNA 4 WMMA 文档（GPUOpen、ROCm matrix instruction calculator）
 - **AMDNR 的 RDNA 3 后端**（0.3.3；0.3.4 中新增掌机构建 gfx1103 / gfx1150）、网络尺寸档位策略和小网络尺寸（0.3.4）—— Copyright (c) 2026 3zwr1 (AMDNR)
 - **Matheus / dlss-5-amd** —— https://github.com/MatheusGViana/dlss-5-amd-project

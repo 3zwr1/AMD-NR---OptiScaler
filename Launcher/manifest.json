@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "launcher": {
-    "version": "0.3.5.1",
-    "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5/AMDNR-Launcher.exe",
-    "sha256": "12c241c548c796e642263331f06bcaa269fd14970c3288930f374def0c2b85ac"
+    "version": "0.3.5.2",
+    "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.1/AMDNR-Launcher.exe",
+    "sha256": "f2311524ccee478826068594313c76d987a34d41e1c0a5b1d314b031c1632dc3"
   },
   "sources": [
     {
@@ -18,11 +18,15 @@
       "runtimeNote": "Recommended on every GPU. On RX 7000 and RX 9000, AMDNR can also use its built-in lmxxf runtime.",
       "runtimes": [
         {
+          "package": "runtime-043",
+          "gpus": ["rdna4", "rdna3"]
+        },
+        {
           "package": "runtime-050",
           "gpus": ["rdna4", "rdna3"]
         },
         {
-          "package": "runtime-043",
+          "package": "runtime-051",
           "gpus": ["rdna4", "rdna3"]
         },
         {
@@ -59,11 +63,15 @@
       ],
       "runtimes": [
         {
+          "package": "runtime-043",
+          "gpus": ["rdna4", "rdna3"]
+        },
+        {
           "package": "runtime-050",
           "gpus": ["rdna4", "rdna3"]
         },
         {
-          "package": "runtime-043",
+          "package": "runtime-051",
           "gpus": ["rdna4", "rdna3"]
         },
         {
@@ -80,10 +88,10 @@
   "packages": [
     {
       "id": "amdnr",
-      "version": "0.3.5",
-      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5/AMDNR-v0.3.5.zip",
-      "sha256": "677c6844787bef6b637787422c5232cc57a705308aa8c3be4d8cbdcc07ff2c96",
-      "size": 616269737,
+      "version": "0.3.5.1",
+      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.1/AMDNR-v0.3.5.1.zip",
+      "sha256": "6ede7b984fc02f2285f6355b98d3009391cb082992250292d6e2bbc7d442fc8a",
+      "size": 629270812,
       "exclude": []
     },
     {
@@ -237,9 +245,12 @@
     {
       "id": "forwarder",
       "version": "0.2.1",
-      "url": "https://cdn.discordapp.com/attachments/1551942949896462418/1555197791091826698/nvngx_dll_dlssnr.dll?backend=b2&ex=6abfa64f&is=6abe54cf&hm=766d073f72349535853ab146244dff40fb371e289764cfa3cddc05d2b16594fc&",
+      "url": "https://cdn.discordapp.com/attachments/1551942949896462418/1555552354781237299/nvngx.dll_dlssnr.dll?backend=b2&ex=6ac0f086&is=6abf9f06&hm=35a155b13a1e8d0ba2a2c075c57098ce876599558923fdf36c237762f6e45967&",
       "sha256": "27f17f9a2bb136b0755dfe5259ab9f40ce62ec47d28895458506f074a9696cb0",
-      "size": 1254400
+      "size": 1254400,
+      "mirrors": [
+        "https://release-assets.githubusercontent.com/github-production-release-asset/1153146471/85022680-5208-46df-bbd3-5d90880abb35?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-10-02T12%3A41%3A31Z&rscd=attachment%3B+filename%3Dnvngx.dll_dlssnr.dll&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-10-02T11%3A40%3A57Z&ske=2026-10-02T12%3A41%3A31Z&sks=b&skv=2018-11-09&sig=Mgx1wSINl2aP%2BMVt1sYbUUGj8MLSGwD5W%2F23LLAZRFo%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc5MDk0MTgzMiwibmJmIjoxNzkwOTQxNTMyLCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.2rAAgvMw8Eyxg81vKpnfDfKvm4XieJiBm2Fu-4g5koY&response-content-disposition=attachment%3B%20filename%3Dnvngx.dll_dlssnr.dll&response-content-type=application%2Foctet-stream"
+      ]
     },
     {
       "id": "anywhere-host",
@@ -333,6 +344,18 @@
       "steamAppId": "2208920",
       "folder": "Assassin's Creed Valhalla",
       "reason": "Assassin's Creed Valhalla offers only FSR 1, which gives AMDNR no motion vectors or depth to work with"
+    },
+    {
+      "steamAppId": "582160",
+      "folder": "Assassin's Creed Origins",
+      "exe": "ACOrigins.exe",
+      "reason": "Assassin's Creed Origins is DirectX 11 only with no upscaler; the in-game mod breaks its DirectX 11 start (use PLAY ANYWHERE)"
+    },
+    {
+      "steamAppId": "289650",
+      "folder": "Assassin's Creed Unity",
+      "exe": "ACU.exe",
+      "reason": "Assassin's Creed Unity is DirectX 11 only with no upscaler; the in-game mod breaks its DirectX 11 start (use PLAY ANYWHERE)"
     },
     {
       "steamAppId": "1222690",

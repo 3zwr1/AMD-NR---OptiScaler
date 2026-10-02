@@ -9,7 +9,79 @@ by **burak113**, whose branch AMDNR ported from (commit `3da4808`, 2026-09-19). 
 burak113 only. The file headers, `Licenses\AMDNR_NOTICE.txt`, the README credits and the in-game credits
 now name both. No entry below this line is rewritten.
 
+## 0.3.5.1 — 2026-10-02
+
+A hotfix for what was reported in the first day of 0.3.5, and lmxxf 0.39 by Kien (MIT). The network's weights, the
+danielblnc runtime and the Anywhere host are unchanged; `OptiScaler.dll`, `OptiScaler.ini`, `LmxxfNrRuntime.dll` and
+`LmxxfNrRuntime.pak` change. Launcher users: REPAIR / UPDATE. By hand: drop the zip over 0.3.5.
+
+- **Faster neural rendering on RX 9000 with lmxxf: AMDNR now carries lmxxf 0.39 by Kien (MIT).** lmxxf's newer
+  kernels load beside the 0.37 set, each checked by SHA-256. lmxxf states its picture is bit for bit the same as
+  0.37's, and AMDNR's own checks gave the same picture on every network size it ships. Network time per frame on an
+  RX 9070 XT: 11.33 -> 11.03 ms at the 1080 tier, 8.29 -> 8.05 ms at 900, 5.61 -> 5.40 ms at 720; 0.39's new path
+  that runs the C512 mix and feed-forward in one wave, also on by default, takes about another 0.1 ms at 1080 and
+  900. The RX 9060 XT runs the same set; it was not measured on that card yet. If any file of the 0.39 set is missing
+  or does not match, NR runs the 0.37 set by itself; `[DlssNr] AmdLmxxfL39=false` keeps 0.37. RX 7000 and handhelds
+  are unchanged.
+- **Network style on lmxxf:** the Network style row (Neural tab, Model strength) now works with lmxxf too: Style 0
+  is NVIDIA's default look, Style 1 the one lmxxf has always used (Auto keeps it), Style 2 the third. A change
+  rebuilds the network, about a second. It is the same `[DlssNr] AmdRuntimeStyle` key as danielblnc's style, so a
+  value set for danielblnc now applies on lmxxf too.
+- **Wuthering Waves and other Unreal Engine 4 titles** no longer hit a fatal error on the first neural frame: the
+  large-stack helper moves the neural pass only when the game evaluates from a job fiber; a plain engine thread runs it
+  on its own stack as before. `[DlssNr] BigStackCall` takes `auto` (default), `true` (the 0.3.5 behaviour) or `false`.
+- **The first neural frame no longer stalls for seconds** while AMDNR checks which other mods are loaded: each folder is
+  resolved once and Windows' own modules are skipped.
+- **The adapter list** in `amd_bridge.log` is read once on a thread of its own, not inside the first neural frame;
+  `[DlssNr] AmdAdapterList=false` skips it.
+- **GTA V Enhanced and every FSR 3.1 title:** the game's video-memory readout no longer shows a figure like "929756 MB";
+  the memory query gets a real estimate.
+- **"Upscaler failed to run!"** shows only when the upscaler has failed for about half a second in a row, not for one
+  skipped frame (Ray Regeneration users saw it while RR ran fine).
+- **RX 9060 XT / 9060 / 9050 with the danielblnc 0.5.0 runtime:** Neural Rendering runs asynchronously by default on
+  these cards; the same-frame wait that could freeze the whole PC is off. `Async=0` in `dlssnr_on_amd.ini` turns it
+  back on; any `Async` / `Inline` key you set still wins on every card.
+- **Dynamic-resolution titles:** the seamless-resize hold holds only steps within 90 percent of the largest frame, logs
+  what it costs, and `[DlssNr] AmdHoldResize=false` turns it off (the 68 to 48 fps reports with frame generation).
+- **Black Myth: Wukong with frame generation:** the game's own frame-generation swapchain no longer shares the XeFG
+  swapchain (the same fix Control Resonant got in 0.3.5); the Frame Generation tab says when a game created a second
+  swapchain under XeFG.
+- **XeSS multi-frame generation above 2X** is labelled experimental: Intel's provider ships 2X only on non-Intel cards,
+  the higher multipliers run on a patched provider. RX 9000: the tab advises FSR FG (FSR 4 FG) as the output.
+- **"Show Detected UI"** (Frame Generation tab) is a debug view that tints the picture on purpose: it turns itself off
+  when the menu closes, is never saved, and says so on screen while it is on (the pink or red picture some players saw
+  with frame generation). The log names which buffer is treated as HUD-less and which as UI.
+- **RX 7000 (RDNA 3): Ray Regeneration is offered again by default, as a preview.** The Ray Regeneration tab appears,
+  the game can turn Ray Reconstruction on; AMD's denoiser has no RDNA 3 provider, so the picture is upscaled without a
+  denoiser and can look noisier than the game's own. The Upscaling tab's box "Preview: Ray Regeneration on this card
+  (restart)" is ticked by default; untick it or set `[FSR-RR] FfxDenoiserAllowPreRdna4=false` to keep the game's own
+  denoiser.
+- **Handheld preset:** the Neural tab's Handheld button applies the tuned handheld settings (NR resolution 80%, 1 pass,
+  Full network and Fast mode on, Dynamic NR off, the model every 4th frame with Edit accumulation, Residual strength
+  1.00 / limit 0.32, Temporal stability 0.70, Sharpening 0.10, Network history on, Output smoothing 0.65, Residual
+  edge fade 0.20, Still-surface steadiness 0, Before upscaling) on both runtimes.
+- **NR resolution on lmxxf:** the slider stops where the network stops growing (100% on a 1080p frame; the cap's tier
+  otherwise) instead of running to 150% with no effect; a saved value above that shows a line saying it is capped, and
+  the cost tag says which percent it prices ("0.64x cost (as at 100%)").
+- **COLLECT LOGS** summarises danielblnc's own log: stalls, lost captures, same-frame or async.
+- **Anywhere: a steady picture.** The Anywhere tab's new **FPS limit** slider (60 by default; the rates your display
+  shows evenly, any rate on a FreeSync display; Off keeps 0.3.5's live pace) holds the Anywhere window at one rate for
+  the whole session, with or without frame generation, and while Play Anywhere runs the launcher holds the game itself
+  at the same rate through AMD Software's Radeon Chill, then puts your own AMD Software settings back (Anti-Lag and
+  Boost included). A game that has its own settings in AMD Software is not reached that way; the tab then says where to
+  set it. A game running far above the rate no longer judders: the newest frame is shown on an even grid, and after the
+  window switches to a smaller network the rate holds instead of jumping up and crashing back. `[DlssNr] AnywhereFpsLimit`.
+- **Anywhere tab in plain words:** Smoothness / Picture / Status / Advanced; "the Anywhere window" and "AMD Software"
+  instead of host and driver; frame generation explained (30 real frames show as 60).
+- **Neural placement** (Before / After upscaling) switches at once from the menu (the network is rebuilt, about a
+  second's hitch); before, the choice needed a game restart. The logs name an after-upscaling frame as such.
+- **danielblnc 0.5.1 is driven** (`v0.5.1-Runtime.zip` on the release): picking it no longer falls back to lmxxf, and on
+  RX 9060 XT / 9050 it runs async by default like 0.5.0.
+
 ## 0.3.5 — 2026-10-01
+
+**Refresh r2 (same version):** changing Fast mode or the NR size in Anywhere no longer freezes the picture - the
+new size warms up on its own thread.
 
 AMDNR Anywhere (preview), lmxxf 0.37 on RX 9000, faster on RX 7000 and Z1 Extreme-class handhelds, a Ray
 Regeneration tab, the neural pass after upscaling, and a Frame Gen tab that says why nothing generates.
@@ -375,8 +447,6 @@ Adrenalin Edition 26.9.1 or newer.
   Radeon Chill (Min = Max) for steady fps.
 - Capture adds delay: inside Anywhere each frame is shown a little after the game drew it.
 - Fast mode makes the NR's own detail softer.
-- Anywhere: changing Fast mode or the NR size mid-game, or the automatic smaller tier, can freeze the picture for
-  about a second once (fixed in the next update).
 - Frame generation needs the game's own frame generation as the input (DLSS FG or FSR 3.1 FG), or OptiFG in a DX12
   game without any; DX11: OptiFG only; Vulkan: no FSR FG / XeFG output. XeFG needs borderless, not exclusive
   fullscreen. No fps gain = FG is off (the tab and the log say which step), not broken.

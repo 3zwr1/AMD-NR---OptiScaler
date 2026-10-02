@@ -18,7 +18,7 @@
       "runtimeNote": "Recommended on every GPU. On RX 7000 and RX 9000, AMDNR can also use its built-in lmxxf runtime.",
       "runtimes": [
         {
-          "package": "runtime-043",
+          "package": "runtime-051",
           "gpus": ["rdna4", "rdna3"]
         },
         {
@@ -26,7 +26,7 @@
           "gpus": ["rdna4", "rdna3"]
         },
         {
-          "package": "runtime-051",
+          "package": "runtime-043",
           "gpus": ["rdna4", "rdna3"]
         },
         {
@@ -63,7 +63,7 @@
       ],
       "runtimes": [
         {
-          "package": "runtime-043",
+          "package": "runtime-051",
           "gpus": ["rdna4", "rdna3"]
         },
         {
@@ -71,7 +71,7 @@
           "gpus": ["rdna4", "rdna3"]
         },
         {
-          "package": "runtime-051",
+          "package": "runtime-043",
           "gpus": ["rdna4", "rdna3"]
         },
         {

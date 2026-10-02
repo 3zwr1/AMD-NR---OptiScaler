@@ -249,7 +249,8 @@
       "sha256": "27f17f9a2bb136b0755dfe5259ab9f40ce62ec47d28895458506f074a9696cb0",
       "size": 1254400,
       "mirrors": [
-        "https://release-assets.githubusercontent.com/github-production-release-asset/1153146471/85022680-5208-46df-bbd3-5d90880abb35?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-10-02T12%3A41%3A31Z&rscd=attachment%3B+filename%3Dnvngx.dll_dlssnr.dll&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-10-02T11%3A40%3A57Z&ske=2026-10-02T12%3A41%3A31Z&sks=b&skv=2018-11-09&sig=Mgx1wSINl2aP%2BMVt1sYbUUGj8MLSGwD5W%2F23LLAZRFo%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc5MDk0MTgzMiwibmJmIjoxNzkwOTQxNTMyLCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.2rAAgvMw8Eyxg81vKpnfDfKvm4XieJiBm2Fu-4g5koY&response-content-disposition=attachment%3B%20filename%3Dnvngx.dll_dlssnr.dll&response-content-type=application%2Foctet-stream"
+        "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.1/nvngx.dll_dlssnr.dll",
+        "https://2020.filemail.com/api/file/get?filekey=bKdG35yFdj1fmfNLfdJ6kQ_ECZSFRdCcn0xXnpCJSB-9uLOo2IQZwWbhJ90--uI"
       ]
     },
     {
@@ -332,7 +333,8 @@
     }
   ],
   "anywhere": {
-    "package": "anywhere-host"
+    "package": "anywhere-host",
+    "integrated": true
   },
   "unsupportedGames": [
     {

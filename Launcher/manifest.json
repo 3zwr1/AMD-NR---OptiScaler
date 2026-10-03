@@ -110,7 +110,7 @@
       "size": 132549025,
       "exclude": ["Setup.bat", "Setup.ps1", "Uninstall_OptiScaler_NR.bat", "Uninstall_OptiScaler_NR.ps1"]
         },
-          {
+       {
         "id": "runtime-060",
         "version": "0.6.0",
         "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.1/v0.6.0-Runtime.zip",

@@ -1,0 +1,1042 @@
+From 37eaf15849c22bd83d16d531c69f0d9e3a582f37 Mon Sep 17 00:00:00 2001
+From: AMDNR <noreply@anthropic.com>
+Date: Sat, 3 Oct 2026 19:35:43 +0100
+Subject: [PATCH 3/3] fix(scaling): a stop nobody asked for no longer turns
+ scaling off for good
+
+A player on an RX 9070 XT reported that taking a screenshot during a session
+turns the upscaler off permanently: it never comes back while they stay in the
+same game.
+
+Two pieces make that permanent. ScalingService::_CheckForegroundTimer_Tick
+records every foreground window it has seen in _hwndChecked, including the
+source window on every tick of a healthy run, and returns early for a window it
+has already checked. _ScalingRuntime_StateChanged then sets the same mark again
+when scaling ends with the source in front, for the one case the upstream
+comment names: the player just stopped scaling with the hotkey or the toolbar,
+so do not restart it under their hand. Nothing distinguished that from a stop
+the player never asked for. A screenshot overlay takes the foreground, the 3D
+game mode check rejects it (ScalingWindow.cpp:1737, which every PLAY ANYWHERE
+profile enables), scaling stops, the game is in front again - and the automatic
+check stays dead for as long as the game stays in front.
+
+Carry why a run ended with the state. ScalingRuntime::_State publishes the
+cause before the notification, on the thread that publishes it, so the handler
+reads a cause that belongs to that notification; the hotkey, the toolbar close
+button and the task-switch option mark their stops as the player's. A stop
+nobody asked for - lost capture, a transient window above the source, a runtime
+fault - now releases the source window instead, so automatic scaling arms
+itself again and the picture returns on its own. Releasing is the part that
+matters: leaving the mark alone changes nothing, the healthy run had already
+set it.
+
+It is bounded: three automatic restarts in a row per window and then the window
+is left alone, so a source that fails for a real reason cannot thrash. A run
+that lasts past the reset window, or a start the player makes themselves,
+clears the tally. One line per stop now says whether the player asked for it,
+which window was being scaled and what was in front when it ended.
+
+A second report (Ghost Recon Breakpoint, 2560x1440) showed the other half.
+There the source was hidden rather than losing the foreground, which takes the
+reposition route and restarts itself in 126 ms - but the restart measured the
+window as 4,28,2556,1436 (2552x1408) where it had been 0,0,2560,1440: a border
+and a title bar the game was still in the middle of dropping after applying new
+graphics settings. ScalingRuntime's reposition poll restarted on the first look
+where the window was visible, with nothing asking whether it had finished
+changing, and SrcTracker::UpdateState watches only the window rect and the
+maximized flag, so a frame change that keeps the window rect was never noticed
+and the wrong crop lasted the whole session: a shifted, mis-sized picture and a
+cursor mapping off by the same amount.
+
+Wait for the window's shape - its rect and the thickness of its non-client area
+- to stop changing before measuring it, capped at 400 ms so a window that never
+settles is still scaled. And treat a change in that thickness during a run like
+a size change, so a measurement that still came out wrong corrects itself
+instead of lasting until the player restarts.
+
+tests/Run-AutoScaleRearmTests.ps1 extracts the latch, the foreground check, the
+state publication and the settle gate. It covers the deliberate stop keeping
+its behaviour, the involuntary stop releasing the window, the bound and its
+three reset paths, a changing frame restarting the settle wait, the 400 ms cap
+and unreadable geometry.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+---
+ scripts/tests/test_auto_scale_rearm.py   | 316 +++++++++++++++++++++++
+ scripts/tests/test_src_shape_settle.py   | 154 +++++++++++
+ src/Magpie.Core/ScalingRuntime.cpp       | 110 +++++++-
+ src/Magpie.Core/SrcTracker.cpp           |  24 ++
+ src/Magpie.Core/SrcTracker.h             |  13 +
+ src/Magpie.Core/include/ScalingRuntime.h |  17 +-
+ src/Magpie/ScalingService.cpp            |  75 +++++-
+ src/Magpie/ScalingService.h              |  10 +
+ tests/Run-AutoScaleRearmTests.ps1        |  37 +++
+ 9 files changed, 744 insertions(+), 12 deletions(-)
+ create mode 100644 scripts/tests/test_auto_scale_rearm.py
+ create mode 100644 scripts/tests/test_src_shape_settle.py
+ create mode 100644 tests/Run-AutoScaleRearmTests.ps1
+
+diff --git a/scripts/tests/test_auto_scale_rearm.py b/scripts/tests/test_auto_scale_rearm.py
+new file mode 100644
+index 0000000..4cc0bbb
+--- /dev/null
++++ b/scripts/tests/test_auto_scale_rearm.py
+@@ -0,0 +1,316 @@
++"""Exercise the extracted production auto-scale latch without windows or a GPU.
++
++A stop the player asked for must keep blocking the automatic check, exactly as
++before. A stop nobody asked for must leave the check armed, but only for a
++bounded number of restarts in a row.
++"""
++from pathlib import Path
++import sys
++
++root = Path(__file__).resolve().parents[2]
++
++
++def method(text, signature):
++    start = text.index(signature)
++    end = text.index('{', start) + 1
++    depth = 1
++    while depth:
++        depth += (text[end] == '{') - (text[end] == '}')
++        end += 1
++    return text[start:end]
++
++
++def read(path):
++    return (root / path).read_text(encoding='utf-8-sig')
++
++
++service = read('src/Magpie/ScalingService.cpp')
++runtime = read('src/Magpie.Core/ScalingRuntime.cpp')
++
++rearm = method(service, 'bool ScalingService::_ShouldRearmAutoScale(')
++state_changed = method(service, 'void ScalingService::_ScalingRuntime_StateChanged(')
++foreground_tick = method(service, 'void ScalingService::_CheckForegroundTimer_Tick(')
++publish_state = method(runtime, 'void ScalingRuntime::_State(')
++
++# The stop handler still latches on the source window, and now also clears the
++# latch, which is what the involuntary case needs.
++assert '_hwndChecked = _hwndCurSrc;' in state_changed
++assert '_hwndChecked = NULL;' in state_changed
++assert 'stoppedByUser' in state_changed and '_ShouldRearmAutoScale' in state_changed
++# The automatic check still returns early for an already checked window, and it
++# still records every foreground window it has seen - including the source while
++# a run is healthy, which is why clearing is necessary.
++assert 'hwndFore == _hwndChecked' in foreground_tick
++assert '_hwndChecked = hwndFore;' in foreground_tick
++# The cause is published before the notification, never after.
++assert publish_state.index('_stoppedByUser.store') < publish_state.index('StateChanged.Invoke')
++
++harness = r'''
++#include <windows.h>
++#include <atomic>
++#include <cassert>
++#include <chrono>
++#include <cstdint>
++#include <iostream>
++#include <string>
++
++static HWND const GAME = (HWND)0x400e4a;
++static HWND const OVERLAY = (HWND)0x9001;
++
++static HWND g_foreground = NULL;
++static HWND FakeForeground() { return g_foreground; }
++#define GetForegroundWindow FakeForeground
++
++namespace winrt {
++struct DispatcherQueueTimer {};
++struct IInspectable {};
++}
++
++namespace fmt {
++template <typename... T>
++static std::string format(const char*, T&&...) { return {}; }
++}
++
++struct Logger {
++    static Logger& Get() { static Logger l; return l; }
++    void Info(const std::string&) {}
++    void Flush() {}
++};
++
++enum class ScalingState { Idle, Starting, Scaling, Stopping, Waiting };
++enum class StopCause { Involuntary, UserRequested };
++enum class AutoScale { Disabled, Fullscreen, Windowed };
++
++struct Profile {
++    AutoScale autoScale = AutoScale::Fullscreen;
++};
++
++static Profile g_profile;
++static bool g_hasProfile = true;
++struct ProfileService {
++    static ProfileService& Get() { static ProfileService s; return s; }
++    // Only the game has a profile that asks for automatic scaling.
++    const Profile* GetProfileForWindow(HWND hWnd, bool) {
++        return (g_hasProfile && hWnd == GAME) ? &g_profile : nullptr;
++    }
++};
++
++struct AppSettings {
++    static AppSettings& Get() { static AppSettings s; return s; }
++    bool IsSmoothMotionCompatibilityMode() const { return false; }
++    void Save() {}
++};
++
++struct FakeDispatcher {
++    template <typename F>
++    bool TryEnqueue(F&& f) const { f(); return true; }
++};
++struct App {
++    static App& Get() { static App a; return a; }
++    const FakeDispatcher& Dispatcher() const { static FakeDispatcher d; return d; }
++    void RestartForSmoothMotion() {}
++};
++
++// Only the pieces of the runtime the latch reads.
++struct ScalingRuntime {
++    std::atomic<ScalingState> _state = ScalingState::Scaling;
++    std::atomic<bool> _stoppedByUser = false;
++    struct { void Invoke(ScalingState) {} } StateChanged;
++    ScalingState State() const noexcept { return _state.load(std::memory_order_relaxed); }
++    bool WasStoppedByUser() const noexcept { return _stoppedByUser.load(std::memory_order_relaxed); }
++    void _State(ScalingState value, StopCause cause = StopCause::Involuntary);
++};
++
++__PUBLISH_STATE__
++
++struct Event { void Invoke(bool) {} };
++
++struct ScalingService {
++    static ScalingService& Get() { static ScalingService s; return s; }
++
++    ScalingRuntime runtime;
++    ScalingRuntime* _scalingRuntime = &runtime;
++
++    HWND _hwndCurSrc = NULL;
++    bool _isAutoScaleSuspended = false;
++    HWND _hwndChecked = NULL;
++    HWND _hwndLastInvoluntaryStop = NULL;
++    uint32_t _involuntaryStops = 0;
++    std::chrono::steady_clock::time_point _lastInvoluntaryStop{};
++    uint32_t _windowsWithoutProfileLogged = 0;
++
++    Event IsScalingChanged;
++    int starts = 0;
++    HWND lastStarted = NULL;
++
++    void StopTimer() {}
++    void _FlushEffectParametersSaves(bool = false) {}
++    void _LogWindowWithoutProfile(HWND) noexcept {}
++    void _StartScale(HWND hWnd, const Profile&, bool, bool) { ++starts; lastStarted = hWnd; }
++
++    bool _ShouldRearmAutoScale(HWND hwndSrc,
++        std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now()) noexcept;
++    void _ScalingRuntime_StateChanged(ScalingState value);
++    void _CheckForegroundTimer_Tick(winrt::DispatcherQueueTimer const&, winrt::IInspectable const&);
++};
++
++static bool IsPopupWindow(HWND, HWND) noexcept { return false; }
++static bool IsReadyForScaling(HWND) noexcept { return true; }
++
++__REARM__
++__STATE_CHANGED__
++__FOREGROUND_TICK__
++
++static void Reset() {
++    auto& s = ScalingService::Get();
++    s._hwndCurSrc = GAME;
++    s._hwndChecked = NULL;
++    s._hwndLastInvoluntaryStop = NULL;
++    s._involuntaryStops = 0;
++    s._lastInvoluntaryStop = {};
++    s._isAutoScaleSuspended = false;
++    s.starts = 0;
++    s.lastStarted = NULL;
++    s.runtime._state = ScalingState::Scaling;
++    s.runtime._stoppedByUser = false;
++    g_foreground = GAME;
++    g_hasProfile = true;
++}
++
++// One involuntary stop, with the source window in front, as the reports describe.
++static void StopInvoluntarily() {
++    auto& s = ScalingService::Get();
++    s._hwndCurSrc = GAME;
++    s.runtime._State(ScalingState::Idle, StopCause::Involuntary);
++    s._ScalingRuntime_StateChanged(ScalingState::Idle);
++}
++
++static void StopOnPurpose() {
++    auto& s = ScalingService::Get();
++    s._hwndCurSrc = GAME;
++    s.runtime._State(ScalingState::Idle, StopCause::UserRequested);
++    s._ScalingRuntime_StateChanged(ScalingState::Idle);
++}
++
++// A healthy run: scaling is active on the game and the foreground check records
++// the source as already checked on every tick. That is the state every stop
++// starts from, and the reason an involuntary stop has to clear the mark rather
++// than just leave it alone.
++static void RunHealthyTicks() {
++    auto& s = ScalingService::Get();
++    s._hwndCurSrc = GAME;
++    s.starts = 0;
++    g_foreground = GAME;
++    s._CheckForegroundTimer_Tick({}, {});
++    s._CheckForegroundTimer_Tick({}, {});
++    assert(s._hwndChecked == GAME && s.starts == 0);
++}
++
++int main() {
++    using namespace std::chrono;
++    auto& s = ScalingService::Get();
++
++    // A stop the player asked for keeps today's behaviour: the source stays
++    // marked as checked and the automatic check does nothing while it is in front.
++    Reset();
++    RunHealthyTicks();
++    StopOnPurpose();
++    assert(s._hwndChecked == GAME);
++    s._CheckForegroundTimer_Tick({}, {});
++    assert(s.starts == 0);
++    // Only another window taking the foreground releases it, as before.
++    g_foreground = OVERLAY;
++    s._CheckForegroundTimer_Tick({}, {});
++    g_foreground = GAME;
++    s._CheckForegroundTimer_Tick({}, {});
++    assert(s.starts == 1 && s.lastStarted == GAME);
++
++    // A stop nobody asked for releases the source, so scaling comes back by
++    // itself while the player sits in the same game. Leaving the mark alone
++    // would not be enough - the healthy run already set it.
++    Reset();
++    RunHealthyTicks();
++    StopInvoluntarily();
++    assert(s._hwndChecked == NULL);
++    s._CheckForegroundTimer_Tick({}, {});
++    assert(s.starts == 1 && s.lastStarted == GAME);
++
++    // Bounded: three restarts in a row, then the window is left alone.
++    Reset();
++    for (int i = 0; i < 3; ++i) {
++        RunHealthyTicks();
++        StopInvoluntarily();
++        assert(s._hwndChecked == NULL);
++    }
++    RunHealthyTicks();
++    StopInvoluntarily();
++    assert(s._hwndChecked == GAME);
++    s._CheckForegroundTimer_Tick({}, {});
++    assert(s.starts == 0);
++
++    // The tally belongs to one window: another source starts with a full budget.
++    Reset();
++    for (int i = 0; i < 4; ++i) StopInvoluntarily();
++    s._hwndCurSrc = OVERLAY;
++    g_foreground = OVERLAY;
++    s._hwndChecked = OVERLAY;
++    s.runtime._State(ScalingState::Idle, StopCause::Involuntary);
++    s._ScalingRuntime_StateChanged(ScalingState::Idle);
++    assert(s._hwndChecked == NULL);
++
++    // A run that lasts past the reset window counts as healthy: the tally clears.
++    Reset();
++    const auto t0 = steady_clock::now();
++    for (int i = 0; i < 4; ++i) assert(s._ShouldRearmAutoScale(GAME, t0 + seconds(i)) == (i < 3));
++    assert(s._ShouldRearmAutoScale(GAME, t0 + seconds(3) + seconds(11)));
++    assert(s._ShouldRearmAutoScale(GAME, t0 + seconds(3) + seconds(12)));
++
++    // Starting scaling by hand gives the window a fresh budget. _StartScaleImpl
++    // does this with `if (!force) _involuntaryStops = 0;`.
++    Reset();
++    for (int i = 0; i < 4; ++i) StopInvoluntarily();
++    s._involuntaryStops = 0;
++    RunHealthyTicks();
++    StopInvoluntarily();
++    assert(s._hwndChecked == NULL);
++
++    // Suspended auto-scale still wins: the task-switch option is untouched.
++    Reset();
++    RunHealthyTicks();
++    s._isAutoScaleSuspended = true;
++    StopInvoluntarily();
++    s._CheckForegroundTimer_Tick({}, {});
++    assert(s.starts == 0);
++
++    // A stop while another window is in front touched nothing before and still
++    // touches nothing, and it does not spend a restart from the budget.
++    Reset();
++    RunHealthyTicks();
++    g_foreground = OVERLAY;
++    StopInvoluntarily();
++    assert(s._hwndChecked == GAME && s._involuntaryStops == 0);
++
++    // No source window: unchanged, the mark is cleared as it was before.
++    Reset();
++    s._hwndCurSrc = NULL;
++    g_foreground = NULL;
++    s._hwndChecked = GAME;
++    s.runtime._State(ScalingState::Idle, StopCause::Involuntary);
++    s._ScalingRuntime_StateChanged(ScalingState::Idle);
++    assert(s._hwndChecked == NULL);
++
++    std::cout << "PASS auto-scale re-arm: deliberate stop still blocks the check, involuntary stop "
++                 "releases the source window, bounded to three restarts per window, tally resets by "
++                 "window, by a healthy run and by a start the player makes\n";
++    return 0;
++}
++'''
++
++harness = (harness
++           .replace('__PUBLISH_STATE__', publish_state)
++           .replace('__REARM__', rearm)
++           .replace('__STATE_CHANGED__', state_changed)
++           .replace('__FOREGROUND_TICK__', foreground_tick))
++output = Path(sys.argv[1]) / 'auto_scale_rearm.cpp'
++output.write_text(harness, encoding='utf-8')
++print(output)
+diff --git a/scripts/tests/test_src_shape_settle.py b/scripts/tests/test_src_shape_settle.py
+new file mode 100644
+index 0000000..7a04e79
+--- /dev/null
++++ b/scripts/tests/test_src_shape_settle.py
+@@ -0,0 +1,154 @@
++"""Exercise the extracted source-window settle gate without windows or a GPU.
++
++The automatic restart after the source window is hidden must not measure the
++window while its frame is still changing, and must not wait for it forever.
++"""
++from pathlib import Path
++import sys
++
++root = Path(__file__).resolve().parents[2]
++
++
++def method(text, signature):
++    start = text.index(signature)
++    end = text.index('{', start) + 1
++    depth = 1
++    while depth:
++        depth += (text[end] == '{') - (text[end] == '}')
++        end += 1
++    return text[start:end]
++
++
++def read(path):
++    return (root / path).read_text(encoding='utf-8-sig')
++
++
++runtime = read('src/Magpie.Core/ScalingRuntime.cpp')
++tracker = read('src/Magpie.Core/SrcTracker.cpp')
++
++shape = method(runtime, 'struct SrcShape {') + ';'
++get_shape = method(runtime, 'static std::optional<SrcShape> GetSrcShape(')
++settle_state = method(runtime, 'struct SrcSettleState {') + ';'
++settled = method(runtime, 'static bool IsSrcShapeSettled(')
++update_state = method(tracker, 'bool SrcTracker::UpdateState(')
++
++# The restart is gated on the settle check, which only runs once the window is
++# visible again (the reposition poll already returned false).
++loop = runtime.split('} else if (scalingWindow.IsSrcRepositioning()) {', 1)[1]
++loop = loop.split('RestartAfterSrcRepositioned();', 1)[0]
++assert 'IsSrcShapeSettled(hwndSrc, srcSettle)' in loop
++assert loop.index('IsSrcRepositioning(hwndSrc)') < loop.index('IsSrcShapeSettled(')
++# And a running session now notices a frame change that keeps the window rect,
++# which is what makes a measurement that still came out wrong correct itself.
++assert '_clientInset' in update_state and 'sizeChanged = true;' in update_state
++
++harness = r'''
++#include <windows.h>
++#include <cassert>
++#include <chrono>
++#include <iostream>
++#include <optional>
++
++using namespace std::chrono;
++
++inline bool operator==(const RECT& l, const RECT& r) noexcept {
++    return l.left == r.left && l.top == r.top && l.right == r.right && l.bottom == r.bottom;
++}
++
++// Window geometry the test drives directly.
++static RECT g_window{};
++static RECT g_client{};
++static bool g_geometryReadable = true;
++
++static BOOL FakeGetWindowRect(HWND, RECT* out) {
++    if (!g_geometryReadable) return FALSE;
++    *out = g_window;
++    return TRUE;
++}
++#define GetWindowRect FakeGetWindowRect
++
++struct Win32Helper {
++    static bool GetClientScreenRect(HWND, RECT& out) noexcept {
++        if (!g_geometryReadable) return false;
++        out = g_client;
++        return true;
++    }
++};
++
++__SHAPE__
++__GET_SHAPE__
++__SETTLE_STATE__
++__SETTLED__
++
++static HWND const GAME = (HWND)0x400e4a;
++
++static void Borderless() { g_window = { 0, 0, 2560, 1440 }; g_client = g_window; }
++// The window as the player's log caught it mid-change: a border and a title bar.
++static void WithTitleBar() { g_window = { 0, 0, 2560, 1440 }; g_client = { 4, 28, 2556, 1436 }; }
++
++int main() {
++    SrcSettleState state;
++    const auto t0 = steady_clock::now();
++
++    // The first look is never enough, however stable the window looks.
++    Borderless();
++    assert(!IsSrcShapeSettled(GAME, state, t0));
++    // Still inside the settle window.
++    assert(!IsSrcShapeSettled(GAME, state, t0 + 50ms));
++    // Unchanged for long enough: measure it.
++    assert(IsSrcShapeSettled(GAME, state, t0 + 100ms));
++
++    // The frame changing restarts the settle window, so the title bar the game is
++    // about to drop is never what gets measured.
++    state.Reset();
++    WithTitleBar();
++    assert(!IsSrcShapeSettled(GAME, state, t0));
++    assert(!IsSrcShapeSettled(GAME, state, t0 + 90ms));
++    Borderless();
++    assert(!IsSrcShapeSettled(GAME, state, t0 + 100ms));
++    assert(!IsSrcShapeSettled(GAME, state, t0 + 150ms));
++    assert(IsSrcShapeSettled(GAME, state, t0 + 200ms));
++
++    // Moving or resizing restarts it too: the window must have stopped changing
++    // altogether before it is measured.
++    state.Reset();
++    Borderless();
++    assert(!IsSrcShapeSettled(GAME, state, t0));
++    g_window = { 40, 40, 2600, 1480 };
++    g_client = g_window;
++    assert(!IsSrcShapeSettled(GAME, state, t0 + 10ms));
++    assert(!IsSrcShapeSettled(GAME, state, t0 + 100ms));
++    assert(IsSrcShapeSettled(GAME, state, t0 + 110ms));
++
++    // A window whose frame never stops changing is waited for, but not forever.
++    state.Reset();
++    Borderless();
++    assert(!IsSrcShapeSettled(GAME, state, t0));
++    for (int i = 1; i <= 45; ++i) {
++        if (i % 2) WithTitleBar(); else Borderless();
++        const bool settled = IsSrcShapeSettled(GAME, state, t0 + milliseconds(i * 10));
++        assert(settled == (i * 10 >= 400));
++    }
++
++    // Geometry that cannot be read is not something to wait for: let the measure
++    // itself report the real error.
++    state.Reset();
++    g_geometryReadable = false;
++    assert(IsSrcShapeSettled(GAME, state, t0));
++    assert(!state.shape.has_value());
++
++    std::cout << "PASS source shape settle: one look is never enough, a changing frame restarts the "
++                 "wait, the wait is capped at 400 ms and unreadable geometry does not block the "
++                 "restart\n";
++    return 0;
++}
++'''
++
++harness = (harness
++           .replace('__SHAPE__', shape)
++           .replace('__GET_SHAPE__', get_shape)
++           .replace('__SETTLE_STATE__', settle_state)
++           .replace('__SETTLED__', settled))
++output = Path(sys.argv[1]) / 'src_shape_settle.cpp'
++output.write_text(harness, encoding='utf-8')
++print(output)
+diff --git a/src/Magpie.Core/ScalingRuntime.cpp b/src/Magpie.Core/ScalingRuntime.cpp
+index 83db56e..5d7dcba 100644
+--- a/src/Magpie.Core/ScalingRuntime.cpp
++++ b/src/Magpie.Core/ScalingRuntime.cpp
+@@ -101,7 +101,9 @@ void ScalingRuntime::ToggleScaling(bool isWindowedMode) {
+ 			State() != ScalingState::Scaling) return;
+ 		if (ScalingWindow& scalingWindow = ScalingWindow::Get()) {
+ 			scalingWindow.ToggleScaling(isWindowedMode);
+-			_State(scalingWindow ? ScalingState::Scaling : ScalingState::Idle);
++			// 热键或工具栏按钮：用户主动结束
++			_State(scalingWindow ? ScalingState::Scaling : ScalingState::Idle,
++				StopCause::UserRequested);
+ 		};
+ 	});
+ }
+@@ -127,6 +129,8 @@ void ScalingRuntime::SwitchToolbarState() {
+ 	});
+ }
+ 
++// 只有用户的操作会调用它：热键和切屏。非用户主动的结束走 ScalingWindow 的
++// RequestStop/_DelayedStop 或 Renderer 的错误路径。
+ void ScalingRuntime::Stop() {
+ 	if (State() == ScalingState::Idle) return;
+ 	const uint64_t generation =
+@@ -136,11 +140,12 @@ void ScalingRuntime::Stop() {
+ 		if (_commandGeneration.load(std::memory_order_acquire) != generation) return;
+ 		ScalingWindow::Get().Stop();
+ 		if (_commandGeneration.load(std::memory_order_acquire) == generation) {
+-			_State(ScalingWindow::Get() ? ScalingState::Stopping : ScalingState::Idle);
++			_State(ScalingWindow::Get() ? ScalingState::Stopping : ScalingState::Idle,
++				StopCause::UserRequested);
+ 		}
+ 	})) {
+ 		if (_commandGeneration.load(std::memory_order_acquire) == generation) {
+-			_State(ScalingState::Idle);
++			_State(ScalingState::Idle, StopCause::UserRequested);
+ 		}
+ 	}
+ }
+@@ -277,6 +282,81 @@ static std::optional<bool> IsSrcRepositioning(HWND hwndSrc) noexcept {
+ 	return bool(guiThreadInfo.flags & GUI_INMOVESIZE);
+ }
+ 
++// 源窗口的形状：窗口矩形和非客户区四边的厚度。用厚度而非客户区的屏幕坐标，窗口
++// 移动不会被误判为形状变化。
++struct SrcShape {
++	RECT window{};
++	RECT clientInset{};
++
++	bool operator==(const SrcShape& other) const noexcept {
++		return window == other.window && clientInset == other.clientInset;
++	}
++};
++
++static std::optional<SrcShape> GetSrcShape(HWND hwndSrc) noexcept {
++	SrcShape shape;
++	RECT clientRect;
++	if (!GetWindowRect(hwndSrc, &shape.window) ||
++		!Win32Helper::GetClientScreenRect(hwndSrc, clientRect)) {
++		return std::nullopt;
++	}
++
++	shape.clientInset = {
++		clientRect.left - shape.window.left,
++		clientRect.top - shape.window.top,
++		shape.window.right - clientRect.right,
++		shape.window.bottom - clientRect.bottom
++	};
++	return shape;
++}
++
++struct SrcSettleState {
++	std::optional<SrcShape> shape;
++	time_point<steady_clock> firstSeen;
++	time_point<steady_clock> stableSince;
++
++	void Reset() noexcept {
++		shape.reset();
++	}
++};
++
++// 有的游戏应用新的图形设置时先隐藏窗口，窗口重新显示之后才恢复自己的边框样式。恰好
++// 在中间重新测量会把即将消失的标题栏和边框当成画面的一部分，而此后窗口矩形不再变化，
++// 错误的裁剪就会持续到本次缩放结束。因此等到窗口的形状不再变化为止。
++//
++// 等待有上限：形状持续变化的窗口最多等 MAX_WAIT，之后按看到的样子测量，也就是原先
++// 的行为。这样不会为了一个一直在动的窗口无限等待。
++// now 带默认值，便于不依赖真实时钟地测试等待上限。
++static bool IsSrcShapeSettled(
++	HWND hwndSrc,
++	SrcSettleState& state,
++	time_point<steady_clock> now = steady_clock::now()
++) noexcept {
++	static constexpr auto SETTLE = 100ms;
++	static constexpr auto MAX_WAIT = 400ms;
++
++	const std::optional<SrcShape> shape = GetSrcShape(hwndSrc);
++	if (!shape) {
++		// 读不到几何信息就不再等待，让接下来的测量给出真正的错误
++		state.Reset();
++		return true;
++	}
++
++	if (!state.shape) {
++		state.shape = shape;
++		state.firstSeen = now;
++		state.stableSince = now;
++		return false;
++	}
++
++	if (!(*state.shape == *shape)) {
++		state.shape = shape;
++		state.stableSince = now;
++	}
++
++	return now - state.stableSince >= SETTLE || now - state.firstSeen >= MAX_WAIT;
++}
++
+ void ScalingRuntime::_ScalingThreadProc() noexcept {
+ #ifdef _DEBUG
+ 	SetThreadDescription(GetCurrentThread(), L"Magpie-缩放线程");
+@@ -309,6 +389,8 @@ void ScalingRuntime::_ScalingThreadProc() noexcept {
+ 
+ 	time_point<steady_clock> lastRenderTime;
+ 	std::optional<uint64_t> parameterRestartGeneration;
++	// 只在等待源窗口恢复期间使用
++	SrcSettleState srcSettle;
+ 
+ 	MSG msg;
+ 	// Input/control messages are removed before frame notifications. WndProc only
+@@ -367,7 +449,8 @@ void ScalingRuntime::_ScalingThreadProc() noexcept {
+ 		// Parameter callbacks only queue changes. Tear down here after rendering
+ 		// and window callbacks have returned, and service messages during the pause.
+ 		if (scalingWindow.ProcessPendingStop()) {
+-			_State(ScalingState::Idle);
++			// 工具栏的关闭按钮，同样是用户主动结束
++			_State(ScalingState::Idle, StopCause::UserRequested);
+ 			continue;
+ 		}
+ 		if (scalingWindow.ProcessPendingSourceTransition()) {
+@@ -454,20 +537,27 @@ void ScalingRuntime::_ScalingThreadProc() noexcept {
+ 				DWORD((std::max<int64_t>(rest.count(), 0) + ratio - 1) / ratio);
+ 			scalingWindow.Renderer().WaitForFrontendWork(std::chrono::milliseconds(restMs));
+ 		} else if (scalingWindow.IsSrcRepositioning()) {
+-			std::optional<bool> repositioning =
+-				IsSrcRepositioning(scalingWindow.SrcTracker().Handle());
++			const HWND hwndSrc = scalingWindow.SrcTracker().Handle();
++			std::optional<bool> repositioning = IsSrcRepositioning(hwndSrc);
+ 			if (repositioning.has_value()) {
+ 				if (*repositioning) {
+ 					// 等待调整完成
++					srcSettle.Reset();
++					_State(ScalingState::Waiting);
++					MsgWaitForMultipleObjectsEx(0, nullptr, 10, QS_ALLINPUT, MWMO_INPUTAVAILABLE);
++				} else if (!IsSrcShapeSettled(hwndSrc, srcSettle)) {
++					// 窗口已经显示出来，但形状还在变化，等它稳定下来再测量
+ 					_State(ScalingState::Waiting);
+ 					MsgWaitForMultipleObjectsEx(0, nullptr, 10, QS_ALLINPUT, MWMO_INPUTAVAILABLE);
+ 				} else {
+ 					// 重新缩放。初始化时视为处于缩放状态
++					srcSettle.Reset();
+ 					_State(ScalingState::Scaling);
+ 					ScalingWindow::Get().RestartAfterSrcRepositioned();
+ 				}
+ 			} else {
+ 				// 取消缩放
++				srcSettle.Reset();
+ 				ScalingWindow::Get().CleanAfterSrcRepositioned();
+ 				_State(ScalingState::Idle);
+ 			}
+@@ -491,7 +581,13 @@ const winrt::DispatcherQueue& ScalingRuntime::_Dispatcher() noexcept {
+ 	return _dispatcher;
+ }
+ 
+-void ScalingRuntime::_State(ScalingState value) {
++void ScalingRuntime::_State(ScalingState value, StopCause cause) {
++	// 在通知之前发布结束原因。StateChanged 是同步触发的，处理函数在本线程的 Invoke
++	// 内部读取原因，因此之后的写入（例如空闲循环反复发布 Idle）不会被它看到。
++	if (value == ScalingState::Idle) {
++		_stoppedByUser.store(cause == StopCause::UserRequested, std::memory_order_relaxed);
++	}
++
+ 	if (_state.exchange(value, std::memory_order_relaxed) != value) {
+ 		StateChanged.Invoke(value);
+ 	}
+diff --git a/src/Magpie.Core/SrcTracker.cpp b/src/Magpie.Core/SrcTracker.cpp
+index cb168bc..b76f658 100644
+--- a/src/Magpie.Core/SrcTracker.cpp
++++ b/src/Magpie.Core/SrcTracker.cpp
+@@ -100,6 +100,9 @@ ScalingError SrcTracker::Set(HWND hWnd, const ScalingOptions& options, bool& isI
+ 		return ScalingError::SourceWindowGeometryFailed;
+ 	}
+ 
++	// 记录本次测量时的非客户区厚度，UpdateState 据此发现标题栏或边框的变化
++	_clientInset = _CalcClientInset(_windowRect, clientRect);
++
+ 	// Reject fullscreen sources before cropping, creating scaling windows or
+ 	// initializing capture/GPU resources. Borderless fullscreen need not carry
+ 	// the maximized flag, and its window kind varies between applications.
+@@ -279,6 +282,27 @@ bool SrcTracker::UpdateState(
+ 		return true;
+ 	}
+ 
++	// 有的游戏应用新的图形设置时临时加上标题栏和边框，窗口矩形却保持不变。此时
++	// _srcRect 已经不对，而上面只检查窗口矩形，错误的裁剪会一直持续到本次缩放结束：
++	// 画面偏移、尺寸不对，光标映射也跟着错位。把非客户区的变化视为尺寸变化，重新
++	// 测量源窗口。拖拽缩放窗口期间和上面一样不做检查。
++	if (!isInvisibleOrMinimized && wp.showCmd != SW_SHOWMINIMIZED) {
++		RECT curClientRect;
++		if (Win32Helper::GetClientScreenRect(_hWnd, curClientRect)) {
++			const RECT curClientInset = _CalcClientInset(curWindowRect, curClientRect);
++			if (!(curClientInset == _clientInset)) {
++				Logger::Get().Info(fmt::format(
++					"源窗口非客户区变化: ({},{},{},{}) -> ({},{},{},{})",
++					_clientInset.left, _clientInset.top, _clientInset.right, _clientInset.bottom,
++					curClientInset.left, curClientInset.top, curClientInset.right, curClientInset.bottom));
++				_clientInset = curClientInset;
++				sizeChanged = true;
++				rectChanged = true;
++				return true;
++			}
++		}
++	}
++
+ 	// 最大化状态改变视为尺寸发生变化
+ 	rectChanged = oldMaximized != _isMaximized || curWindowRect != _windowRect;
+ 	
+diff --git a/src/Magpie.Core/SrcTracker.h b/src/Magpie.Core/SrcTracker.h
+index 7cf4da5..d9788a2 100644
+--- a/src/Magpie.Core/SrcTracker.h
++++ b/src/Magpie.Core/SrcTracker.h
+@@ -87,10 +87,23 @@ private:
+ 		LONG borderThicknessInFrame
+ 	) noexcept;
+ 
++	// 非客户区四边的厚度（客户区相对窗口矩形的内缩）。窗口矩形不变而标题栏或边框
++	// 变化时捕获区域已经不对，用它来发现这种情况。使用厚度而非屏幕坐标，因此窗口
++	// 移动不会被误判。
++	static RECT _CalcClientInset(const RECT& windowRect, const RECT& clientRect) noexcept {
++		return {
++			clientRect.left - windowRect.left,
++			clientRect.top - windowRect.top,
++			windowRect.right - clientRect.right,
++			windowRect.bottom - clientRect.bottom
++		};
++	}
++
+ 	HWND _hWnd = NULL;
+ 	RECT _windowRect{};
+ 	RECT _windowFrameRect{};
+ 	RECT _srcRect{};
++	RECT _clientInset{};
+ 	SrcWindowKind _windowKind = SrcWindowKind::Native;
+ 
+ 	bool _isFocused = false;
+diff --git a/src/Magpie.Core/include/ScalingRuntime.h b/src/Magpie.Core/include/ScalingRuntime.h
+index 26e2e71..b1a8439 100644
+--- a/src/Magpie.Core/include/ScalingRuntime.h
++++ b/src/Magpie.Core/include/ScalingRuntime.h
+@@ -16,6 +16,13 @@ enum class ScalingState {
+ 	Waiting
+ };
+ 
++// 缩放是如何结束的。用户主动结束（热键、工具栏、切屏）和非用户主动结束（捕获中断、
++// 其他窗口短暂占据前台、运行时故障）对自动缩放的影响不同，调用者据此区分。
++enum class StopCause {
++	Involuntary,
++	UserRequested
++};
++
+ class ScalingRuntime {
+ public:
+ 	ScalingRuntime();
+@@ -50,6 +57,13 @@ public:
+ 		return _state.load(std::memory_order_relaxed);
+ 	}
+ 
++	// 最近一次进入 Idle 是否由用户主动触发。只应在 StateChanged 的处理函数中读取：
++	// 事件是同步触发的，而发布原因和发布状态在同一个线程上紧挨着进行，因此此时读到
++	// 的值一定属于本次通知。
++	bool WasStoppedByUser() const noexcept {
++		return _stoppedByUser.load(std::memory_order_relaxed);
++	}
++
+ 	// 调用者应处理线程同步
+ 	MultithreadEvent<ScalingState> StateChanged;
+ 
+@@ -59,7 +73,7 @@ private:
+ 	// 确保 _dispatcher 完成初始化
+ 	const winrt::DispatcherQueue& _Dispatcher() noexcept;
+ 
+-	void _State(ScalingState value);
++	void _State(ScalingState value, StopCause cause = StopCause::Involuntary);
+ 
+ 	std::thread _scalingThread;
+ 
+@@ -70,6 +84,7 @@ private:
+ 
+ 	std::atomic<ScalingState> _state = ScalingState::Idle;
+ 	std::atomic<uint64_t> _commandGeneration = 0;
++	std::atomic<bool> _stoppedByUser = false;
+ };
+ 
+ }
+diff --git a/src/Magpie/ScalingService.cpp b/src/Magpie/ScalingService.cpp
+index 8da9fab..0935481 100644
+--- a/src/Magpie/ScalingService.cpp
++++ b/src/Magpie/ScalingService.cpp
+@@ -322,8 +322,45 @@ void ScalingService::_CheckForegroundTimer_Tick(winrt::DispatcherQueueTimer cons
+ 	_hwndChecked = hwndFore;
+ }
+ 
++// Scaling can end without anybody asking for it: the capture breaks, a window
++// from another program is in front of the source for a moment, a runtime fault
++// tears the session down. Automatic scaling must arm itself again in that case,
++// or the picture stays off while the player sits in the same game.
++//
++// It is bounded, so a source that fails for a real reason cannot thrash: a few
++// restarts in a row and the window is left alone until scaling is started for
++// it again. A restarted run that lasts longer than the reset window counts as
++// healthy and clears the tally.
++bool ScalingService::_ShouldRearmAutoScale(
++	HWND hwndSrc,
++	std::chrono::steady_clock::time_point now
++) noexcept {
++	static constexpr uint32_t MAX_REARMS = 3;
++	static constexpr std::chrono::seconds REARM_RESET{ 10 };
++
++	if (hwndSrc != _hwndLastInvoluntaryStop || now - _lastInvoluntaryStop > REARM_RESET) {
++		_hwndLastInvoluntaryStop = hwndSrc;
++		_involuntaryStops = 0;
++	}
++	_lastInvoluntaryStop = now;
++
++	++_involuntaryStops;
++	const bool rearm = _involuntaryStops <= MAX_REARMS;
++	Logger::Get().Info(fmt::format(
++		"Scaling ended without a request from the user ({} in a row, at most {}); "
++		"automatic scaling {}", _involuntaryStops, MAX_REARMS,
++		rearm ? "stays armed" :
++		"is left off for this window until it is started again"));
++	Logger::Get().Flush();
++	return rearm;
++}
++
+ void ScalingService::_ScalingRuntime_StateChanged(ScalingState value) {
+-	App::Get().Dispatcher().TryEnqueue([this, value]() {
++	// This handler runs on the thread which published the state, inside the
++	// event's own Invoke, so the cause still belongs to this notification. Carry
++	// it by value; a later state change must not rewrite it under us.
++	const bool stoppedByUser = _scalingRuntime->WasStoppedByUser();
++	App::Get().Dispatcher().TryEnqueue([this, value, stoppedByUser]() {
+ 		bool shouldRestartForSmoothMotion = false;
+ 
+ 		if (value == ScalingState::Scaling) {
+@@ -333,11 +370,36 @@ void ScalingService::_ScalingRuntime_StateChanged(ScalingState value) {
+ 			shouldRestartForSmoothMotion = !_isAutoScaleSuspended && _hwndCurSrc &&
+ 				AppSettings::Get().IsSmoothMotionCompatibilityMode();
+ 
++			// One line per stop, so a report says whether the player asked for it,
++			// which window was being scaled and what was in front when it ended.
++			// Read together with "Source transition requested" it tells a stop the
++			// player made apart from one they did not.
++			const HWND hwndFore = GetForegroundWindow();
++			Logger::Get().Info(fmt::format(
++				"Scaling ended: requestedByUser={} source={:#x} foreground={:#x} autoScaleSuspended={}",
++				stoppedByUser, uintptr_t(_hwndCurSrc), uintptr_t(hwndFore), _isAutoScaleSuspended));
++			Logger::Get().Flush();
++
+ 			// 缩放结束后源窗口位于前台则不要检查自动缩放，用户可能刚通过快捷键或
+ 			// 工具栏终止缩放。_CheckForegroundTimer_Tick 也实现了类似功能，但它
+ 			// 的触发频率较低，容易错过时机。
+-			if (GetForegroundWindow() == _hwndCurSrc) {
+-				_hwndChecked = _hwndCurSrc;
++			//
++			// Only a stop the player asked for blocks the check: that is what this
++			// guard is for. A stop nobody asked for must not block it, or scaling
++			// stays off for as long as the source stays in front, which reads as
++			// it turning itself off for good.
++			//
++			// Clearing is the part that matters. _CheckForegroundTimer_Tick records
++			// the source as already checked on every tick of a healthy run, so for
++			// an involuntary stop merely leaving this alone changes nothing: the
++			// check would keep returning early on a window it checked while scaling
++			// was still running.
++			if (hwndFore == _hwndCurSrc) {
++				if (stoppedByUser || !_hwndCurSrc || !_ShouldRearmAutoScale(_hwndCurSrc)) {
++					_hwndChecked = _hwndCurSrc;
++				} else {
++					_hwndChecked = NULL;
++				}
+ 			}
+ 
+ 			// 缩放结束后清空 _hwndCurSrc，等待状态下则保留
+@@ -640,7 +702,12 @@ ScalingError ScalingService::_StartScaleImpl(HWND hWnd, const Profile& profile,
+ 	}
+ 
+ 	_hwndCurSrc = hWnd;
+-	if (!force) _isAutoScaleSuspended = false;
++	if (!force) {
++		_isAutoScaleSuspended = false;
++		// The player started this run, so give the window a fresh tally of
++		// automatic restarts.
++		_involuntaryStops = 0;
++	}
+ 	return ScalingError::NoError;
+ }
+ 
+diff --git a/src/Magpie/ScalingService.h b/src/Magpie/ScalingService.h
+index 6371a4d..ff04e97 100644
+--- a/src/Magpie/ScalingService.h
++++ b/src/Magpie/ScalingService.h
+@@ -66,6 +66,12 @@ private:
+ 
+ 	void _LogWindowWithoutProfile(HWND hWnd) noexcept;
+ 
++	// now 带默认值，便于不依赖真实时钟地测试重试上限
++	bool _ShouldRearmAutoScale(
++		HWND hwndSrc,
++		std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now()
++	) noexcept;
++
+ 	void _CheckForegroundTimer_Tick(winrt::DispatcherQueueTimer const&, winrt::IInspectable const&);
+ 
+ 	void _ScalingRuntime_StateChanged(ScalingState value);
+@@ -100,6 +106,10 @@ private:
+ 	// 1. 避免重复检查同一个窗口
+ 	// 2. 用户使用热键退出全屏后暂时阻止该窗口自动放大
+ 	HWND _hwndChecked = NULL;
++	// Bounds the automatic restarts after scaling ends without the player asking.
++	HWND _hwndLastInvoluntaryStop = NULL;
++	uint32_t _involuntaryStops = 0;
++	std::chrono::steady_clock::time_point _lastInvoluntaryStop{};
+ 	// Keeps the unmatched-window diagnostic to a few lines per run.
+ 	uint32_t _windowsWithoutProfileLogged = 0;
+ 	struct PendingEffectParametersSave {
+diff --git a/tests/Run-AutoScaleRearmTests.ps1 b/tests/Run-AutoScaleRearmTests.ps1
+new file mode 100644
+index 0000000..4f9a16d
+--- /dev/null
++++ b/tests/Run-AutoScaleRearmTests.ps1
+@@ -0,0 +1,37 @@
++# Runs on Windows PowerShell 5.1 as well, so the gate is available on a machine
++# without PowerShell 7.
++#Requires -Version 5.1
++$ErrorActionPreference = 'Stop'
++$repo = Split-Path $PSScriptRoot -Parent
++$workspace = Split-Path $repo -Parent
++$output = Join-Path $workspace '.tools/068-v4e-stop/auto-scale-rearm'
++New-Item -ItemType Directory -Path $output -Force | Out-Null
++
++# Only enter a developer shell when the compiler is not already available.
++if (!(Get-Command cl.exe -ErrorAction SilentlyContinue)) {
++    $programFilesX86 = [Environment]::GetFolderPath('ProgramFilesX86')
++    $vswhere = Join-Path $programFilesX86 'Microsoft Visual Studio/Installer/vswhere.exe'
++    if (!(Test-Path -LiteralPath $vswhere)) {
++        throw 'Visual Studio was not found. Install the C++ build tools, or run this from a developer prompt.'
++    }
++    $vs = & $vswhere -latest -products * -requires Microsoft.Component.MSBuild -property installationPath |
++        Select-Object -First 1
++    Import-Module (Join-Path $vs 'Common7/Tools/Microsoft.VisualStudio.DevShell.dll')
++    Enter-VsDevShell -VsInstallPath $vs -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64' | Out-Null
++}
++
++$cases = @(
++    @{ Script = 'scripts/tests/test_auto_scale_rearm.py'; Name = 'auto_scale_rearm' },
++    @{ Script = 'scripts/tests/test_src_shape_settle.py'; Name = 'src_shape_settle' }
++)
++
++foreach ($case in $cases) {
++    & python (Join-Path $repo $case.Script) $output
++    if ($LASTEXITCODE) { throw ('Extract {0} test failed' -f $case.Name) }
++    & cl.exe /nologo /std:c++20 /EHsc /utf-8 /MT /O2 /DUNICODE /D_UNICODE `
++        "$output/$($case.Name).cpp" `
++        "/Fe:$output/$($case.Name).exe" "/Fo:$output/$($case.Name).obj"
++    if ($LASTEXITCODE) { throw ('Compile {0} test failed' -f $case.Name) }
++    & "$output/$($case.Name).exe"
++    if ($LASTEXITCODE) { throw ('{0} test failed' -f $case.Name) }
++}
+-- 
+2.55.0.windows.3
+

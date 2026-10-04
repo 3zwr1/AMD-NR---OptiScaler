@@ -21,8 +21,8 @@ The following is AMDNR's own work, Copyright (c) 2026 3zwr1 (AMDNR):
     listed in section 5;
   * the release texts, menus and documentation written for AMDNR.
 
-It covers every AMDNR release from 0.1.0 onward, including 0.3.3, 0.3.4, 0.3.5
-and later, as recorded in CHANGELOG.md. Highlights:
+It covers every AMDNR release from 0.1.0 onward, including 0.3.3, 0.3.4, 0.3.5,
+0.3.5.2 and later, as recorded in CHANGELOG.md. Highlights:
 
   * AMDNR's AMD Neural Rendering pipeline: model interleave (Guided fill, Edit
     accumulation and the self-tuning interleave), the temporal stability pass,
@@ -57,9 +57,10 @@ and later, as recorded in CHANGELOG.md. Highlights:
   * The Anywhere host's output, edit, exposure and pacing rules, the style slot
     rules, the handheld highlight ceiling and pass rule, the game frame-
     generation provider rule, the HIP start-up evidence and the FSR 4 (INT8)
-    handheld opt-in rules (0.3.5); and the loading of lmxxf 0.37's modules as a
-    pinned group with its per-GPU defaults, off switches and fallbacks (the
-    kernels and their launch code are lmxxf's, see section 5).
+    handheld opt-in rules (0.3.5); and the loading of lmxxf 0.37's and 0.39's
+    modules as a pinned group with its per-GPU defaults, set choice, off
+    switches and fallbacks (the kernels and their launch code are lmxxf's, see
+    section 5).
   * The 0.3.5 RDNA 3 module set of LmxxfNrRuntime.pak (the g2 operand-assembly
     build of lmxxf's kernels for gfx1100 / gfx1101 / gfx1102 / gfx1103): lmxxf's
     kernels (Kien, MIT), built by AMDNR with its own recipe; AMDNR claims the
@@ -93,6 +94,16 @@ and later, as recorded in CHANGELOG.md. Highlights:
     Salvi 2016 (history clamping); Turanszki 2019 and Wu 2020 (normals from
     depth); Hartley 1997 (rotating-camera self-calibration); IEC 61966-2-1
     (the sRGB transfer function).
+  * The 0.3.5.2 rules and their suites: the driver-reset backoff and its session
+    ceiling (NrTimeoutRules.h), who carries the capture host's upscale and the
+    history reset that lets FSR 4 take it with Neural Rendering on
+    (AnywhereUpscaleRules.h and the Who scales it row), the pre-exposure sanity
+    rule applied where an exposure value enters a dispatch (ExposureRules.h),
+    the neural cost ceiling (NrCostRules.h), the ENB detection rules, the HIP
+    start-up cause line, and the per-game entries AMDNR added to the quirk
+    table. The three Magpie fixes of that release are NOT AMDNR's work in the
+    sense of this section: they are changes to the fork's own code, licensed
+    GPL-3.0 as the rest of it, and are described in section 5.
   * The AMDNR Launcher: AMDNR's own work, under its own licence, not GPL-3.0
     (see section 7).
 
@@ -172,6 +183,13 @@ licences:
     and the host launch code for them in LmxxfNrRuntime.dll are lmxxf's (MIT;
     see lmxxf_LICENSE.txt). AMDNR's part: loading them as one pinned group,
     SHA-256 pins, per-GPU defaults, off switches and fallbacks.
+  * lmxxf 0.39 by Kien (MIT) - the lmxxf 0.39 kernels in LmxxfNrRuntime.pak
+    (the lmxxf039-* modules for gfx1200 / gfx1201, shipped as lmxxf built them;
+    where lmxxf 0.39 ships 0.37's very bytes the lmxxf037-* file is used) and
+    the host launch code for its new kernels in LmxxfNrRuntime.dll are lmxxf's
+    (MIT; see lmxxf_LICENSE.txt). AMDNR's part: loading them as the second set
+    of the same pinned group, SHA-256 pins, the set choice ([DlssNr]
+    AmdLmxxfL39) and the fallback to the 0.37 set.
   * RenoDX by clshortfuse (Carlos Lopez Jr.) - the colour composition maths (MIT;
     see RenoDX_ATTRIBUTION.txt).
   * Zach Hembree (DarkHelmet) - FSR Ray Regeneration for OptiScaler (branch
@@ -186,12 +204,21 @@ licences:
     inherited from the OptiScaler-AMD-PreSR lineage; the credit belongs to its
     original authors. Its shaders come from the experimental_lighting folder of
     the danielblnc package, which AMDNR does not ship.
-  * Magpie by Blinue, experimental fork by SAOG0721 (GPL-3.0), fetched from the
-    author, not redistributed by AMDNR - the window-capture host AMDNR Anywhere
-    runs inside. No Magpie source or binary is included with AMDNR; the AMDNR
-    Launcher downloads the fork's release from its author. AMDNR's DLL only
-    recognises the host by its process name and reads the settings the
-    launcher wrote for it.
+  * Magpie by Blinue, experimental fork by SAOG0721 (GPL-3.0) - the window-capture
+    host AMDNR Anywhere runs inside. https://github.com/SAOG0721/Magpie
+    The host package is fetched from the fork's own GitHub release and is not
+    re-hosted by AMDNR. ONE FILE IN IT IS MODIFIED: Magpie.exe is that fork's
+    v0.6.8-experimental.1 (commit 06095c17c16923108645027503de1de2a119d02f)
+    rebuilt by AMDNR in 2026 with three fixes - an unreadable UI font no longer
+    ends scaling; a class-name rule that holds the full window class matches
+    again, so a profile is found and auto-scaling arms; and a stop nobody asked
+    for no longer turns scaling off for the rest of the session. The three
+    patches, the base commit and the build options are in Anywhere-host-source/
+    beside the host, as GPL-3.0 section 6 requires, and have been offered to the
+    fork's author; if they are merged and released, AMDNR goes back to his own
+    binary. Everything else in the host package is the fork's, unmodified.
+    AMDNR's DLL recognises the host by its process name and reads the settings
+    the launcher wrote for it.
   * ReShade by crosire (BSD-3-Clause) - AMDNR detects ReShade beside it through
     ReShade's public add-on exports and its published unwrap interface GUID;
     no ReShade code is included.

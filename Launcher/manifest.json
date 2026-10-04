@@ -19,7 +19,7 @@
       "runtimes": [
         {
           "package": "runtime-060",
-          "gpus": ["rdna4", "rdna3", "rdna2"]
+          "gpus": ["rdna2"]
         },
         {
           "package": "runtime-051",
@@ -68,7 +68,7 @@
       "runtimes": [
           {
           "package": "runtime-060",
-          "gpus": ["rdna4", "rdna3", "rdna2"]
+          "gpus": ["rdna2"]
         },
         {
           "package": "runtime-051",

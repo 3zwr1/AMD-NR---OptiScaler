@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "launcher": {
-    "version": "0.3.5.4",
-    "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.1/AMDNR-Launcher.exe",
-    "sha256": "7f9ef4046fea8e8a32994643fb43c993ffcc6a7101acde5d0d871fd48893a5d6"
+    "version": "0.3.5.6",
+    "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.2/AMDNR-Launcher.exe",
+    "sha256": "2cc7a267b794fa5b3d2e818c2065fa2065ce12978ff854558ba9b828653c5f1a"
   },
   "sources": [
     {
@@ -17,6 +17,10 @@
       "runtimeRequired": false,
       "runtimeNote": "Recommended on every GPU. On RX 7000 and RX 9000, AMDNR can also use its built-in lmxxf runtime.",
       "runtimes": [
+        {
+          "package": "runtime-060",
+          "gpus": ["rdna4", "rdna3", "rdna2"]
+        },
         {
           "package": "runtime-051",
           "gpus": ["rdna4", "rdna3"]
@@ -92,10 +96,10 @@
   "packages": [
     {
       "id": "amdnr",
-      "version": "0.3.5.1",
-      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.1/AMDNR-v0.3.5.1.zip",
-      "sha256": "6ede7b984fc02f2285f6355b98d3009391cb082992250292d6e2bbc7d442fc8a",
-      "size": 629270812,
+      "version": "0.3.5.2",
+      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.2/AMDNR-v0.3.5.2.zip",
+      "sha256": "e7b147f9c0be5b3c79fd02bbc26e347c5cb145b1ccb4361428e79ff86dd1f15e",
+      "size": 629396152,
       "exclude": []
     },
     {
@@ -270,7 +274,7 @@
     {
       "id": "forwarder",
       "version": "0.2.1",
-      "url": "https://cdn.discordapp.com/attachments/1551942949896462418/1555552354781237299/nvngx.dll_dlssnr.dll?backend=b2&ex=6ac0f086&is=6abf9f06&hm=35a155b13a1e8d0ba2a2c075c57098ce876599558923fdf36c237762f6e45967&",
+      "url": "https://cdn.discordapp.com/attachments/1551942949896462418/1556156381633970247/nvngx.dll_dlssnr.dll?backend=b2&ex=6ac32311&is=6ac1d191&hm=1819459ae246b2b3079d3b3f2a24702db5ff6819aa6d9fc3411ed93c58ee1c53&",
       "sha256": "27f17f9a2bb136b0755dfe5259ab9f40ce62ec47d28895458506f074a9696cb0",
       "size": 1254400,
       "mirrors": [
@@ -279,12 +283,12 @@
       ]
     },
     {
-      "id": "anywhere-host",
-      "version": "0.6.8-experimental.1",
-      "url": "https://github.com/SAOG0721/Magpie/releases/download/v0.6.8-experimental.1/Magpie-Experimental-x64.zip",
-      "sha256": "efb41e5177a628c0742566a887660a5a50e159f824cbfbf9f0620b2cc3b6803c",
-      "size": 489787536,
-      "exclude": ["nvngx_*.dll", "sl.*.dll", "nvofapi*.dll", "NvLowLatency*.dll", "nvsdk_ngx*.dll"]
+    "id": "anywhere-host",
+    "version": "0.6.8-experimental.1",
+    "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.2.1/Magpie-Experimental-x64-AMDNR.zip",
+    "sha256": "013055ba19b5a797d4aac8a0e6ca03a8460c3ec389e06efcdc0cce0ffc363846",
+    "size": 489439536,
+    "exclude": ["nvngx_*.dll", "sl.*.dll", "nvofapi*.dll", "NvLowLatency*.dll", "nvsdk_ngx*.dll"]
     }
   ],
   "compatibility": [],

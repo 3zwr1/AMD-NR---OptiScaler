@@ -9,6 +9,127 @@ by **burak113**, whose branch AMDNR ported from (commit `3da4808`, 2026-09-19). 
 burak113 only. The file headers, `Licenses\AMDNR_NOTICE.txt`, the README credits and the in-game credits
 now name both. No entry below this line is rewritten.
 
+## 0.3.5.2 — 2026-10-04
+
+A hotfix built from your reports: crashes in The Witcher 3 and with Intel's frame generation, a black screen in
+Resident Evil Requiem, handheld sessions that ended with the game closing, the Wuthering Waves crash, Ray
+Regeneration's grain and colour bleeding, the Black Myth: Wukong black screen, the Radeon 760M, a
+darker-than-it-should-be picture in the Anywhere window, and three speed fixes a player found with a GPU profiler.
+The network's weights, the danielblnc runtime and the Anywhere window's own program are unchanged; `OptiScaler.dll`,
+`OptiScaler.ini` and `LmxxfNrRuntime.dll` change. Launcher users: the launcher brings every installed game up to date
+by itself. By hand: drop the zip over 0.3.5.1.
+
+**One default changes:** Intel's XeSS frame generation now runs exactly as Intel ships it, at 2X, unless you ask for
+the multi-frame unlock. See the entry below if you were using 3X or more.
+
+- **Wuthering Waves no longer shows "Fatal error!"** when Neural Rendering starts in the lobby or with NR on at launch,
+  with either runtime. 0.3.5.1's note blamed the large-stack helper; the real cause was AMDNR itself: its first-frame
+  module check released Windows' own `dxgi.dll` (the copy AMDNR forwards every DirectX call to) and Windows unloaded
+  it. That dll is now pinned for the life of the game, every handout of it is counted, and the module check reads
+  version information without loading anything. Other Unreal Engine titles on the same hook path are covered too.
+- **The Witcher 3 no longer crashes to the desktop on the second launch.** The game played once, and the next start
+  closed about four seconds in until you uninstalled and installed AMDNR again. The game ships three frame
+  generations of its own, and AMDNR was holding on to a frame-generation swapchain the game had already given up -
+  so when the game asked Windows for a new one for the same window, Windows refused and the game went down. AMDNR
+  now lets that one go and takes a fresh one, as it already did for CONTROL Resonant and Black Myth: Wukong.
+  Nothing else about the title changed, and the crash was before Neural Rendering ran at all.
+- **Intel's XeSS frame generation runs as Intel shipped it unless you ask for more.** CONTROL Resonant crashed with
+  it and God of War Ragnarok was unstable. Everything above 2X on our cards exists because AMDNR rewrites five
+  places inside Intel's frame-generation library in memory and redirects three of its entries for pacing - a
+  vendor's code on a path its maker never tests on a card that is not theirs. That whole path is now **off by
+  default**: `[XeFG] UnlockMFG=true` in `OptiScaler.ini` turns it back on, and the ceiling and the pacing are
+  unchanged when you do. One line in the log says which way a session ran. In those two titles the pacing stays off
+  by itself even with the unlock on; `[XeFG] ExtraPacing=true` hands it back. A provider build AMDNR has no table
+  for is left alone instead of patched blind, and a leftover `XeFGUnlock*.asi` plugin in the game folder is named in
+  the log - with the built-in unlock off, that plugin loads and patches the same library by itself.
+- **A driver reset no longer turns into a session of them.** When the display driver decides the GPU has stopped
+  answering while the network is running, it resets the device - a stutter and usually a black flash. AMDNR used to
+  try again one second later, every time, for the whole session: one handheld report ended with **172 resets and the
+  game closing**. Now the wait between tries grows (1, 2, 4, 8, 16, then 30 seconds), and after 8 resets one after
+  another - or 32 in a session - Neural Rendering turns itself off for the rest of it and says so in one line. The
+  game and its upscaler carry on without it, and starting the game again tries once more. A minute without a reset
+  starts the count over, so a game that stumbles twice at a loading screen and then plays normally is back to one
+  second. `[DlssNr] AmdTimeoutKeepTrying=true` never stops - the growing wait still applies, so it costs about two
+  resets a minute instead of sixty.
+- **No more black screen in Resident Evil Requiem** (and any game that hands over an exposure value too small for
+  the hardware to treat as a number). The value passed the old check for "is this a real number above zero", and
+  then dividing by it sent the picture to black. Every place an exposure value enters the upscaler now rejects one
+  that small and uses 1.0 instead. Verified by the player who reported it.
+- **Save Settings works in games installed under C:\Program Files** (GTA V Enhanced from the Rockstar Games Launcher
+  or the Epic Games Store, among others). The game cannot write there, and the failed save was silently ignored, so
+  every change was gone at the next start. Now such a save goes to
+  `%LOCALAPPDATA%\AMDNR\settings\<game>\OptiScaler.ini` and the next start reads it; the log says where it went.
+- **Black Myth: Wukong: no more black screen with Neural Rendering on.** The exposure value the game hands over
+  turned the network's answer black; AMDNR now ignores it in this game by default - the fix a player found
+  (`[DlssNr] AmdUseGameExposure=0`). A value you set yourself still wins.
+- **Radeon 760M (8 compute units): lmxxf runs, as an experimental and very slow option.** About 75-90 ms per
+  network run at the smallest network size (an estimate - no 760M has been measured yet), with the model every 4th
+  frame in a game. Inside the Anywhere window it runs on every frame, so expect a low frame rate there. The Z1 and the
+  Radeon 740M (4 compute units) stay unsupported.
+- **RX 9060 XT / 9060 / 9050 with the danielblnc runtime: same-frame again by default.** 0.3.5.1's asynchronous
+  default on these cards caused problems, so it is off. `Async=1` in `dlssnr_on_amd.ini` still asks for asynchronous
+  mode (the way out if your whole PC froze with same-frame), and any `Async` / `Inline` key you set wins.
+- **Auto-exposure no longer runs on a single GPU thread.** lmxxf's auto-exposure, danielblnc's white-point estimate
+  and the Anywhere window's dark-fade measure spread their 64x36 sample grid over 256 threads, with the same result:
+  about 1 ms of GPU time per frame less at 1440p on an RX 9070 XT (the player's profile).
+- **RX 9000: lmxxf snaps the NR size to the nearest network tier by default**, as RDNA 3 already did, so 1440p FSR
+  Quality (1707x960) runs the 900 tier instead of 1080: Cyberpunk 2077 went from 52.2 to 64.0 fps (+22.7%) on an
+  RX 9070 XT with no visible difference in the player's test. `[DlssNr] AmdLmxxfTierSnap=false` restores the old sizes.
+- **New, opt-in: `[DlssNr] AmdLmxxfFastHistory=true`** (lmxxf): the network's history pass runs lmxxf's float version
+  instead of the exact double-precision one, which costs about 1.8 ms per frame on RX 9000. The picture differs
+  slightly, so it is off by default.
+- **Ray Regeneration: less grain, flicker and colour bleeding.** The light that goes around the denoiser (the spatial
+  floor, and the raw frame AMDNR blends back for detail) is now held to Ray Regeneration's own picture instead of
+  being added on top unfiltered; textured surfaces such as skin, brick and fabric no longer copy the raw frame's grain
+  in full; and on strongly coloured surfaces such as green foliage, glow, fog and particles are no longer amplified
+  into magenta patches. New defaults: Stability bias 0.75 (was 0.5), Correlation bias 0.5 (was 1.0), handover leash 1.0
+  (was 2.0). Ray Regeneration tab > More Ray Regeneration options has Composition repair, Chroma-safe demodulation and
+  Correlation bias to compare live; `OptiScaler.ini` [FSR-RR] lists the settings that give 0.3.5.1's picture back.
+- **Tone intensity starts at 0 with the danielblnc runtime, in the Anywhere window and in a game.** With it at 1 a
+  captured picture mostly got darker - "super dark" in Dark Souls Remastered - and could show a glow around
+  characters; in a game it is the one knob AMDNR was driving that his own overlay leaves alone, which is why some
+  players saw flicker and ghosting "but only on yours". 0 is his own default, so his runtime is now driven the way
+  he drives it. The lmxxf runtime is unchanged, and a value you set in the menu or the ini wins everywhere.
+- **Anywhere: the Upscaling row offers V3, one FSR 4 pass** in place of V1's FSR 3 one - the same single stage, the
+  same library AMDNR already puts beside the window, so it downloads nothing. A card or a window FSR 4 cannot take
+  falls back to V1's FSR 3 pass by itself.
+- **Anywhere: picking V3 now gets you FSR 4 with Neural Rendering on too.** Until now, with NR on, AMDNR's
+  own pass scaled the captured picture and the FSR stage was skipped - on purpose, because a captured window has no
+  jitter, so an FSR temporal pass finds no extra detail in it and only blends the frame before through estimated
+  motion, which softens the picture and flickers on moving edges. That reasoning was measured on FSR 3, which has no
+  neural network, so FSR 4 now carries the picture on V3 whether NR is on or off - which is what picking V3 was
+  asking for. That dispatch is given a fresh history, so nothing is blended through estimated motion. There is a row
+  for it either way: **Who scales it**, under Upscaling in the Anywhere menu, "FSR 4" or "AMDNR's own pass". It
+  applies as you pick it, and one line in the log names whichever carried the picture and says it again if you
+  switch - so you can compare and send the log. **V1 and V2 are untouched**, and so is any card or window that
+  cannot take FSR 4: only a window you picked V3 for changes. Two things to know while you compare: it only means
+  anything on a window smaller than your screen, and the FSR stage sharpens (RCAS) where AMDNR's pass does not, so
+  part of any difference you see is sharpening rather than the upscaler. `[DlssNr] AnywhereFsr4Upscale=false` is the
+  way back to AMDNR's own pass.
+- **A game that cannot start HIP says which of the reasons it was** in the menu, instead of pointing at a section of
+  the support notes.
+- **A report from a Skyrim modlist now says ENB is there, and under which file name.** ENB and AMDNR both want the
+  same file names, and a report that did not mention it cost a round trip on every Lorerim-style setup.
+- **Anywhere on 16:10 and ultrawide screens:** the Game window line in the Anywhere menu names sizes in your screen's
+  own shape (1440x900 on a 1920x1200 screen) and, when the picked size is as tall as your screen, your screen's own
+  size: no upscaling then, and Neural Rendering and frame generation still run.
+- **CONTROL Resonant (Ray Regeneration):** glass and polished panels are denoised with their surroundings
+  (material type 0) and held more tightly to Ray Regeneration's picture (leash 0.75), aimed at the flickering
+  rectangles on buildings a player reported.
+
+**The launcher (0.3.5.6)** stops starting an installer instead of the game when you added the game's folder by hand
+and had run one inside it; the Doctor now tells you when a standalone copy of danielblnc's runtime is installed in
+the game folder on its own, which loads the game a second time, and names the file to delete; a report carries
+`OptiScaler.ini` as well, which is the file that answers "it worked once and then it crashed"; the Anywhere window
+is closed before the launcher writes over its files, and a file it still holds is named; and the Anywhere window now
+closes with a game you closed, instead of waiting - it only waits the three minutes when you walked away from a game
+that is still running.
+
+Thanks to the player who profiled AMDNR with Radeon GPU Profiler and sent the numbers, to the Wuthering Waves player
+whose logs pinned the crash down, to the players who found the Wukong fix and sent the Anywhere reports, to the
+Witcher 3 and handheld reporters whose logs named both causes outright, and to the players who reported the Intel
+frame-generation crashes.
+
 ## 0.3.5.1 — 2026-10-02
 
 A hotfix for what was reported in the first day of 0.3.5, and lmxxf 0.39 by Kien (MIT). The network's weights, the

@@ -1,0 +1,303 @@
+From f497a7d685f2db79bf30b44099eae1280c8696a4 Mon Sep 17 00:00:00 2001
+From: AMDNR <noreply@anthropic.com>
+Date: Sat, 3 Oct 2026 17:08:26 +0100
+Subject: [PATCH 2/3] fix(profile): match a class rule that holds the full
+ window class
+
+An Assetto Corsa report (RX 9070) showed the host start, load its effects and
+its settings, then write nothing for six minutes while the game ran unscaled:
+no scaling attempt, no refusal, no diagnostic code.
+
+GetProfileForWindow normalizes the live window class before comparing it: a WPF
+class carries a GUID that changes every run, so
+HwndWrapper[AssettoCorsa.exe;;073d6f0b-...] is reduced to AssettoCorsa.exe. The
+rule it was compared against held the full class name exactly as the system
+reports it, so no profile matched, automatic scaling never fired, and nothing
+was written - every refusal and every diagnostic code lives further down, after
+the "scaling start" line that was never reached.
+
+Normalize the rule through the same parser before giving up on it. A rule
+written by Magpie itself is already normalized and still takes the first, plain
+comparison, so nothing changes for it. A rule that holds a live class name now
+matches that window, and keeps matching after the application restarts with a
+new GUID.
+
+Also name the first few foreground windows that no rule matched, and flush, so
+the log can answer "no rule matched this window" instead of being empty. That
+line is written only when a profile asks for automatic scaling, at most a few
+times per run.
+
+tests/Run-ProfileClassNameRuleTests.ps1 extracts the parser and the match
+condition and covers both spellings of a rule, the restart case, the two other
+normalized class families, and a near-miss that must not match.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+---
+ scripts/tests/test_profile_class_name_rule.py | 121 ++++++++++++++++++
+ src/Magpie/ProfileService.cpp                 |  10 +-
+ src/Magpie/ScalingService.cpp                 |  31 ++++-
+ src/Magpie/ScalingService.h                   |   4 +
+ tests/Run-ProfileClassNameRuleTests.ps1       |  30 +++++
+ 5 files changed, 194 insertions(+), 2 deletions(-)
+ create mode 100644 scripts/tests/test_profile_class_name_rule.py
+ create mode 100644 tests/Run-ProfileClassNameRuleTests.ps1
+
+diff --git a/scripts/tests/test_profile_class_name_rule.py b/scripts/tests/test_profile_class_name_rule.py
+new file mode 100644
+index 0000000..a4108f9
+--- /dev/null
++++ b/scripts/tests/test_profile_class_name_rule.py
+@@ -0,0 +1,121 @@
++"""Extract the production class-name parser and profile match for a CPU-only test."""
++from pathlib import Path
++import sys
++
++root = Path(__file__).resolve().parents[2]
++service = (root / 'src/Magpie/ProfileService.cpp').read_text(encoding='utf-8-sig')
++
++parsers = service[service.index('// WPF '):service.index('static bool TestNewProfileImpl(')]
++assert 'MatchWPFClassName' in parsers and 'MatchRPGMakerMZClassName' in parsers
++assert 'MatchTeknoParrotClassName' in parsers and 'ParseClassName(' in parsers
++
++lookup = service.split('const Profile* ProfileService::GetProfileForWindow(', 1)[1].split('\n}', 1)[0]
++condition = lookup[lookup.index('\t\t// A rule may hold'):lookup.index('if (!isPackaged.has_value())')]
++assert 'ParseClassName(profile.classNameRule)' in condition
++# The live class name is normalized once, before the loop, and the executable
++# path is compared only after the class name has been accepted.
++assert lookup.index('ParseClassName(className)') < lookup.index('for (const Profile& profile : profiles)')
++assert lookup.index(condition) < lookup.index('if (profile.pathRule == path)')
++
++harness = r'''
++#include <cassert>
++#include <cwctype>
++#include <iostream>
++#include <regex>
++#include <string>
++#include <string_view>
++#include <vector>
++
++struct StrHelper {
++    template <typename CHAR_T>
++    static constexpr size_t StrLen(const CHAR_T* str) noexcept {
++        size_t length = 0;
++        while (str[length]) ++length;
++        return length;
++    }
++    static bool isdigit(wchar_t c) noexcept { return (bool)std::iswdigit(c); }
++};
++
++namespace wil {
++template <typename IT>
++struct iterator_range {
++    IT _begin, _end;
++    IT begin() const noexcept { return _begin; }
++    IT end() const noexcept { return _end; }
++};
++template <typename IT>
++static iterator_range<IT> make_range(IT begin, IT end) noexcept { return { begin, end }; }
++}
++
++PARSERS
++
++struct Profile {
++    std::wstring classNameRule;
++    std::wstring pathRule;
++};
++
++// The class-name half of GetProfileForWindow, with the production condition.
++static const Profile* MatchProfile(
++    const std::vector<Profile>& profiles, std::wstring_view windowClassName) noexcept {
++    std::wstring className(windowClassName);
++    std::wstring_view parsedClassName = ParseClassName(className);
++
++    for (const Profile& profile : profiles) {
++CONDITION
++        return &profile;
++    }
++    return nullptr;
++}
++
++static const wchar_t* AC_WINDOW =
++    L"HwndWrapper[AssettoCorsa.exe;;073d6f0b-d40b-41b3-97e0-10dd573f51b2]";
++// The same application after a restart: WPF builds a new GUID every run.
++static const wchar_t* AC_WINDOW_RESTARTED =
++    L"HwndWrapper[AssettoCorsa.exe;;1f2e3d4c-5b6a-7989-8a7b-6c5d4e3f2a19]";
++
++static bool Matches(const wchar_t* rule, const wchar_t* windowClassName) noexcept {
++    const std::vector<Profile> profiles{ { rule, L"C:\\game\\Game.exe" } };
++    return MatchProfile(profiles, windowClassName) != nullptr;
++}
++
++int main() {
++    // The player report: the rule held the class name exactly as the system
++    // reports it, so nothing ever matched and the application sat idle without
++    // writing a single line.
++    assert(Matches(AC_WINDOW, AC_WINDOW));
++    // And it keeps matching once the game has restarted its window.
++    assert(Matches(AC_WINDOW, AC_WINDOW_RESTARTED));
++
++    // A rule written by Magpie itself is already normalized: unchanged.
++    assert(Matches(L"AssettoCorsa.exe", AC_WINDOW));
++    assert(Matches(L"AssettoCorsa.exe", AC_WINDOW_RESTARTED));
++
++    // Another application's window is still rejected, with either spelling.
++    assert(!Matches(AC_WINDOW, L"HwndWrapper[OtherGame.exe;;073d6f0b-d40b-41b3-97e0-10dd573f51b2]"));
++    assert(!Matches(L"AssettoCorsa.exe", L"HwndWrapper[OtherGame.exe;;073d6f0b-d40b-41b3-97e0-10dd573f51b2]"));
++    assert(!Matches(AC_WINDOW, L"UnrealWindow"));
++
++    // Plain class names compare exactly, as before.
++    assert(Matches(L"UnrealWindow", L"UnrealWindow"));
++    assert(!Matches(L"UnrealWindow", L"UnrealWindow2"));
++
++    // The other two normalized families keep their behaviour.
++    assert(Matches(L"Chrome_WidgetWin_1", L"Chrome_WidgetWin_3"));
++    assert(Matches(L"Chrome_WidgetWin_7", L"Chrome_WidgetWin_1"));
++    assert(Matches(L"XWindow_0", L"XWindow_1234"));
++    assert(!Matches(L"XWindow_0", L"XWindow_abc"));
++
++    // A class name that only looks like WPF is not normalized, so it compares
++    // exactly and cannot match a real WPF window.
++    assert(Matches(L"HwndWrapper[Foo;;not-a-guid]", L"HwndWrapper[Foo;;not-a-guid]"));
++    assert(!Matches(L"HwndWrapper[Foo;;not-a-guid]",
++        L"HwndWrapper[Foo;;073d6f0b-d40b-41b3-97e0-10dd573f51b2]"));
++
++    std::cout << "profile class-name rule tests passed\n";
++    return 0;
++}
++'''
++
++harness = harness.replace('PARSERS', parsers).replace('CONDITION', condition)
++output = Path(sys.argv[1]) if len(sys.argv) > 1 else root
++(output / 'profile_class_name_rule.cpp').write_text(harness, encoding='utf-8')
+diff --git a/src/Magpie/ProfileService.cpp b/src/Magpie/ProfileService.cpp
+index 26d445f..8aa4668 100644
+--- a/src/Magpie/ProfileService.cpp
++++ b/src/Magpie/ProfileService.cpp
+@@ -219,7 +219,15 @@ const Profile* ProfileService::GetProfileForWindow(HWND hWnd, bool forAutoScale)
+ 			continue;
+ 		}
+ 
+-		if (profile.classNameRule != parsedClassName) {
++		// A rule may hold the window class exactly as the system reports it, while
++		// the classes normalized above carry a part that changes on every run (the
++		// WPF GUID, the RPG Maker MZ counter, the TeknoParrot number). Normalize
++		// the rule the same way before giving up on it, so a rule written from a
++		// live window keeps matching that window after the application restarts.
++		// A rule Magpie wrote itself is already normalized and takes the first
++		// comparison, exactly as before.
++		if (profile.classNameRule != parsedClassName &&
++			ParseClassName(profile.classNameRule) != parsedClassName) {
+ 			continue;
+ 		}
+ 
+diff --git a/src/Magpie/ScalingService.cpp b/src/Magpie/ScalingService.cpp
+index cf26979..8da9fab 100644
+--- a/src/Magpie/ScalingService.cpp
++++ b/src/Magpie/ScalingService.cpp
+@@ -267,6 +267,32 @@ static bool IsReadyForScaling(HWND hwndFore) noexcept {
+ 	return !Win32Helper::IsWindowHung(hwndFore);
+ }
+ 
++// A run in which no rule ever matches writes nothing at all, so a report cannot
++// tell "no rule matched this window" apart from a refusal that was never raised.
++// Name the first few windows the rules were tested against, and flush, so the
++// log answers that question even while the application is still running.
++void ScalingService::_LogWindowWithoutProfile(HWND hWnd) noexcept {
++	static constexpr uint32_t MAX_LOGGED_WINDOWS = 8;
++
++	if (_windowsWithoutProfileLogged >= MAX_LOGGED_WINDOWS) {
++		return;
++	}
++
++	// Nothing to report when no profile asks for automatic scaling.
++	if (std::ranges::none_of(AppSettings::Get().Profiles(), [](const Profile& profile) {
++		return profile.autoScale != AutoScale::Disabled;
++	})) {
++		return;
++	}
++
++	++_windowsWithoutProfileLogged;
++	Logger::Get().Info(fmt::format(
++		"No profile matched the foreground window: class \"{}\", path \"{}\"",
++		StrHelper::UTF16ToUTF8(Win32Helper::GetWindowClassName(hWnd)),
++		StrHelper::UTF16ToUTF8(Win32Helper::GetWindowPath(hWnd))));
++	Logger::Get().Flush();
++}
++
+ void ScalingService::_CheckForegroundTimer_Tick(winrt::DispatcherQueueTimer const&, winrt::IInspectable const&) {
+ 	if (_isAutoScaleSuspended) return;
+ 	const HWND hwndFore = GetForegroundWindow();
+@@ -277,8 +303,11 @@ void ScalingService::_CheckForegroundTimer_Tick(winrt::DispatcherQueueTimer cons
+ 	if (hwndFore != _hwndCurSrc) {
+ 		// 检查自动缩放
+ 		const Profile* profile = ProfileService::Get().GetProfileForWindow(hwndFore, true);
++		if (!profile) {
++			_LogWindowWithoutProfile(hwndFore);
++		}
+ 		// 正在缩放窗口时禁止自动缩放它的弹窗
+-		if (profile && !(_hwndCurSrc && IsPopupWindow(hwndFore, _hwndCurSrc))) {
++		else if (!(_hwndCurSrc && IsPopupWindow(hwndFore, _hwndCurSrc))) {
+ 			// 如果窗口处于某种中间状态则跳过此次检查
+ 			if (!IsReadyForScaling(hwndFore)) {
+ 				return;
+diff --git a/src/Magpie/ScalingService.h b/src/Magpie/ScalingService.h
+index 19e5a7e..6371a4d 100644
+--- a/src/Magpie/ScalingService.h
++++ b/src/Magpie/ScalingService.h
+@@ -64,6 +64,8 @@ private:
+ 
+ 	void _CountDownTimer_Tick(winrt::DispatcherQueueTimer const&, winrt::IInspectable const&);
+ 
++	void _LogWindowWithoutProfile(HWND hWnd) noexcept;
++
+ 	void _CheckForegroundTimer_Tick(winrt::DispatcherQueueTimer const&, winrt::IInspectable const&);
+ 
+ 	void _ScalingRuntime_StateChanged(ScalingState value);
+@@ -98,6 +100,8 @@ private:
+ 	// 1. 避免重复检查同一个窗口
+ 	// 2. 用户使用热键退出全屏后暂时阻止该窗口自动放大
+ 	HWND _hwndChecked = NULL;
++	// Keeps the unmatched-window diagnostic to a few lines per run.
++	uint32_t _windowsWithoutProfileLogged = 0;
+ 	struct PendingEffectParametersSave {
+ 		std::shared_ptr<EffectParametersSaveState> state;
+ 		uint64_t revision;
+diff --git a/tests/Run-ProfileClassNameRuleTests.ps1 b/tests/Run-ProfileClassNameRuleTests.ps1
+new file mode 100644
+index 0000000..f8840a2
+--- /dev/null
++++ b/tests/Run-ProfileClassNameRuleTests.ps1
+@@ -0,0 +1,30 @@
++# Runs on Windows PowerShell 5.1 as well, so the gate is available on a machine
++# without PowerShell 7.
++#Requires -Version 5.1
++$ErrorActionPreference = 'Stop'
++$repo = Split-Path $PSScriptRoot -Parent
++$workspace = Split-Path $repo -Parent
++$output = Join-Path $workspace '.tools/068-v4e-profile/class-name-rule'
++New-Item -ItemType Directory -Path $output -Force | Out-Null
++
++# Only enter a developer shell when the compiler is not already available.
++if (!(Get-Command cl.exe -ErrorAction SilentlyContinue)) {
++    $programFilesX86 = [Environment]::GetFolderPath('ProgramFilesX86')
++    $vswhere = Join-Path $programFilesX86 'Microsoft Visual Studio/Installer/vswhere.exe'
++    if (!(Test-Path -LiteralPath $vswhere)) {
++        throw 'Visual Studio was not found. Install the C++ build tools, or run this from a developer prompt.'
++    }
++    $vs = & $vswhere -latest -products * -requires Microsoft.Component.MSBuild -property installationPath |
++        Select-Object -First 1
++    Import-Module (Join-Path $vs 'Common7/Tools/Microsoft.VisualStudio.DevShell.dll')
++    Enter-VsDevShell -VsInstallPath $vs -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64' | Out-Null
++}
++
++& python (Join-Path $repo 'scripts/tests/test_profile_class_name_rule.py') $output
++if ($LASTEXITCODE) { throw 'Extract profile class-name rule test failed' }
++& cl.exe /nologo /std:c++20 /EHsc /utf-8 /MT /O2 /DUNICODE /D_UNICODE `
++    "$output/profile_class_name_rule.cpp" `
++    "/Fe:$output/profile_class_name_rule.exe" "/Fo:$output/profile_class_name_rule.obj"
++if ($LASTEXITCODE) { throw 'Compile profile class-name rule test failed' }
++& "$output/profile_class_name_rule.exe"
++if ($LASTEXITCODE) { throw 'Profile class-name rule test failed' }
+-- 
+2.55.0.windows.3
+

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Build options for AMDNR's build of the capture host.
+
+  WHY THIS FILE IS PART OF THE SOURCE OFFER. The fork's own BuildOptions.props defaults every
+  Enable* to false, and each one needs an SDK path that ships empty. A build with none of them set
+  compiles and packages happily, and produces a host with the features stubbed out: XeSSFGPresenter
+  answers "XeSS Frame Generation is disabled at build time", the Renderer fails to initialise, and
+  every scaling attempt ends in MP-010. So the three patches alone do NOT reproduce the binary
+  AMDNR ships - this file is the other half, and GPL-3.0 counts the scripts that control
+  compilation as part of the corresponding source.
+
+  TO USE IT: copy to BuildOptions.props.user beside BuildOptions.props, and replace each <...Dir>
+  with the path to that SDK on your own machine. The paths below are placeholders.
+
+  The SDKs are the public ones:
+    * Intel XeSS, including XeSS Frame Generation - https://github.com/intel/xess
+      Needs inc\xess_fg\xefg_swapchain_d3d12.h (what XeSSFGPresenter.cpp includes),
+      bin\libxess_fg.dll, and Intel's own third-party-programs.txt (packaging stops without it;
+      the published host carries the same text as INTEL-XESS-THIRD-PARTY.txt).
+      The build AMDNR used is libxess_fg.dll 1.3.1.78, the one the fork's own compatibility path
+      names. A different build is where an earlier attempt crashed in xellD3D12CreateContext.
+    * AMD FidelityFX SDK - https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK
+      The FSR 3.1 upscaler and the cross-vendor optical-flow provider. With EnableAmdOpticalFlow
+      off, no provider is set in Renderer.cpp and frame guidance fails to initialise, the same way
+      it does without XeSS FG. If you clone it sparsely, note that the frame-generation shader
+      sources the optical-flow step compiles live outside the usual sparse set.
+    * NVIDIA NVAPI - headers only; no driver DLL is packaged (the fork's own words).
+-->
+<Project>
+  <PropertyGroup>
+    <!-- Intel XeSS, including XeSS Frame Generation. -->
+    <XeSSSdkDir>PATH\TO\xess</XeSSSdkDir>
+    <EnableXeSSFrameGeneration>true</EnableXeSSFrameGeneration>
+    <EnableXeSSZeroMV>true</EnableXeSSZeroMV>
+
+    <!-- AMD FidelityFX: the FSR 3.1 upscaler and the cross-vendor optical-flow provider. -->
+    <FSR3SdkDir>PATH\TO\FidelityFX-SDK</FSR3SdkDir>
+    <EnableFSR3ZeroMV>true</EnableFSR3ZeroMV>
+    <EnableAmdOpticalFlow>true</EnableAmdOpticalFlow>
+
+    <!-- NVIDIA: headers only, no driver DLL is packaged. -->
+    <NvapiSdkDir>PATH\TO\nvapi</NvapiSdkDir>
+
+    <!-- LEFT OFF, on purpose: EnableRTXVideoDenoise needs the NVIDIA Video Effects SDK, which
+         AMDNR does not have. The fork's own published asset carries Magpie.RtxVideo.dll,
+         NVCVImage.dll, nvVFXVideoSuperRes.dll and the npp*64_12.dll set from it, so AMDNR's build
+         does not have them and AMDNR does not replace those files. It is NVIDIA video
+         super-resolution, inert on an AMD card. Same for EnableDLSSSR, EnableDLSSFrameGeneration,
+         EnableDLSSNR and EnableNvidiaOpticalFlow. -->
+  </PropertyGroup>
+</Project>

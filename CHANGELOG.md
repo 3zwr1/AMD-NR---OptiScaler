@@ -9,6 +9,849 @@ by **burak113**, whose branch AMDNR ported from (commit `3da4808`, 2026-09-19). 
 burak113 only. The file headers, `Licenses\AMDNR_NOTICE.txt`, the README credits and the in-game credits
 now name both. No entry below this line is rewritten.
 
+## 0.3.5.3 — 2026-10-08
+
+Neural Rendering gets the NVIDIA look by default, lmxxf 0.41 by Kien (MIT) on RX 9000 and a history step that costs
+much less GPU time; Ray Regeneration gets AMDNR's own denoiser where AMD's has no provider (a preview) and an opt-in
+for Vulkan games; AMDNR Screen-space GI by 3zwr1 is official (off by default). Also in this release: danielblnc
+0.6.0's black screen, RX 6000's HIP error 126, crashes in Red Dead Redemption 2, The Witcher 3 and GTA V Enhanced,
+video memory that kept growing, Force Anti-Lag 2 for games without Reflex, even pacing for XeSS frame generation at
+3X and above, and AMDNR Launcher 0.3.5.7. Several of these changes are measured in AMDNR's lab and not yet seen in a
+game; Known limits says which. `OptiScaler.dll`, `OptiScaler.ini`, `LmxxfNrRuntime.dll` and `LmxxfNrRuntime.pak`
+change (the pak adds lmxxf 0.41's kernels and AMDNR's RDNA 3 kernels); the danielblnc runtime is unchanged, and the
+Anywhere window's host package no longer carries any NVIDIA file. Launcher users: the launcher brings every installed
+game up to date by itself. By hand: drop the zip over 0.3.5.2.
+
+**Defaults that change:** the NVIDIA look on lmxxf, lmxxf 0.41 on RX 9000, the AMDNR Ray Denoiser (preview) on
+RX 7000 and the RDNA 3 / 3.5 APUs, AMD's own values for five of Ray Regeneration's six denoiser settings, the
+reflection ray length handed to Ray Regeneration exactly as the game sends it (RX 9000), even pacing for XeSS frame
+generation at 3X and above, and FSR 4 (INT8) on RX 6000. Each entry below names its way back.
+
+### Neural Rendering
+**The NVIDIA look is the new default**
+- On lmxxf the network now runs NVIDIA's default style (Style 0) with all 71 blocks, and AMDNR no longer limits the
+  size of its changes: no residual limit and no edge guard in a game. Shapes, faces and lighting change as much as
+  the network changes them. In lmxxf's own single-frame test against NVIDIA's output, the style we ran before scored
+  24 dB; NVIDIA's default style with all 71 blocks scores 47 dB.
+- lmxxf keeps Temporal stability 0.6 and its output smoothing 0.6 under the NVIDIA look. lmxxf's answer reaches the
+  frame one frame late. With those two at 0 (the first test build), fine detail such as skin and hair got grainy: the
+  late answer added the frame's own fine noise a second time, and the network's answer flickered. NVIDIA's own
+  network smooths its answer over time, and these two do that job here.
+- danielblnc's runtime already ran its own default style and tone; with the NVIDIA look it also loses our temporal
+  blend (and the residual limit away from 100% NR resolution).
+- The earlier look is one click away: Neural tab > NR style > **AMDNR soft** (or `[DlssNr] AmdNrLook=1` in the ini).
+  Anything you set yourself (a slider, a named style, a style slot, an ini line) still wins over either look.
+- Model interleave (and the handheld default of every 4th frame) keeps its guards: only the network itself changes
+  there. AMDNR Anywhere is unchanged.
+- The full network costs about 0.3 ms per network run at the 1080 size (measured on an RX 9070 XT: +0.29 ms at 1080,
+  +0.22 at 900, +0.13 at 720); the style itself costs nothing.
+- lmxxf (RX 9000), the NVIDIA look: the network now gets the same noise seed NVIDIA's DLSS-NR uses on a fresh frame
+  (0 instead of 1) at every network size except the smallest (640x360), which keeps the old seed. Measured against
+  NVIDIA's own output of the same frame, the picture is about 1.4 dB closer at 1080p (45.6 -> 46.9 dB), and about
+  0.9 / 1.5 dB closer at the native 1440p / 4K sizes. No speed cost. `AMDNR_NR_SEED=1` (an environment variable)
+  gives the old picture back at every size.
+- Fixed: the NR resolution note on lmxxf no longer says 100% is pixel-exact for frames above 1920x1080.
+
+**Faster lmxxf**
+- **lmxxf 0.41 by Kien (MIT) on RX 9000.** lmxxf's newest kernels now run by default, each checked by SHA-256. The
+  picture is bit for bit the same as 0.39's - AMDNR's own check gave the same picture on every network size it ships.
+  Network time per frame on an RX 9070 XT: about 0.16 ms less at the 1080 tier (-1.5 %), 0.04 ms less at 900, no
+  measurable change at 720. The RX 9060 XT runs the same set; it was not measured on that card yet. If any file of
+  the 0.41 set is missing or does not match, the 0.39 set runs by itself; `[DlssNr] AmdLmxxfL41=false` keeps 0.39.
+  RX 7000 and handhelds are unchanged.
+- **lmxxf with history on: the history step costs much less GPU time.** lmxxf's history pass did its exact sums in
+  double precision, which RDNA cards run at a small fraction of their normal speed. AMDNR now does those sums with
+  whole numbers wherever that gives exactly the same result, and keeps the old maths for the rare pixels where it
+  does not. The picture is the same, bit for bit (checked on every network size). Measured per frame on an
+  RX 9070 XT, by network size: 1080 about 2 ms less (10 %), 900 1.2 ms, 720 0.9 ms, 576 0.5 ms, 360 0.2 ms; the
+  opt-in 1440 size about 3.5 ms (9 %). (A 1440p or 4K game runs the 1080 size unless you opt in.) Testers:
+  `AMDNR_TSI=0` goes back to the old maths.
+- **lmxxf: no more copies of the network's input, history and answer.** Each frame copied these three buffers once
+  more than needed (about 190 MB of memory traffic per 1080p frame); the passes that make them now write them where
+  the network and the frame read them. Same bytes, same picture, about 35 MB less video memory at the 1080 size.
+  Measured per frame: the opt-in 1440 size about 0.8 ms less, the 720 size 0.1 ms less; at the 1080, 900 and 360
+  sizes the difference was smaller than the measurement could separate. Testers: `AMDNR_DIRECT_IO=0` keeps the
+  copies.
+- For testers (off by default): `AMDNR_C256W_ALL=1`: on RX 9000, lmxxf's one-kernel version of its C256 blocks also
+  at the 576p, 720p, 900p, 972p and smaller sizes (by default it runs only at 1080p, and at 1440p with
+  `AMDNR_L41_C256Q=1`). Same picture, bit for bit. Measured: 0.08 to 0.24 ms less per frame at 576p to 972p, 0.035 ms
+  more at 360p, so it stays a tester switch.
+- **RX 7000 and RDNA 3 handhelds (ROG Ally, Legion Go, 780M / 890M):** AMDNR's own RDNA 3 kernels for the heaviest
+  part of the lmxxf network (the fused FFN + projection + QKV blocks) now ship in the pak. Off by default while
+  testers time them; same picture, bit for bit. Testers: set `AMDNR_G11N=1`. Nothing changes on RX 9000.
+
+**Neural passes 2 and 3**
+- **lmxxf: Neural passes 2 and 3 no longer flicker the way they did, most of all in the AMDNR Anywhere window.** At
+  one pass the picture you see has gone through lmxxf's output smoothing; at 2 and 3 the extra passes' answer reached
+  the screen without it (the smoothing was applied to pass 1 only, after the extra passes had already used it). Now
+  what you see at 2 and 3 is pass 1 smoothed as at one pass, plus the extra passes' change smoothed the same way
+  against its own previous frame: the stronger look stays, its shimmer is calmed, and a real change in the picture
+  still comes through at once. The network and its history are not touched, and one pass is exactly as before. It
+  follows the output smoothing you run. `[DlssNr] AmdLmxxfPassSmooth=false` shows the extra passes as before, for a
+  side-by-side.
+- **lmxxf: Neural passes 2 and 3 keep the colours and brightness of 1 pass.** Each extra pass runs the network again
+  on the previous pass's answer, so the network's own tone added up: at 3 passes colours turned (up to 5.7 degrees of
+  hue at the 360 size, the handheld default, and about 3 degrees at 900 and 1080) and the picture got up to 1 %
+  darker. The extra passes now add only the detail they make; region by region the colour and the brightness stay
+  those of 1 pass (at every size and both looks: within 0.7 degrees and 0.5 %). The sharper look of 2 and 3 passes
+  stays.
+- **lmxxf: on a still picture, Neural passes 2 and 3 now shimmer about as much as 1 pass.** The extra passes changed
+  a still picture 2-3 times as much from frame to frame as 1 pass does. Their frame-to-frame change is now averaged
+  where nothing moves and damped where it flickers back and forth, and pass 2 works on the smoothed pass 1: a still
+  picture at 2 and 3 passes now changes about as much as at 1 pass (2 passes 1.03-1.07x, 3 passes 1.06-1.20x of 1
+  pass, was 1.6-3.0x), and a moving picture is not smeared (a camera pan keeps its sharpness and swims less). A real
+  change in the picture still comes through at once.
+- `[DlssNr] AmdLmxxfPassSmooth=false` still shows the extra passes exactly as before, for a side-by-side.
+- **danielblnc: Neural passes 2 and 3 keep the colours and brightness of 1 pass.** As with lmxxf, each extra pass
+  runs the network again on the previous pass's picture, so its tone could add up from pass to pass. AMDNR now keeps
+  pass 1's picture and scales each region of the extra passes' picture back to pass 1's level, so only the detail
+  they add stays; a bright light (a lamp, the sun, a window) does not change its dark surroundings. 1 pass is
+  unchanged; the extra cost is about 0.1-0.4 ms, and its 16-64 MB of video memory are given back when you go back to
+  1 pass.
+- Passes 2 and 3 still cost about 2x and 3x the network's time (on an RX 9070 XT at the 720 size, 7.4-8.5 ms became
+  14.3-15.0 ms with 2 passes). In the Anywhere window a network slower than the window's frame repeats the last
+  picture; the Neural passes help now says so, the NR cost line names Passes as the lever, and when you change Passes
+  while the window runs it measures the network again instead of judging the new cost by the old numbers
+  (`anywhere_budget.ini` now records the passes it was measured at).
+- Fixed: the log said "kernel unavailable" at the first frame of every DirectX 12 game set to 2 or 3 passes with
+  lmxxf - the extra passes are only set up at their first launch, just after that line; it now says "pending" until
+  then. If lmxxf's extra passes really cannot start, lmxxf_backend.log now says so (one pass runs then); before,
+  nothing did. A change of Neural passes in the menu now has its own "AMD settings:" line in amd_bridge.log.
+- Fixed: the Neural passes slider could store 0, a negative number or 7 by Ctrl+click; a stored -1 showed "1 pass" in
+  the menu while both runtimes ran 3. The slider now stays within 1-3 and everything reads the value the same way.
+- **NR (lmxxf runtime): Network output shows the network's own answer at Neural passes 2-3 too.** The colour hold of
+  the extra passes (0.3.5.3) no longer runs under Network output, so that view is the last pass's raw answer again.
+- danielblnc: **a missing or unusable dlssnr_amd_pass2.dll / pass3.dll no longer turns NR off for the session** when
+  Passes is 2 or 3 - the passes that can start run, and the log names the file and why.
+- danielblnc: **when one of passes 2-3 timed out, the game could stall up to 15 seconds** (5 s for each further pass)
+  before NR stopped; it now stops at the first timeout. The hand-off from one pass to the next also waits a quarter
+  of a millisecond at a time instead of a whole Windows timer tick (up to 15.6 ms on PCs at the default timer
+  setting).
+- danielblnc: passes 2 and 3 now ask for video memory like a new NR size does: when their first working size does not
+  fit, the passes that fit run (the log says so) instead of pushing the game over its budget; each further pass keeps
+  about 128 bytes per pixel of its working size until the game closes.
+- danielblnc: after lowering Neural passes, a pass that no longer runs can no longer keep the two-slot fast path off
+  for the rest of the session.
+
+**lmxxf's picture**
+- **lmxxf: less of the dark shadow that trailed a moving character** (Silent Hill 2 in fog: a dark copy of the head
+  and shoulders where the character was a frame earlier, with Network output too). lmxxf's answer lands one frame
+  late and is moved onto the new frame by the game's motion vectors. Where the character had just uncovered the
+  background, that patch either showed the game's picture without NR's change and faded back in over several frames,
+  or - where the depth test could not tell the character from the fog far behind him - kept the character's own
+  darker answer. AMDNR now checks each moved pixel against the picture the answer was made for, and fills what it
+  refuses from NR's own brightness response for that brightness instead of leaving it out. In our synthetic test (a
+  dark figure walking over light fog) the darkening left behind fell from about 3% of the fog's brightness (up to 6%)
+  to under 0.1%, and in the same tests a still picture and a slow pan came out exactly as before. It costs about 0.1
+  ms per frame at 1506x847 on an RX 9070 XT. Set the environment variable `AMDNR_CARRY_GUARD=0` to compare with the
+  earlier behaviour. danielblnc's runtime is not affected (its answer is for the frame it was given).
+- **Fixed: lmxxf kept the wrong brightness after a dark moment.** In Resident Evil Requiem a fade or a camera cut
+  could make lmxxf drop the game's own exposure for the rest of the session and switch to its own auto-exposure. The
+  network was then fed a picture about 6 times too bright, which showed as grain on lit skin. lmxxf now keeps the
+  game's exposure once it has worked in that session. A single dark moment no longer changes it. A game whose
+  exposure is wrong from the start is still corrected, a few seconds later than before.
+- lmxxf at its smallest network size (360: the default on AMD handhelds, or `AmdLmxxfTierCap=360`): the extra rows
+  the network reads below the picture were left empty at that size, which made NR's picture about 5 % darker. They
+  are now filled the same way as at every other size. Every other network size gets exactly the same input as before.
+- lmxxf at the smallest network sizes (360 - the AMD handheld size - and 288 / 432): with Network history on, a still
+  picture could pump (its brightness swinging and drifting) and moving pictures swam far more than with history off.
+  The history is now held within the picture's own range at those sizes: a still picture no longer pumps, and history
+  helps in motion again. Every larger size is unchanged.
+- lmxxf: a still picture now stays nearly still. With Network history on, the network kept changing a still picture a
+  little every frame after it had settled - a fine shimmer, most at the 360 size (the handheld size) and at 1080.
+  Where nothing moves and the picture itself does not change, the answer is now held steady over frames: at the 360
+  size the change of a still picture drops from 0.67/255 to 0.14/255 a frame (Neural passes 3: 0.84 to 0.25), at 1080
+  from 0.62 to 0.14, and at every size and both looks it is now 0.25/255 or less. Anything that moves, and any real
+  change in the picture, is shown exactly as before, and colours, brightness and detail are the same.
+- lmxxf: on a nearly still real scene the pixels that barely move are calmer too (the network's grain on them,
+  against the scene's own: 360 1.46x to 1.25x, 720 1.32x to 1.24x, 1080 0.99x to 0.92x).
+- lmxxf at the 576 size (the size for games running at 1024x576 or less): on a nearly still scene the parts of the
+  picture that do not move are much calmer. With Network history on, the 576 network's own frame-to-frame change on
+  pixels whose input barely moves was 1.84x the scene's own (NVIDIA look; Neural passes 2 / 3: 1.86x / 1.88x) and is
+  now 1.09x (1.12x / 1.16x); with the soft look 1.26x is now 1.17x. The detail is kept within 2 % (the earlier fix
+  for the small sizes would have taken 6 % here), colours are unchanged, and anything that moves is shown exactly as
+  before.
+- lmxxf: Network output and Output smoothing 0 now also switch the network history off. Without the smoothing the
+  history's loop flickered, even on a still picture. The Neural tab says so on the Network history row.
+- lmxxf at the 360 size: the network's input is written where the network reads it, as at every other size (one copy
+  a frame less; the picture is the same).
+
+**lmxxf above 1080p (opt-in)**
+- **RX 9070 / 9070 XT, 1440p, opt-in:** `[DlssNr] AmdLmxxfTierCap=1440` lets the lmxxf runtime run the NR network at
+  2560x1440 itself, so a 1440p frame no longer goes down to 1080p and back up through the network. This is AMDNR's
+  own 2560x1440 network size. It is heavy: on an RX 9070 XT the network takes about 19.6 ms per run against 10.8 ms
+  at the 1080 size, and about 550 MB more video memory; it is only used when the card says it has room for it,
+  otherwise NR stays on the 1080 size. Without the key nothing changes. Other GPUs and every frame up to 1920x1080
+  run exactly as before.
+- **lmxxf, RX 9070 / 9070 XT, `[DlssNr] AmdLmxxfTierCap=1440`:** the 2560x1440 network size had a colour cast (red
+  up, blue down) and was further from NVIDIA's own picture than the default 1080 size. It now runs the network on the
+  same surface as `AmdLmxxfTierCap=native` and gives exactly its picture at 1440p: 45.5 dB against NVIDIA's own
+  2560x1440 frame instead of 31.0 dB, no colour cast. It also got a little cheaper: about 19.1 ms of network time on
+  an RX 9070 XT instead of 19.8 ms (measured outside a game), and about 50 MB less video memory. Still opt-in;
+  nothing changes for anyone who has not set the key.
+- **NR (lmxxf runtime, 2560x1440 network size): the video-memory check asks for the real need.** The check runs when
+  the session starts, before any network exists, so it now asks for the whole 2560x1440 network (about 2.3 GB) plus
+  the 256 MB margin, and for about 720 MB more only beside a running 1080 network; before, it asked for 165 MB, and a
+  card with about 1 GB left took the size and then held 2.0-2.3 GB. A card without the room runs the 1920x1080 fit,
+  as before.
+- **lmxxf can run the NR network at your frame's own size above 1080p (experimental, opt-in).** With
+  `[DlssNr] AmdLmxxfTierCap=native`, the NVIDIA look and an RX 9070 / 9070 XT, a 1440p, 1600p, ultrawide or 4K frame
+  is processed at its own size instead of being shrunk to 1080p and scaled back - the way NVIDIA runs its network. It
+  costs much more GPU time (estimates, not yet measured: about 18 ms at 1440p, 24 ms at 3440x1440, 39 ms at 4K,
+  against about 11 ms for the 1080 size), so it is off unless you ask for it, and it is only used when your video
+  memory has room for it. The log says what ran and why.
+
+**Video memory**
+- **NR (lmxxf runtime): video memory no longer grows every time the network is rebuilt.** A look change, Full
+  network, the character controls, a tier policy change or an NR size change rebuilds the network, and about 16 MB of
+  video memory stayed behind on every rebuild (also when a session was destroyed and made again). A rebuild now takes
+  back its own memory, so repeated rebuilds stay flat.
+- **NR (lmxxf runtime): a finished lmxxf session gives its video memory back to the game.** The AMD HIP runtime kept
+  every block NR freed (up to about an eighth of the card) for as long as the game ran, so most of NR's memory stayed
+  in use after its session ended. For the lmxxf runtime AMDNR now turns that HIP cache off before HIP starts: at 1080
+  a finished session gives back about 1.0 GB of its 1.2 GB (the rest is the shared buffers DirectX 12 and HIP keep
+  for each NR size). Switching NR off in the game still keeps its session, as before. `AMDNR_HIP_CACHE=keep` in the
+  environment keeps HIP's own cache.
+- **NR (lmxxf runtime, Vulkan games): HIP's cache setting stays off danielblnc's runtime.** When a Vulkan game's last
+  lmxxf session stopped before its first answer and the next start runs danielblnc's runtime instead, AMDNR no longer
+  turns HIP's cache of freed video memory off for that start (it is meant for the lmxxf runtime only), and the log no
+  longer says it did.
+- **danielblnc: video memory no longer keeps growing every time the NR size changes during a session.** danielblnc's
+  runtime keeps the memory of every NR size above about 1 MP it has worked at until the game closes - about 100 to
+  450 MB each (our logs: The Witcher 3 went from 9.2 to 12.1 GB over four size changes and got none of it back) - and
+  at NR resolution 100% every DLSS mode change and every dynamic-resolution step was a new size. On a 12 GB card with
+  Ray Reconstruction a few of those can fill the card and cost a large part of the frame rate. AMDNR now hands the
+  runtime a new size only while the card has room for it (DXGI's budget, with a margin left for the game); without
+  room, NR works at a size the runtime already holds, or the frame's shape in 1 MP, and amd_presr.log says so ("AMD
+  memory: NR stays on sizes ..."). On a card with room nothing changes. `[DlssNr] AmdNrSizeStep=0` turns it off
+  together with the size rounding.
+- **The Neural tab now says when the game with NR uses more video memory than Windows gives it** (for example Death
+  Stranding 2 at 4K: 13,898 of 12,963 MB). Over that budget Windows moves memory in and out and the game freezes for
+  short moments; the hover names the two levers: a lower NR resolution, or the game's texture quality one step down.
+- **OptiScaler.log has a video-memory line once a minute** ("AMD VRAM trend") in DirectX 12 games: how much of the
+  game's video-memory budget is in use (and by how much it is over), how much Windows has moved to system memory,
+  what AMDNR itself holds for NR, Ray Regeneration, the AMDNR Ray Denoiser and its own frame generation, the rest
+  (the game, the driver, other programs), and what grew the most since the first reading. A report sent after a
+  slowdown now shows whether the game or AMDNR grew.
+
+**danielblnc**
+- Fixed: a black picture with danielblnc's runtime in many games (WuWa, Oblivion Remastered, The Witcher 3, ...),
+  most visible at NR resolution 100% (Quality) with one pass. These games hand over a broken pre-exposure value (a
+  denormal such as 4.2039e-45); AMDNR now ignores the game's exposure whenever that value is broken, whether or not
+  the game publishes an exposure texture, and hands NR and the upscaler 1 instead for that frame. Games whose value
+  is fine are unchanged, and `[DlssNr] AmdUseGameExposure=1` still hands the game's exposure back.
+- **danielblnc 0.6.0: no more black picture in games that publish an exposure texture (Resident Evil Requiem and
+  others).** That build divides the game's exposure texture by a pre-exposure it reads by itself, and under AMDNR
+  that value is not the game's (its own log shows numbers like 4.2039e-45), so the exposure came out as infinity.
+  With 0.6.0 AMDNR now keeps the exposure texture from it and its own auto-exposure runs instead;
+  `[DlssNr] AmdUseGameExposure=1` hands the texture back.
+- **When danielblnc's runtime fails for good in a session, NR now turns itself off instead of dragging the game
+  down.** The Witcher 3 with XeSS frame generation: after its GPU context failed ("unspecified launch failure" on
+  every job), each frame still waited for an answer that could not come — 4 to 8 fps until the game crashed. AMDNR
+  now reads that in the runtime's log within about a second and stops NR for the session with one line in the Neural
+  tab; the game and its upscaler carry on. If it happens again in that game, `Async=1` in `dlssnr_on_amd.ini` avoids
+  the same-frame wait.
+- **RX 6000: no more false "the runtime loaded here is older" message.** It was shown to every RX 6000 player, with
+  0.6.0 installed, because it was asked before the runtime had loaded. It is now asked once the runtime has loaded
+  and only appears when the runtime really has no RX 6000 support.
+
+**Neural placement (Before / After upscaling)**
+- **Fixed: "Neural placement" looked like it did nothing in games that use Ray Regeneration.** In such a game
+  (Resident Evil Requiem with Ray Reconstruction on, for example) the neural pass always runs on Ray Regeneration's
+  finished picture, after the upscaler - before it there is only Ray Regeneration's noisy input, which the pass
+  cannot use. So Before and After could not change the picture there, and the menu did not say so: the row looked
+  like a normal choice, and amd_bridge.log had no line about it. Now the row is greyed in such a game with "runs
+  after Ray Regeneration" beside it and the reason in its tooltip; a stored "After upscaling" stays clickable so it
+  can be set back. Once Ray Regeneration has run in a session, frames the game upscales without it stay before
+  upscaling until the game restarts ("before upscaling until restart").
+- A Neural placement choice made in a Ray Regeneration game is now taken at the next frame and written to
+  amd_bridge.log ("AMD neural placement: ..."), and such a session writes one line that says where the pass runs
+  ("AMD neural placement: after Ray Regeneration - picture ...").
+- In games without Ray Regeneration nothing changes: Before / After applies at once, as in 0.3.5.1 (the network is
+  rebuilt, about a second's hitch). If the game has not drawn an upscaled frame since the change (paused, loading, or
+  NR off), the row says "applies at the next NR frame".
+- Inside AMDNR Anywhere the row is greyed from the start ("not used in AMDNR Anywhere"); it no longer looks like a
+  choice until the first pick is refused.
+- The Neural status tooltip's "Placement:" line now says "after upscaling" while the pass runs after the upscaler (it
+  said "before Super Resolution" in that case). Both runtimes (lmxxf and danielblnc) are handled the same way.
+- **The Neural placement row now says what Before and After change in your game.** Under the row: what each placement
+  feeds the network (for example "Before: network 1599x900 of the 1706x960 render - After: 1920x1080 of the 2560x1440
+  output"), what that means for the picture, and the NR time each one measured since the game started.
+- Why "After" often looks the same: with lmxxf at 1440p, Before feeds the network the render picture at 1599x900 and
+  After feeds it the upscaled picture fitted into 1920x1080 - about the same detail, so the network makes nearly the
+  same change. Measured on game frames: only 1-5% of the pixels differ visibly between the two, and After costs more
+  network time (the 1080 tier's 10.6 ms against the 900 tier's 8.0 ms on an RX 9070 XT). In a game that renders at
+  the display size (native AA, DLAA) both placements feed the same picture: no visible difference to expect. After
+  clearly differs only where it feeds the network more pixels (danielblnc, or lmxxf with
+  `[DlssNr] AmdLmxxfTierCap=1440`: the 2560x1440 output at its own size, 18.8 ms, visibly different on 26-44% of the
+  pixels).
+- The Neural placement help no longer promises a sharper look; nothing about what runs, no default and no setting
+  changed.
+- **Neural tab, Neural placement:** the hover names `[DlssNr] AmdLmxxfTierCap=1440` or `=native` as the lmxxf setting
+  that makes After visibly different, with numbers measured after the fix above.
+
+**Both runtimes**
+- **RX 6000: "Cannot load amdhip64_7.dll; Windows error=126" with the AMD HIP SDK installed is fixed.** On RX 6000
+  AMD's HIP runtime comes from the HIP SDK, not the driver, and AMDNR only looked where the driver puts it
+  (System32). It now also loads it from the SDK's own folder - HIP_PATH, then `Program Files\AMD\ROCm\<version>\bin`,
+  newest version first - for both the Neural tab's HIP check and the runtime. RX 7000 / 9000 load it from System32
+  exactly as before. When the runtime is really missing, the message lists every place AMDNR looked, so an SDK
+  installed somewhere unusual can be pointed to with HIP_PATH.
+- **Vulkan games on the DirectX 12 bridge with Neural Rendering on: a possible crash with auto exposure or "Disable
+  reactive mask" on.** With either option on, the bridge left the game's own Vulkan exposure texture or reactive mask
+  where the neural pass reads DirectX 12 images. The neural pass (and the bridged upscaler) now see those inputs as
+  not published - as in a game that sends none - and the log says once which input and why. The same applies to the
+  FSR masks of games that use FSR in Vulkan, and to Ray Reconstruction's inputs when its upscaler falls back to FSR.
+- **DirectX 11 games with Neural Rendering on: a possible crash with auto exposure or "Disable reactive mask" on.**
+  With either option on, the DirectX 11 bridge left the game's own DirectX 11 exposure texture or reactive mask where
+  the neural pass reads DirectX 12 images. The neural pass (and the bridged upscaler) now see those inputs as not
+  published - as in a game that sends none - and the log says once which input and why. The same applies to the FSR
+  masks of DirectX 11 games that use FSR 2 or XeSS.
+- **Both runtimes: less CPU work in the bridge every frame.** It no longer rebuilds an unchanged log line, no longer
+  checks danielblnc's files on disk every frame (and never for lmxxf), and no longer records every command list the
+  game submits. Nothing on screen changes.
+- **Switching NR off in the game now says what stays.** The HOME key and the Neural tab's box only switch the neural
+  pass off: the NR runtime keeps the video memory it took until the game closes, and in a DX11 or Vulkan game the
+  DX12 bridge picked for NR stays in place. On a card that is close to full, that leftover memory can still cost
+  frames with NR off. When NR goes off after it has run, the Off notice (shown for 8 seconds now) and a dim line
+  under Enable Neural Rendering on the Neural tab say so, and say how to compare fairly: NR AT START: OFF in the
+  launcher (or `[DlssNr] Enabled=false`) starts the game without NR. Nothing else changes; this is text only.
+- **A file check no longer runs on every frame.** The notice that asks you to pick between two installed NR runtimes
+  checked the runtime files on every frame for the whole session whenever only one runtime was installed - NR on or
+  off. It now checks at most once a second. The notice itself is unchanged.
+
+### Ray Regeneration
+- Fixed: Ray Regeneration reflections that dragged behind the camera ("trails") on glossy surfaces - wet streets, car
+  paint, polished floors - in games that publish the reflection ray length with Ray Reconstruction (Cyberpunk 2077
+  with path tracing and Resident Evil Requiem among them). AMDNR shortened that length on glossy surfaces and
+  replaced it with 0 on rough ones before handing it to AMD's denoiser, which then moved those reflections with the
+  surface instead of with the reflected object. It now goes over exactly as the game sends it, and the denoiser
+  decides by itself how far each reflection moves. Games that publish no ray length (CONTROL Resonant) are not
+  changed by this; OptiScaler.log says which case a game is ("specular ray length: ..."). RX 9000 only: FSR Ray
+  Regeneration has no denoiser for RX 7000, so nothing changes there. `[FSR-RR] FfxDenoiserTitleHitDistance=false`
+  gives the 0.3.5.2 behaviour back for comparison.
+- Changed: Ray Regeneration now starts from AMD's own values for five of its six denoiser settings (disocclusion
+  0.01, normal strength 1.0, max radiance 65504, radiance clip 50, kernel relaxation 0); stability bias stays 0.75.
+  The old values came with the translation layer AMDNR started from and had never been measured; AMD's are sharper
+  behind moving objects. Values you set yourself are kept. `[FSR-RR] FfxDenoiserLegacy0352=true` puts the whole
+  0.3.5.2 look back in one line for comparison.
+- Fixed: magenta / inverted-colour patches where fog, glow or particles sit on strongly coloured surfaces (green
+  foliage) under FSR Ray Regeneration (RX 9000).
+- Fixed: a still scene "crawling" under Ray Regeneration: the light that goes around the denoiser is now held steady
+  over frames while nothing changes (a real change of light still shows at once).
+- Fixed: moving and animated characters losing the denoiser's history (noisy or smeared while they move): they now
+  report their own depth change instead of the camera's.
+- New: in games that send the picture before their transparencies (Cyberpunk 2077), particles, sparks and glows go
+  around the denoiser at full sharpness instead of being smeared and tinted by the surface below.
+- New: Ray Regeneration runs in games that give Ray Reconstruction no camera (Hogwarts Legacy, Satisfactory) - AMDNR
+  supplies one - instead of plain FSR without a denoiser. Reflections stay on the simpler path there. OptiScaler.log
+  names the camera ("[RR_CAM]"). `[FSR-RR] FfxDenoiserCameraFallback=false` turns it off.
+- Changed: CONTROL Resonant's and Resident Evil Requiem's Ray Regeneration settings are no longer chosen by game name
+  where the game's own data decides them: CONTROL Resonant keeps material type 0 because it sends no reflection ray
+  length; Resident Evil Requiem's "bias mask 0" default is gone (that game sends no bias mask, so it never did
+  anything). The picture in both games is unchanged by this.
+- Try it: `[FSR-RR] FfxDenoiserSpecularMvecLength=true` works out the reflection ray length from the reflection
+  motion vectors a game sends (CONTROL Resonant) - off until it has been compared in the game.
+- Ray Regeneration and FSR 3.1: after a runtime error the feature is re-created at most once every 5 seconds. Each
+  re-create keeps the old one (about 0.5 GB at 1440p for Ray Regeneration) for 2 more seconds, so an error that came
+  back on every new feature could pile them up. No report has shown it; it is bounded now.
+
+**The AMDNR Ray Denoiser (preview)**
+- AMD's FSR Ray Regeneration denoiser exists only for RX 9000 (RDNA 4). On every other card the game's Ray
+  Reconstruction picture used to be upscaled without any denoiser. AMDNR now has its own denoiser for that path, the
+  AMDNR Ray Denoiser: it answers the game's DLSS Ray Reconstruction call where AMD's has no provider.
+- RX 7000 and the RDNA 3 / 3.5 APUs (Z1 / Z2 handhelds, 780M / 890M laptops, Strix Halo): on by default, as a
+  preview - nothing to set.
+- RX 6000 and older: Upscaling tab > "Offer Ray Regeneration on this GPU (restart)", then turn Ray Reconstruction on
+  in the game.
+- RX 9000: AMD's denoiser stays the default. The Ray Regeneration tab's Denoiser backend row now has four choices
+  (Automatic, AMD FSR Ray Regeneration, AMDNR Ray Denoiser (preview), Off), and switching between the first three
+  applies while the game runs, for a side-by-side.
+- Integrated GPUs rendering above 1280 x 800 use a lighter setting (2 spatial passes instead of 3); the tab says so.
+- Its memory: about 124 MB at a 1080p render (55 MB at 720p, 221 MB at 1440p). The Ray Regeneration tab shows what
+  runs, its passes, its memory and the GPU time of the whole Ray Regeneration step while the tab is open.
+- If it cannot start, that one Ray Reconstruction feature falls back to FSR without a denoiser and the next one tries
+  again (the log says why).
+- Turning Ray Reconstruction off in the game still gives the game's own denoiser, on every card.
+- The AMDNR Ray Denoiser (Ray Regeneration tab > Denoiser backend > "AMDNR Ray Denoiser", and the automatic choice on
+  every card without AMD's own denoiser) now denoises only the light. The game's textures come straight from the game
+  every frame instead of going through the denoiser's history, so they keep far more of their detail and shimmer far
+  less. Measured on AMDNR's lab (not yet in a game): the texture detail kept went from 4 % to 93 %, the texture
+  flicker from 16 % to 2 % of its level.
+- When a light changes (a lamp turns on, a flash), the denoised light now follows within a few frames instead of
+  trailing for about a second.
+- It behaves the same at every brightness a game renders at (it used to depend on the game's HDR scale).
+- Surfaces lit by ray-traced light no longer go dark for a frame here and there. The game's light reaches the
+  denoiser in a form where about half of the samples are exactly zero, and the denoiser read a patch of zeros as "no
+  noise" and dropped the pixel's light for that frame. Measured on AMDNR's lab (not yet in a game): those dark
+  dropouts went from 0.36 % of the pixels to none, and that light's flicker fell by about two thirds.
+- Small steady lights - a lamp, an LED, a glint one or two pixels wide - are no longer clipped to the brightness of
+  what is around them on every frame (lab, camera still and the upscaler's jitter off: a one-pixel light kept 15 % of
+  its brightness, now 99 %).
+- The four corners of the picture are denoised like the rest of it (they showed the raw, noisy light), and the outer
+  edge of the picture is steadier.
+- Small steady lights stay bright: a lamp or an LED one or two pixels wide no longer fades to a faint dot (AMDNR's
+  lab: a one-pixel light kept 5 % of its brightness and now keeps 96 %, a two-pixel light 13 % and now 98 %).
+  Ray-traced glints - the small sparkles of sunlight on a surface, which flicker with the ray tracing's noise - are
+  still dimmed: they keep about a fifth to a quarter of their light (AMDNR's lab, 720p: 22 %; AMD's own denoiser in
+  the same test: 4 %). That has not changed in this build.
+- Dim, sparse ray-traced light keeps its brightness. Where most of the game's ray-traced samples are black, the
+  denoiser's firefly filter took the few lit ones for fireflies: with 80-90 % of the samples black the picture there
+  lost 15-25 % of its light. It now keeps about all of it (lab: 85 % / 75 % of the light, now 96 % / 96 %), and real
+  fireflies are still filtered out.
+- In those dim, sparse areas the picture can look a little grainier than before: the light the denoiser used to drop
+  brings its own noise with it.
+- The denoiser costs a little more GPU time: on an RX 9070 XT about 0.2 ms more per frame at 1080p (1.02 -> 1.24 ms;
+  AMD's own denoiser takes about 3.5 ms there).
+- No more stray sparkles on the outermost row and column of the picture right after a camera cut or along the edge a
+  camera pan reveals. The denoiser judged a bright speck there against copies of the speck itself, so it let it
+  through (AMDNR's lab: after a cut, 57 times the share of sparkles the rest of the picture shows; now none).
+- Still a preview: very fine glowing detail (under two pixels) and hair-thin strands can still look softer or noisier
+  than with AMD's own denoiser on RX 9000.
+
+**Ray Reconstruction in Vulkan games (opt-in)**
+- **Ray Reconstruction in Vulkan games, as an opt-in (`[FSR-RR] RrVulkan=true`, off by default).** RTX Remix games
+  (Half-Life 2 RTX, Portal RTX and the mods) and the id Tech 8 games (Indiana Jones and the Great Circle, DOOM: The
+  Dark Ages) ask for DLSS Ray Reconstruction through Vulkan, and AMDNR answered "unsupported" there, so the game kept
+  its own denoiser. With the switch on, the game is told Ray Reconstruction is supported on the same cards as in
+  DirectX 12 games, and AMDNR's Vulkan-to-DirectX 12 bridge carries the game's ray-tracing inputs (diffuse and
+  specular albedo, normals, roughness, the reflection ray length) to the same denoiser a DirectX 12 game gets on that
+  card: AMD's FSR Ray Regeneration on RX 9000, the AMDNR Ray Denoiser (preview) on the cards it serves
+  (`[FSR-RR] RrBackend` chooses, as in DirectX 12 games). Neural Rendering keeps running on the same bridge, after
+  the denoiser. Off, nothing changes from 0.3.5. To try it: add `RrVulkan=true` under `[FSR-RR]` in OptiScaler.ini,
+  restart the game, then turn Ray Reconstruction on in the game. The Ray Regeneration tab in a Vulkan game now says
+  which of the two applies instead of "not available in Vulkan titles yet". Tested on the CPU only so far; Vulkan Ray
+  Reconstruction has not run on a graphics card yet.
+
+**The developer capture (for reporting Ray Regeneration problems)**
+- `[FSR-RR] RrCaptureFrames = N` (ini only, off by default) adds a button to the Ray Regeneration tab's Diagnostics
+  that records the next N frames Ray Regeneration makes, next to OptiScaler.log in `AMDNR_RRCapture`. It is for
+  AMDNR's lab: send the folder (zipped) with a report. `[FSR-RR] RrCaptureCrop = 512` keeps a 512 x 512 square at the
+  centre so the folder stays small (a whole 1080p frame is about 150 MB).
+- `[FSR-RR] RrCaptureFrames` (developer only): the capture no longer reads its copies before the graphics card has
+  finished them, no longer frees memory the card may still write when the system is out of memory (which could crash
+  the game), works with every render size, and finishes about two seconds after its last frame even when Ray
+  Regeneration stops.
+- `[FSR-RR] RrCaptureFrames` (developer only): a capture that Ray Regeneration stops part way (the option turned off,
+  a debug view) now finishes with the frames it has instead of holding its memory - up to 2 GB - until the game
+  closes; and the capture no longer reads its copies early when the game is paused mid-frame (a debugger, a PIX
+  capture): it waits for the game's own frames instead of the clock.
+
+### AMDNR Anywhere
+- **Anywhere on slower GPUs: no more doubled edges when the camera moves.** When NR answers more slowly than the
+  Anywhere window shows frames (a Radeon 760M answered about twelve frames late), the window used to step back to the
+  older picture each time an answer arrived, so every edge appeared twice during a pan. It now always shows the
+  newest picture and keeps NR's edit where the picture has not changed. Faster cards see no difference.
+- **FSR 4 scales the Anywhere picture only when you picked FSR 4.** On some cards the Anywhere window ran FSR 4 on
+  "V1: FSR 3 to screen" as well and handed it the upscale; now FSR 4 takes over only when the window asked for it
+  (V3) and really runs it, and AMDNR's own pass scales the picture otherwise. The log names the FSR version the
+  window really runs.
+- **V1 in the Anywhere window now runs FSR 3.** Under "V1: FSR 3 to screen" (and V2) the Anywhere window ran FSR 4 on
+  cards that offer it whenever AMDNR's own pass was not scaling the picture (NR off, while NR starts, the carried
+  edit). It now runs the FSR version the Upscaling choice asks for - FSR 3 for V1 and V2, FSR 4 for V3 - and the
+  Anywhere tab shows which version runs. On an RX 9000 card the launcher still asks for FSR 4 under V1 while its
+  Anywhere upscaler setting is auto.
+- **No more "turn on frame generation" where it cannot help.** When NR is far too slow for this GPU (about five
+  answers a second on a Radeon 760M), the Anywhere tab and the log now say that frame generation cannot fix that,
+  instead of suggesting it. Frame generation stays available.
+- Anywhere: "FPS limit: Off" and "Start rate: Auto (the rate NR sustains)" survive a restart. Both are saved as the
+  word `auto`, which the DLL read as "not set", so Off came back as 60 and Auto as Default at every start, and the
+  next Save Settings wrote that back (a report from a Radeon 780M handheld). The launcher always read the word
+  correctly; now both sides do.
+- Anywhere: under Upscaling, NR detail and Frame generation the tab now adds one dim "Running now: ..." line with
+  what really runs this session - nothing is upscaled when the game window is the screen's own size (V1 / V2 / V3 and
+  Who scales it change nothing there), the NR size really fed with its detail and what set it under the NR detail
+  ceiling (NR resolution and Fast mode on the Neural tab), and under frame generation the real frames drawn, the
+  frames shown and how often NR answers. The rows keep showing the saved choice; the line shows the fact.
+- Anywhere: the texts about the game's frame cap under frame generation said the game is held at half of the FPS
+  limit. The launcher holds it at the limit itself, with or without frame generation; the AMD Software line, the FPS
+  limit's help and the frame-generation explanation now say so, and the "game held at" line asks for that rate.
+- The Anywhere tab's AMD Fluid Motion Frames option now says plainly that AMDNR has not confirmed it runs on the
+  Anywhere window, and that AMD Software's own overlay shows whether it does.
+- **A game's own background window no longer ends scaling.** When a game briefly brought a hidden window of its own
+  to the front (WARDOGS), or a window that was already closed, the Anywhere window stopped scaling - often right
+  after the AMDNR menu was opened. Visible windows of the game, such as a dialog, still end scaling so they can be
+  seen.
+- **The Anywhere window no longer downloads NVIDIA files.** The host package used to carry NVIDIA's DLSS, RTX Video
+  and CUDA runtimes from the fork author's own release - none of them can run on an AMD card, and AMDNR's host never
+  loaded them. They are gone, and every NVIDIA option of the host is off at build time: the download is 387 MB
+  smaller.
+
+### Frame generation
+- **XeSS frame generation at 3X and above: frames now come out evenly spaced, and no longer tear in with V-Sync
+  off.** At 3X and above AMDNR spaced only the generated frames. The real frame went out right behind the last
+  generated one (0.2 to 1.6 ms later), and the first generated frame waited for the GPU and then one whole extra
+  step. In a game that keeps the GPU busy every real frame therefore came out as about 14 / 7 / 0.6 ms instead of
+  three even steps (STALKER 2 on an RX 9060 XT at 3X with a 138 fps cap on a 144 Hz screen), and with V-Sync off the
+  0.6 ms frame tore into the picture on screen - a tear line near the top on every real frame, and a hold that read
+  as stutter. Now every frame of a burst, the real frame included, goes out one step after the one before it, counted
+  from the previous real frame (about 7.1 / 7.1 / 7.5 ms with that player's numbers). A frame that is late is never
+  followed by a catch-up rush: the rest of the burst keeps its spacing from it. The frame rate itself is unchanged.
+  2X - Intel's own multiplier on AMD cards - is left exactly as it was. `[XeFG] PaceRealFrame=false` brings the
+  0.3.5.2 pacing back.
+- OptiScaler.log gains an `XeFG pacing presents:` line every five seconds while XeFG runs at 3X and above: the gap
+  before every frame (after the real frame, between generated frames, before the real frame), how many gaps were
+  under 0.6 ms, and how long frames were held. A report now shows uneven pacing directly; before, that line's numbers
+  only covered one frame per burst.
+- The game's V-Sync and tearing setting on the frame-generation swapchain, and what XeFG's own frames carry to the
+  display (SyncInterval, tearing allowed or not), are written once per swapchain (and again when they change).
+- Frame Gen tab, VRR Frame Cap Calculator: while frame generation is picked or running, one line says that the
+  calculated cap leaves very little room under the refresh rate, and to set V-Sync to On (Advanced tab, Display) if
+  the picture tears, or use a lower cap.
+- The RX 9000 advice line under FG Output (shown while XeFG is picked or running) now ends with the same V-Sync
+  advice.
+- **Force Anti-Lag 2 (Frame Gen tab > Low latency, off by default).** AMD Anti-Lag 2 in a DirectX 11 or DirectX 12
+  game that has no Reflex or Anti-Lag 2 of its own - for example Where Winds Meet, where the NVIDIA spoof is off and
+  the game offers no Reflex. Until now AMDNR's Anti-Lag 2 only ran when the game itself called Reflex, so in such a
+  game nothing ran at all. With the box on, AMDNR waits at the end of each frame so the next one starts as late as
+  the GPU allows: lower input latency when the GPU is the limit, little change when the CPU is.
+  - **With FSR frame generation** (FG Output "FSR FG", DirectX 12) Anti-Lag 2 is paired automatically: the FSR
+    swapchain marks every generated frame for it. Frame generation still holds one real frame - Anti-Lag 2 removes
+    the queue in front of it, not that frame.
+  - **A game that sends Reflex markers** (its Reflex toggle off or greyed): Anti-Lag 2 runs on the game's own
+    markers, which sit closer to your input. `ForceReflex = Force Disable` still turns it off.
+  - **Not used** on Vulkan, with XeSS frame generation (it brings Intel's XeLL), where an anti-cheat is found next to
+    the game, and in a game that runs its own Anti-Lag 2 (use the game's own setting there). The row's tag says which
+    one applies; the log says it in one line.
+  - The tag next to the box says when it runs: `on`, or `on - paired with FSR FG`.
+  - `[fakenvapi] ForceAntiLag2=true` in OptiScaler.ini does the same as the box.
+- **A DirectX 11 game on AMDNR's DirectX 12 frame-generation bridge no longer hands its Anti-Lag 2 context to FSR
+  FG.** That context is the DirectX 11 one, which FSR FG would have called as a DirectX 12 one.
+- Frame generation: with "Draw UI over FG" on (and after using Show Detected UI), every restart of frame generation
+  (a resize, the game re-creating its upscaler) left two screen-sized copies behind in video memory, about 30 MB at
+  1440p (60 MB in HDR scRGB) each time. They are released now.
+- **Frame generation: a swapchain that was already released can no longer be released a second time** when a game
+  re-creates its frame-generation swapchain (AMDNR kept a pointer to the released one).
+- OptiScaler.log says when a game hands its UI to its own frame generation (for example Skyrim with Bottled Shaders'
+  FSR frame generation): the size, format and flags of the UI layer, what AMD's FidelityFX DLL answered, and whether
+  AMDNR declined the driver's frame-generation provider for the game's own frame generation. Once, and again only
+  when something changes. A missing-HUD report then shows where the UI went.
+
+### AMDNR Screen-space GI by 3zwr1 (official, off by default)
+AMDNR's own screen-space global illumination is no longer a preview. It has its own section on the Neural tab, and
+its look changed:
+- **Its own section:** Neural > **Screen-space GI** > **AMDNR Screen-space GI** (dim tag "by 3zwr1"). It is drawn on
+  every AMD GPU, with or without an NR runtime installed (the 0.3.4 preview row sat in the Experimental drawer, which
+  only shows while a runtime is installed). Inside Anywhere it is greyed with its reason (a captured window carries
+  no game depth). Off by default: GI changes the look of a game a lot, so turn it on per game and compare.
+- **Presets:** GI quality is four buttons, Low / Medium / High / Ultra. While you have not pressed one, Auto picks
+  one for your GPU: High on RX 9000; on RX 7000 High from 80 compute units (RX 7900 XT / XTX), else Medium; on
+  RX 6000 Medium from 60 compute units, else Low; Low on APUs and handhelds. The tag beside the buttons shows the
+  measured GPU time once GI runs, and an estimate (it says so) before that. `[AmdGi] Quality` now defaults to 4
+  (Auto); a pressed preset is saved as its number.
+- **Light travels farther:** past its contact radius GI now follows the screen out to about half its height and
+  gathers light from surfaces brighter than the scene's ambient light - a sunlit wall lights the shadowed floor in
+  front of it. That far light only adds; it never darkens, so rooms the game already lights do not get darker. The
+  sky beside a sunlit wall no longer dims the light the wall bounces, and a floor in shadow is no longer mistaken for
+  a dark material. In AMDNR's synthetic test (the sunlit-wall scene), the light reaching the shadowed floor went from
+  5 % to 69 % of an exact one-bounce reference at High (53 % at Low, 61 % at Medium, 66 % at Ultra). The far light
+  now reaches as far at a 1080p render as in that test (High 71 %, Ultra 67 %); before, a cap meant for single bright
+  pixels held a sunlit wall's light down to its shadowed surroundings at higher resolutions (1080p: High 62 %, Ultra
+  59 %). A screen-space effect cannot reach 100 % there: part of the wall is off screen.
+- **Steady on a still camera:** the bounced light no longer shimmers more than 0.3.4's AO did. In AMDNR's synthetic
+  tests the frame-to-frame variation of the added light on a still camera is at or below 0.3.4's on every preset, and
+  well below it in the colour-bleed room and the sunlit-floor scene (High: 1.0 % and 0.4 %; 0.3.4: 1.8 % in both; the
+  first 0.3.5.3 build: 2.1 % and 2.5 %). Three causes are fixed: the direction pattern repeated in 2x2 blocks that
+  the smoothing filter could not merge, nearby samples on one surface were joined or not depending on the upscaler's
+  jitter, and light from far surfaces used one direction per pixel and frame - it is now smoothed over its surface
+  before GI keeps it.
+- **Steady while the camera moves:** while you turn or walk, the bounced light changes less from frame to frame than
+  0.3.4's did, on every preset, at 1280x720 and 1920x1080 renders too, and it stays that way while the camera keeps
+  moving (AMDNR's synthetic test, High at 1080p: 0.00124 of the image's light per frame, 0.3.4 0.00141, before this
+  fix 0.00189). Light from surfaces near the border of the view fades out over a band along the border (30 % of the
+  view's height at Low, 40 % at Medium, a third at High, 45 % at Ultra) instead of disappearing at once as they leave
+  it, so GI reaches a little less far than before, most at Ultra; after a camera cut GI starts complete in the first
+  frame, three bounces of light included, instead of settling over the next frames.
+- **Follows the light:** when a lamp or the sun switches on or off, the bounced light follows at once (0.3.4 took 2
+  to 6 frames, the first 0.3.5.3 build 12 to 14). After a camera cut GI starts with its far light and its AO share
+  right away (the first 0.3.5.3 build showed one frame of 0.3.4-style AO, then jumped).
+- **Inside its budget:** the light pyramid is built in two passes instead of six, the ambient-light histogram is
+  gathered where the colour is already read, the trace computes its angles without an arctangent and skips the far
+  reads that cannot block anything, the depth check samples a quarter of the screen, and close samples are no longer
+  joined. Every preset is inside its design budget (RX 9070 XT, 1080p: Low 0.25 of 0.35 ms, Medium 0.32 of 0.6, High
+  0.61 of 1.0, Ultra 1.50 of 2.0). Measured the same way, 0.3.4's GI cost 0.30 / 0.40 / 0.48 / 0.98 ms: Low and
+  Medium are cheaper now, and the longer reach costs more at High and Ultra.
+- **Walls are solid for far light:** two far samples on one continuous surface block the light between them, so a far
+  wall does not let light leak through the gaps between its samples; samples across a depth gap (a pole in front of a
+  far wall) are never joined. Close to the pixel, where joined samples flickered with the upscaler's jitter, GI uses
+  the samples' thickness alone, as 0.3.4 did.
+- **Thin objects:** in AMDNR's synthetic test, the contact shading beside a thin pole 0.6 m in front of a wall is
+  within half a percent of a ray-traced reference (6.2 % vs 6.6 %), and a pole 5 m in front of a wall leaves no dark
+  halo on it (0.3 % darker; the pole really hides 0.7 % there). Real games have harder cases (hair, foliage,
+  fences) - judge those in your game.
+- **Sunlit surfaces keep their light:** ambient occlusion blocks ambient light, so it now only darkens the ambient
+  part of a pixel. A sunlit or lamp-lit surface keeps its brightness; corners lit only by the game's ambient light
+  get the full contact shading. (0.3.4 multiplied the whole colour, so contact shading also dimmed direct sunlight.)
+  The AO protection debug view shows where.
+- **Bounce colour** now also acts on the colour of the bounced light, not only on the surface's colour.
+- **Works with** Neural Rendering on (danielblnc or lmxxf, any NR look including the NVIDIA look: GI runs before the
+  network) or off. DirectX 12 games whose DLSS, FSR or XeSS inputs AMDNR takes; DirectX 11 and Vulkan games only
+  through a "w/Dx12" upscaler (not tested yet). It stands aside while a game's own Ray Reconstruction runs (that
+  light is ray traced already); the status line says so. Not in Anywhere.
+- **Cost (measured):** the whole GI pass per frame on an RX 9070 XT in AMDNR's lab, with the GPU at full clock as a
+  game keeps it - the time a frame loses where the GPU is the limit:
+
+  | GI quality | RX 9070 XT, 1080p render | RX 9070 XT, 1440p render | RX 7800 XT, 1080p (estimate) |
+  |---|---|---|---|
+  | Low | 0.25 ms | 0.32 ms | ~0.4 ms |
+  | Medium | 0.32 ms | 0.40 ms | ~0.5 ms |
+  | High | 0.61 ms | 0.75 ms | ~0.9 ms |
+  | Ultra | 1.50 ms | 1.66 ms | ~2.3 ms |
+
+  No RX 7000 card has been measured (x1.5 of the RX 9070 XT, range x1.3-1.8). A GPU that has idled between frames
+  takes up to 1.8x longer for the same work while it clocks up; that costs no FPS (the GPU had time to spare). Read
+  the ms tag in your game. A camera cut costs about four frames' time, for that one frame (Ultra at 1080p: about
+  8 ms); resets that keep coming (a title that resets every few frames, or a changing render size) never pay it more
+  than once.
+- **Limits:** screen-space - light from off screen or behind objects is missing, and GI changes as things enter or
+  leave the view. On a still camera the added light can still shimmer slightly (AMDNR's synthetic tests: up to 2 %,
+  about as much as 0.3.4's AO). Light from surfaces near the border of the view counts less than light from the
+  middle of it. No in-game A/B has been published yet.
+- **AMDNR's own work**, Copyright (c) 2026 3zwr1 (AMDNR), written clean-room from published research (the list in
+  `Licenses\AMDNR_NOTICE.txt`). The inherited Screen-space GI stays retired from the menu (its checkbox only shows
+  while your ini has it on; credit to its original authors, unchanged).
+
+### Upscaling
+- **RX 6000: FSR 4 (INT8) is now the default upscaler**, the same way it already is on RX 7000. The model is AMD's
+  own FSR 4.1.1 INT8 model, from the FidelityFX DLL AMDNR already ships. AMD only validates it on RX 7000, so AMDNR
+  runs it on RX 6000 by answering the DLL's GPU check as an RX 7000. In D3D12 games "auto" now gives FSR 4 instead of
+  XeSS. On Windows, other projects report ghosting on RX 6000 from a driver issue. If you see trails behind moving
+  objects, set `[FSR] Fsr4ForceModel=0` in OptiScaler.ini and restart the game. That puts back the setup from before;
+  you can also pick XeSS in the Upscaling tab. The Steam Deck and other RDNA 2 integrated graphics are unchanged.
+- Fixed: Unreal Engine games running the XeSS upscaler (Backrooms: Escape Together) wrote an XeSS error line into
+  OptiScaler.log on every frame (3411 in one report): AMDNR handed XeSS an exposure texture it had not set XeSS up
+  for. The picture is unchanged (XeSS ignored it); repeated XeSS messages are now logged a few times with a count.
+  Every card.
+
+### Menu
+- **AMDNR Anywhere: the game behind the open menu no longer moves or clicks.** With the AMDNR menu open in the
+  Anywhere window, the keys still moved the character and a click on the menu also clicked the game (GTA V). The menu
+  already held the keyboard and the mouse with Windows' low-level hooks, but a game that reads them as raw input gets
+  its copy before any hook is asked. Now, while the menu is open, the game is not the window in front: AMDNR Anywhere
+  takes the focus for the menu and gives it back to the game the moment the menu closes (when you close it with the
+  menu key, as soon as you let go of that key). The scaled picture keeps running. A game that pauses or mutes when it
+  is not in front (as on Alt+Tab; GTA V pauses) does so while the menu is open.
+- **The menu's keyboard highlight no longer jumps to the Discord button.** AMDNR's own keys reached the menu's
+  keyboard navigation too: Home (Neural Rendering on/off) is "go to the first item" there, End (frame generation) "go
+  to the last", PageUp / PageDown (FPS overlay) page through the rows. Pressing Home to compare NR with the menu open
+  put the red highlight on Discord, and the mouse did not hover anything until it moved again (Resident Evil
+  Requiem). AMDNR's keys now only do their own job while the menu is open. A key that was already held when the menu
+  opened (one you were walking with, say) or when you click is not taken as menu navigation until you let go of it,
+  and a click always lands on what is under the pointer. The arrow keys, Tab, Space, Enter and Escape navigate the
+  menu as before when you press them.
+- OptiScaler.log of the Anywhere window: "Anywhere input: the menu took the focus from the game", "the focus went
+  back to the game (...)", and once per session a line when the focus could not or should not be taken (another
+  application in front, Windows refused it, the game minimised).
+- The menu-input lines (one a second while the menu is open) end with "| nav: hotkeys kept ..., keys held back ...,
+  held items released ..., highlight frames ..." whenever any of that happened.
+
+### AMDNR Launcher 0.3.5.7
+**PLAY ANYWHERE**
+- **The Anywhere window comes back after it restarts.** When the game left the front, when Mass Effect Legendary
+  Edition's launcher handed over to ME1/2/3, or when the window lost the game for a moment, the launcher restarted
+  the Anywhere window too fast and the new one closed at once - for the rest of the session. The old window is now
+  closed properly first, a window that picks the game up again by itself is left alone, and a start that still
+  collides is retried.
+- **Your Anywhere window gets the fixed version.** Players who had set up PLAY ANYWHERE before October 4 kept the old
+  window files; the launcher now replaces them when the download changes.
+- PLAY ANYWHERE: the NVIDIA files the earlier Anywhere window carried are removed from its folder when the new one is
+  laid out.
+- **PLAY ANYWHERE downloads the Anywhere window again when Magpie.exe is gone,** and names the antivirus when it
+  keeps disappearing.
+- **Exclusive full screen is named.** A game in exclusive full screen (Batman: Arkham Knight) minimizes itself under
+  the Anywhere window; the launcher now says so and tells you to pick Borderless or Windowed in the game.
+- The Windows HDR notice is repeated in the "AMDNR Anywhere is ON" message, so it is not overwritten before you read
+  it.
+- PLAY ANYWHERE: the start notice calls NR detail a ceiling and says what sets the size NR really runs at; last
+  session's measured rate is kept when the NR detail ceiling is the same.
+
+**Where the game really runs**
+- The launcher learns where each game really runs: while it is open (a start with PLAY, from the store or from the
+  game's own launcher) it sees which exe the game runs as, shows "last ran as" on the game's page with whether AMDNR
+  loaded, and uses that folder for INSTALL and REPAIR from then on.
+- When the game ran from another folder than AMDNR's, the status line says so once and the Doctor's line has Move
+  AMDNR: one click, asked first, your settings come with it, the old folder is put back as it was.
+- Move AMDNR is busy from the moment it is pressed and moves the game it asked about.
+- "AMDNR did not start" (with Try next proxy) is said again when a fresh install never loads - still never for
+  TheAutomatic's build or a folder the game cannot write in, and a log moved with LogFileName is read there.
+- Tools in a game's folder (BodySlide, Wrye Bash, xEdit, the Creation Kit) are no longer taken for the game: the
+  launcher learns only a run that settled and looks like the game - the row's exe or another build of it, or a
+  program that loads a graphics API or AMDNR itself.
+- A game added by hand with a tool beside its exe (Skyrim SE with the Creation Kit) is no longer stuck on the tool:
+  the game's own run takes its place.
+- A game folder you add by hand no longer starts a repack's 7-Zip (7za.exe) instead of the game, and a report no
+  longer shows another game's PLAY ANYWHERE as if it were this game's.
+- A launcher started from inside a game's folder is no longer "the game still running" (The Last of Us Part II
+  report). In the very folder AMDNR goes into it refuses INSTALL and says, in your language, to move
+  AMDNR-Launcher.exe to a folder of its own.
+- The install check no longer opens every program on the PC to read its modules: it opens only a program named like
+  one of the game's files, and only to read where its exe is.
+- A leftover install record for a folder that no longer exists no longer takes over the game's row; INSTALL works
+  again.
+- Games in a library reached through a junction or SUBST drive, and games added straight under a drive (D:\GTAV),
+  keep their run watch and install checks.
+- A game added by hand at the root of a drive no longer claims every program on that drive.
+- PLAY no longer freezes the window when a game sits on a network share that went offline, and an empty card reader
+  no longer brings up "There is no disk in the drive".
+- An install that stopped halfway, or whose only trace is the game's own file in AMDNR_backup, keeps its UNINSTALL,
+  which puts that file back.
+
+**INSTALL, REPAIR and the Doctor**
+- **"I start the game and nothing happens" after an update (fixed by deleting %LOCALAPPDATA%\AMDNR):** INSTALL and
+  REPAIR now check the launcher's own stored copy of each package first - every file there, at the size it was
+  downloaded at (older copies against the package's own SHA256SUMS.txt) - and download a damaged copy again instead
+  of copying the damage into the game. The status line says which copy was damaged and that it was fetched again.
+- **REPAIR downloads the build again when its stored OptiScaler.dll is gone,** and names the antivirus when a file
+  keeps disappearing.
+- **"Installed, but Doctor found problems" and REPAIR brings the same text back:** every Doctor finding REPAIR can
+  fix, REPAIR now fixes (an old d3d11.dll OptiScaler and a second OptiScaler are moved into AMDNR_backup; RESET INI
+  also resets the %LOCALAPPDATA% settings copy the game really reads). Findings REPAIR cannot fix no longer offer a
+  REPAIR that loops; they say what to do. After an install the line names what is still wrong (a file that vanished
+  right after the install is named as the antivirus, with the folder to exclude).
+- **An OptiScaler.ini from another OptiScaler build** (no [DlssNr] section - Where Winds Meet) is no longer kept at
+  INSTALL / REPAIR: it goes to AMDNR_backup (UNINSTALL puts it back) and AMDNR's goes in. An install that kept one
+  says so, with RESET INI. A player's own AMDNR ini is never touched.
+- **DLSSNR AMD runtime:** games left on 0.6.0 on RX 7000 / RX 9000, or on 0.5.0, are offered the card's runtime again
+  (REPAIR / UPDATE, or the automatic update). A game on a runtime picked under SETTINGS says so, with a "Use
+  recommended runtime" button that puts SETTINGS back and installs it.
+- **Choose the mod version per game:** a game's menu (right-click in the library, or MORE) offers USE THE PREVIOUS
+  VERSION when the launcher still has the AMDNR version the game had before an update; the game keeps it (REPAIR,
+  UPDATE ALL and the automatic update leave it there) until USE THE LATEST VERSION. Uses only what is already on the
+  PC; no manifest change.
+- **Games listed as having no upscaler** (the manifest's unsupportedGames) say so even when AMDNR is already in
+  them - AMDNR's own XeSS / FidelityFX files no longer count as the game's - and an install there is told UNINSTALL
+  takes it out; REPAIR is refused there. Takes effect for a game once AMDNR lists it (EA SPORTS FC 27 etc.).
+- **AION 2** is refused at INSTALL with the reason (its NCGuard anti-cheat closes the game ~5 s in with 0xE0000012
+  when a mod is in its folder; the game is online only); an install already in it is told to UNINSTALL.
+
+**Games**
+- **The Last of Us Part I** is set up for tlou-i.exe again, not its launcher.exe; a hand-added Part II for
+  tlou-ii.exe, not the crash uploader.
+- **GTA V Enhanced (and RDR2)** resolve to the game's own exe instead of the Rockstar starter (PlayGTAV.exe /
+  PlayRDR2.exe), so the manifest's per-game settings for them apply (GTA V Enhanced: dxgi.dll).
+- **The Elder Scrolls Online (Steam)** is set up beside eso64.exe in The Elder Scrolls Online\game\client, not beside
+  the zosSteamStarter.exe Steam starts (AMDNR there was never loaded). An earlier install beside the starter: MORE >
+  CHOOSE GAME .EXE > zosSteamStarter.exe, UNINSTALL, then USE THE LAUNCHER'S FOLDER and INSTALL. Whether ESO itself
+  works with AMDNR has not been tried.
+
+**COLLECT LOGS**
+- **COLLECT LOGS:** the "Anywhere mode" line says which session it describes - the game, the window it really scaled,
+  how long ago - and says plainly when that was another game.
+- **COLLECT LOGS:** Windows error reports in the zip are this copy of the game's, newest first, each dated; the
+  summary names the ones Windows' events point to that are not in the zip, and why.
+- **COLLECT LOGS:** the zip carries the Streamline crash dumps the game's own OptiScaler.log names - the session's
+  first and its newest - whatever the starter exe is called, each dated under "Private files"; a dump the log names
+  that is gone is listed.
+- **COLLECT LOGS:** the zip carries lmxxf_backend.log from the game's own folder (and its _storage_ copy), not only
+  the Anywhere window's, so a report shows whether lmxxf ran inside the game.
+- **COLLECT LOGS:** the report's first line reads the build stamp from the log it carries, so it no longer says "no
+  build stamp" for a build that has one.
+- COLLECT LOGS: a "Ran as:" line, the Windows error reports and Streamline dumps of the exe the game really ran, and
+  the Anywhere menu's saved settings (the host's OptiScaler.ini, budget, upscaler, game cap, launch records).
+
+**SETTINGS > LAUNCHER**
+- **SETTINGS > LAUNCHER "Scan for games at start".** Off: the launcher opens on the library it had last time and asks
+  no store.
+- **SETTINGS > LAUNCHER "Update automatically".** Off: no launcher or game update happens without a click; a newer
+  launcher is still downloaded and offered with RESTART TO UPDATE.
+- **Go back to the previous launcher:** an update now keeps the launcher it replaced (one copy, only a launcher
+  signed with AMDNR's certificate). SETTINGS > LAUNCHER offers GO BACK TO LAUNCHER <version> once "Update
+  automatically" is unticked (ticked, the older launcher would update itself straight back); it stays on that version
+  until RESTART TO UPDATE or the box ticked again. It is checked before it starts (the hash it was kept with and
+  Windows' signature check); a copy that fails is removed and said. Launchers before 0.3.5.7 are shown with the
+  reason and not offered (0.3.5.5 / 0.3.5.6 update themselves at every start; older ones drop settings this launcher
+  keeps), so the first launcher that can be gone back to is 0.3.5.7, kept by the next update. Settings and per-game
+  choices a newer launcher saved now survive an older launcher's save.
+
+### Fixes per game
+- **GTA V Enhanced: no longer closes about three seconds after start, when the Rockstar Social Club overlay loads.**
+  The Social Club overlay tries out the graphics setup with a small swapchain of its own and hooks into what it finds
+  there. In this game every swapchain goes through NVIDIA Streamline, and AMDNR's menu overlay sat inside that
+  Streamline layer; on the next frame after the overlay's test, a fault inside that layer made Streamline write a
+  crash dump and the game closed (RX 7600 on 0.3.5, RX 9060 XT on 0.3.5.2). In GTA V Enhanced AMDNR now draws its
+  menu on the game picture instead, as it already does in the Resident Evil games, so nothing of AMDNR sits in that
+  layer any more. Neural Rendering is unchanged; the AMDNR menu opens in game while the game's FSR 3.1 is on.
+  `[Menu] OverlayMenu=true` in OptiScaler.ini gives the old overlay menu back.
+- The menu drawn on the game picture (GTA V Enhanced, the Resident Evil games, and any game with
+  `[Menu] OverlayMenu=false`) no longer touches the picture on frames where it has nothing to show, and when it does
+  show on a picture it has to copy, the picture is handed back in the state the game expects.
+- **Red Dead Redemption 2 on Vulkan no longer closes right after the loading screen** when the game's own FSR 2 is
+  on. AMDNR's FSR 2 path is DirectX 12 only, and on Vulkan it treated the game's FSR 2 as DirectX 12 and crashed at
+  the first frame after the load. On Vulkan the game's own FSR 2 now runs untouched (no AMDNR upscaler and no Neural
+  Rendering on it); set the game to DirectX 12 to use them. The log says so in one line.
+- **Red Dead Redemption 2: AMDNR no longer adopts the game's Windows 7 D3D12 (12on7\d3d12.dll).** A crash report
+  pointed into that copy after it had been unloaded. A version read of a d3d12.dll is now answered by Windows as
+  asked (AMDNR used to load the file fully for it), and a d3d12.dll from a "12on7" / "d3d12on7" folder is never
+  hooked or used by AMDNR. What the game loads is unchanged.
+- **The Witcher 3 with FG Input "FSR 3.1 FG" and FG Output "FSR FG" no longer closes four seconds in.** With that
+  pair the game failed when it re-created its frame-generation swapchain (DXGI 0x80070005), on 0.3.5.1 and on 0.3.5.2
+  alike. In The Witcher 3 that pair now leaves the game's own FSR frame generation to the game, the same path every
+  install without an FG Input takes: turn frame generation on in the game's menu. Your pick stays in OptiScaler.ini,
+  the Frame Gen tab says why it shows None, and Neural Rendering is not affected. XeFG output with the FSR 3.1 FG
+  input keeps working as before. `[FrameGen] LeaveFsrFgPairToGame=false` takes the pair over again.
+- **Dying Light: The Beast no longer closes on its main menu when an FG Output is picked in the AMDNR menu.** The
+  game makes its swapchain twice at start. With an FG Output set (the report: FG Input "DLSSG via Streamline", FG
+  Output "FSR FG"), AMDNR handed the second one the frame-generation swapchain that was still live for the window
+  (`[FrameGen] PreserveSwapChain`), and a few seconds later the game's device was removed (DXGI 0x887A002B) - even
+  with frame generation itself switched off. In this game AMDNR now releases that swapchain and creates a new one, as
+  it already does in Red Dead Redemption, CONTROL Resonant, The Witcher 3 and Black Myth: Wukong. A
+  `[FrameGen] PreserveSwapChain` value you set yourself still wins. Not yet confirmed in the game: if it still
+  closes, set FG Input and FG Output back to None and send COLLECT LOGS.
+- **F1 24 and F1 25 now start with your own AMD card's name.** AMDNR no longer shows these two games the spoofed
+  NVIDIA card (upstream OptiScaler lists that spoof as not working in F1 24 / F1 25). If DLSS is not offered in the
+  game's graphics menu, pick FSR 3.1 or XeSS there: Neural Rendering runs on either. The two F1 25 reports we have
+  (0.3.4.1) closed about nine seconds after start; the likely cause in those logs has been fixed since 0.3.5 /
+  0.3.5.2. `[Spoofing] Dxgi=true` in OptiScaler.ini puts the old start back. F1 25 runs EA's Javelin anti-cheat in
+  every mode; the launcher's anti-cheat warning applies.
+- **Games without DLSS, FSR or XeSS (EA SPORTS FC 27): the Neural tab says so.** When no frame has reached Neural
+  Rendering in a session, the status help adds that a game with none of them in its graphics menu (render scale only)
+  gives NR nothing to work on, under any dll name, and points to PLAY ANYWHERE in the AMDNR launcher. EA SPORTS FC 27
+  is such a game: AMDNR loads in it, but the game never calls an upscaler, so changing the dll name changes nothing.
+- The log now names a very small swapchain that a game creates on its own window (reported for The Elder Scrolls
+  Online, which makes its swapchain at 8x8 pixels and resizes it later). AMDNR leaves such a swapchain to the game as
+  it does an overlay's, so the AMDNR menu and frame generation do not reach it; the next report from such a game says
+  whether that is the case. No behaviour change.
+- **Half-Life 2 RTX (and other Vulkan games on the DirectX 12 bridge): no more VK_ERROR_UNKNOWN / device lost a
+  moment after the game starts upscaling.** The bridge could be told the game's command buffer belonged to Remix's
+  transfer-only queue (a stale entry: a destroyed command pool's handle was given out again for a new one) and moved
+  its own command buffers there. The entry now follows the pool that is alive, and a report that cannot be true is no
+  longer acted on (the log says so once). Not yet confirmed on the reporter's PC.
+
+### Known limits
+- **Ray Regeneration is not clean everywhere yet, with either denoiser.** AMDNR's overnight check on an RX 9070 XT
+  (synthetic scenes with a known right answer, not game frames) still finds, in this build:
+  - with both denoisers: mirror-like reflections lose about 92 % of their detail and 2-pixel neon text most of it,
+    and sparks or particles that carry no motion vectors leave trails (short and bright with the AMDNR Ray Denoiser,
+    long and faint with AMD's);
+  - with the AMDNR Ray Denoiser: still surfaces flicker more than with AMD's (1.4-1.5 % of their light against
+    0.34-0.64 %), an object moving into a shadow stays up to about 4x too bright for 2-4 frames, and very dim scenes
+    show blotches;
+  - with AMD's FSR Ray Regeneration: lights one or two pixels wide keep only 2-7 % of their light, a light that
+    changes is followed slowly (a halved light is still 1.22x as bright 48 frames later), and bright text gets a pink
+    glow around it.
+- **Built and covered by this release's tests, not yet seen in a game:** the AMDNR Ray Denoiser's changes (AMDNR's
+  lab only), the Ray Regeneration quality changes (an in-game A/B is still to come), the XeSS frame-generation pacing
+  at 3X and above (worked out from the report's own numbers), the Neural placement row in Ray Regeneration games, the
+  menu's keyboard and mouse fix, the GTA V Enhanced menu change, the video-memory limit for danielblnc's runtime, the
+  DirectX 11 / Vulkan bridge fixes, and Screen-space GI. Vulkan Ray Reconstruction, the Half-Life 2 RTX fix and Dying
+  Light: The Beast say so in their entries.
+- AMDNR Anywhere: a game that reads the keyboard and the mouse even while it is not in front, and every game pad,
+  still reach the game while the menu is open; AMDNR cannot stop that from outside the game.
+- AMDNR Anywhere: while the menu is open the Windows taskbar can show over the bottom of the picture; it goes away
+  when the menu closes.
+- AMDNR Anywhere: a game that minimises itself when it is not in front is brought back at once, and for the rest of
+  that session the menu leaves the focus with it (as in 0.3.5.2).
+- **Crimson Desert can freeze when FSR is picked in the game's upscaler menu while AMDNR is installed.** Pick XeSS
+  (or DLSS, where the game offers it) in the game's menu instead: AMDNR runs its own upscaler under either (FSR 4 on
+  RX 9000), and Neural Rendering runs on either. Players without AMDNR report the same freeze when the game's
+  FidelityFX files are replaced (OptiScaler or a hand-copied FSR 4 file); with AMDNR the game's FidelityFX calls are
+  answered by AMDNR's own FidelityFX files.
+
+Credits for this release: **DLSS-NR on AMD by Daniel Blanco (danielblnc)** - the danielblnc runtime, unmodified, with
+his permission; **lmxxf by Kien (MIT)**; AMD's FidelityFX SDK (FSR, FSR Ray Regeneration); **Magpie by Blinue,
+experimental fork by SAOG0721 (GPL-3.0)**, built by AMDNR for the Anywhere window. Everyone else is in the README's
+credits and `Licenses\AMDNR_NOTICE.txt`.
+
 ## 0.3.5.2 — 2026-10-04
 
 A hotfix built from your reports: crashes in The Witcher 3 and with Intel's frame generation, a black screen in

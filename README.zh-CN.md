@@ -23,7 +23,7 @@ DLSS 光线重建游戏的 FSR Ray Regeneration。自 0.3.5 起，**AMDNR Anywhe
 > **0.3.5 新内容：** **AMDNR Anywhere**（preview）：为自身没有 DLSS、XeSS 或 FSR 2 的游戏提供神经渲染——AMDNR Launcher
 > 中只需一个 **PLAY ANYWHERE** 按钮，不向游戏目录写入任何东西；本次发布支持 RX 9000（RDNA 4）（见"AMDNR Anywhere"）。
 > **Ray Regeneration 有了自己的选项卡**，紧跟在 Upscaling 之后，其状态行会按显卡、按 API 说明什么在运行、为什么没有运行；在 RX 7000 上，自 0.3.5.1 起它再次以
-> preview 形式提供并默认开启（AMD 的降噪器没有面向 RDNA 3 的提供程序，因此画面在不带降噪的情况下被升采样；Upscaling 选项卡中的
+> preview 形式提供并默认开启（自 0.3.5.3 起，在那里由 AMDNR Ray Denoiser（preview）降噪；Upscaling 选项卡中的
 > 勾选框或 `[FSR-RR] FfxDenoiserAllowPreRdna4=false` 可将其关闭，游戏便保留自己的降噪器）。
 > **神经通道可以在放大之后运行**（`[DlssNr] AmdPlacement=post`，Neural > Performance > Placement；默认的 `pre` 不变）。
 > **Frame Gen 选项卡会说明为什么没有生成任何帧**，并列出五个步骤（见帧生成的常见问题）。**在 RX 7000 和 Z1 Extreme
@@ -280,8 +280,7 @@ Radeon 780M：360p 下约 50 ms，576p 下约 105 ms，画面逐位相同，经�
 **它是什么。** 为自身没有 DLSS、XeSS 或 FSR 2 的游戏提供神经渲染——而且不会向游戏目录写入任何东西。AMDNR 在一个窗口
 捕获宿主中运行：宿主捕获游戏窗口，用 FSR 3 把它缩放到你的屏幕，神经渲染在捕获到的画面上运行；我们的菜单绘制在宿主
 内部（用你的菜单键，默认为 `INSERT`），并有自己的 **Anywhere** 选项卡。宿主是
-**Magpie by Blinue, experimental fork by SAOG0721 (GPL-3.0), fetched from the author, not redistributed by AMDNR**：
-AMDNR Launcher 从其作者的发布页下载它（467 MB，只需一次）。
+**Magpie by Blinue, experimental fork by SAOG0721 (GPL-3.0)**，使用 AMDNR 自己的构建版：其 `Magpie.exe` 经重新构建，带四项修复（补丁、基础提交和构建选项都在旁边的 `Anywhere-host-source/` 中），且该包不含任何 NVIDIA 文件。AMDNR Launcher 从 AMDNR 的 GitHub 发布页下载它（约 100 MB，只需一次）。
 
 **怎么用。** 在 AMDNR Launcher 中，没有放大器的游戏会显示 **PLAY ANYWHERE**，而不是 INSTALL。点它：启动器会（首次）
 获取宿主、启动游戏，宿主随即捕获游戏窗口。请以**窗口化或无边框**模式运行游戏，不要用独占全屏，并在宿主内按你的菜单键
@@ -302,8 +301,7 @@ PLAY ANYWHERE 时生效，启动器会在按钮旁显示一份只读摘要。在
 再放大回去，页面会说明这一点，并给出网络看到的像素占屏幕像素的比例。NR resolution 一行会显示网络在宿主内的真实尺寸。
 
 **状态：preview。** 本次发布仅支持 RX 9000（RDNA 4）；RX 7000 在那里测试后跟进。快速运动时可能仍有轻微闪烁或抖动
-（把 NR 档位降到 720、把游戏限制在 60-90 fps、保持 Model interleave 关闭——宿主会拒绝它）。捕获宿主从其作者的 GitHub
-发布页获取，而不是从我们的发布页。反馈：在宿主内的菜单中生成的 **Save report** zip（其标题写的是被缩放的游戏），或启动器的
+（把 NR 档位降到 720、把游戏限制在 60-90 fps、保持 Model interleave 关闭——宿主会拒绝它）。捕获宿主是 AMDNR 自己的构建版，从 AMDNR 的 GitHub 发布页获取。反馈：在宿主内的菜单中生成的 **Save report** zip（其标题写的是被缩放的游戏），或启动器的
 COLLECT LOGS。
 
 ## Linux / Proton（Steam Deck、桌面 Linux）
@@ -476,21 +474,17 @@ Daniel Blanco 的名字会打开他的 GitHub 页面）、**Components** 行（O
   style、Tone curve 和 Black lift）、**Exposure and highlights**（Auto-exposure、其高光上限、Highlight colour guard、
   Game exposure）和 **Appearance filter**（名称后显示 off / on）。折叠区块名称后淡色的 "default" 或
   "custom" 表示其中是否有改动。
-- **Ray Regeneration**：自 0.3.5 起是一行指引。当 Ray Regeneration 在游戏中运行时，它的控件位于其独立的 **Ray
-  Regeneration** 选项卡上（紧跟在 Upscaling 之后），这一行会提供一个 **Open Ray Regeneration** 按钮；它没有运行时，
-  这一行会说明原因（游戏没有开启光线重建、驱动在这块显卡上拒绝了降噪器、Ray Regeneration 放弃了这款游戏以及原因，
-  或它上一次运行的时间）。
+- **Ray Regeneration**：自 0.3.5.3 起不在本选项卡上；它的控件和状态位于其独立的 **Ray Regeneration** 选项卡上（紧跟在 Upscaling 之后）。这里只有运行时下方的橙色提示行可能显示 "Ray Regeneration is off in this title" 或 "Ray Regeneration could not start on this GPU"（把鼠标悬停在上面可查看原因）。
+- **Screen-space GI**（0.3.5.3 新增）：**AMDNR Screen-space GI**，默认关闭，后面有淡色的 "by 3zwr1"；开启时其下方显示：GI quality（Low / Medium / High / Ultra；在你按下其中一个之前，Auto 会为你的显卡选一个；其标签显示实测的 GPU 时间，GI 运行之前显示估算值）、Bounce light、Ambient occlusion、Radius、Object thickness、Camera FOV、**More GI options**（Bounce colour、Sky light、Multi-bounce、FOV axis、Colour encoding、Debug view）和 Reset GI。所有 AMD 显卡上都有，无论是否安装了 NR 运行时；在 AMDNR Anywhere 内会变灰并注明原因。
 - **工具行**，启动时收起：**Diagnostics**（Network output、Debug view、Edit shaper A/B、NR cost、拖影
-  与自调读数、GPU 行、**Save report**；自 0.3.5 起 RR 调试视图位于 Ray Regeneration 选项卡上）、**Runtime options**（Encoding、Every-frame NR、NR slots、Highlight proxy）和
-  **Experimental**（AMDNR Screen-space GI，preview）。
+  与自调读数、GPU 行、**Save report**；自 0.3.5 起 RR 调试视图位于 Ray Regeneration 选项卡上）和 **Runtime options**（Encoding、Every-frame NR、NR slots、Highlight proxy）；只有当你的 ini 开启了继承的、已从菜单中移除的 Screen-space GI（`[AmdRtgi] Enabled`）时才会出现 **Experimental**，其中只有它的复选框，带 "retired" 标签。
 
 当前运行时不具备的控件会变灰并带简短标签（例如 "not in lmxxf yet"），或被隐藏并显示数量（"3 danielblnc-only
 options hidden"）；切换运行时不会移动其他任何行。
 
 **其他选项卡：** Upscaling 以放大器、一行状态和 Render resolution（原 Upscale Ratio Override 与 Output Scaling）
 开头；在非 NVIDIA 显卡上不再列出 "DLSS w/Dx12"。**Ray Regeneration**（0.3.5 新增）在 Ray Regeneration 于游戏中运行时
-紧跟在 Upscaling 之后：状态行（按显卡、按 API）、**Denoiser backend** 行（Automatic / Off——Off 会告诉游戏光线重建不受
-支持，于是游戏保留自己的降噪器；重启后生效）、各项控件、More Ray Regeneration options，以及它自己的 Diagnostics 区块，
+紧跟在 Upscaling 之后：状态行（按显卡、按 API）、**Denoiser backend** 行（Automatic / AMD FSR Ray Regeneration / AMDNR Ray Denoiser (preview) / Off (the game's own)：Automatic 在 RX 9000 上用 AMD 的降噪器，在其他所有显卡上用 AMDNR Ray Denoiser；前三项可在游戏运行时切换；Off 会告诉游戏光线重建不受支持，于是游戏保留自己的降噪器，重启后生效）、各项控件、More Ray Regeneration options，以及它自己的 Diagnostics 区块，
 其中有 RR 调试视图和噪点数值（输入与输出的颗粒、静止镜头下的闪烁）；它从不在 AMDNR Anywhere 内绘制。Image 包含
 Sharpness、Textures、Init Flags 和 Magnifier。Frame Gen 以 FG Input 和 FG Output 开头，并且自 0.3.5 起有一行文字写出
 在生成任何帧之前还缺少哪一步。Interface 包含 FPS 叠加层和 Keybinds（每个按键一个按钮）。Advanced 以 Active Quirks 开头，
@@ -543,30 +537,24 @@ Sharpness、Textures、Init Flags 和 Magnifier。Frame Gen 以 FG Input 和 FG 
   高于 6X 需要 OptiScaler 自带的 XeFG 提供程序并开启 Extra pacing；游戏自带的 XeSS 3 副本最多 6X。
   10X 需要 360 Hz 及以上的显示器，并把帧率上限设为刷新率 / 10；延迟较高，且提供程序在 4K 下多占用约
   128 MiB 显存。7X-10X 尚未在游戏中确认：测试者请发送 `OptiScaler.log`。
-- **FSR Ray Regeneration** —— 在 RX 9000（RDNA 4）上提供；在 RX 7000（RDNA 3）上作为 preview 提供，默认开启，不带降噪器（见下文）；仅在使用 DLSS 光线重建的游戏中（Cyberpunk 2077、Alan Wake 2），且游戏
+- **FSR Ray Regeneration** —— 在 RX 9000（RDNA 4）上提供；在 RX 7000（RDNA 3）上作为 preview 提供，默认开启，由 AMDNR Ray Denoiser 降噪（见下文）；仅在使用 DLSS 光线重建的游戏中（Cyberpunk 2077、Alan Wake 2），且游戏
   运行 DLSS（开启伪装）、光线追踪和光线重建都在游戏自身设置中启用。此时神经渲染在它之后、对它的
   输出运行，开销更大：帧率下降时调低 NR resolution。自 0.3.5 起，它的控件位于其独立的 **Ray Regeneration** 选项卡上，
-  紧跟在 Upscaling 之后，在 Ray Regeneration 于游戏中运行时绘制；Neural 选项卡会指向它，并在 Ray Regeneration 没有运行时
-  保留那行说明原因的浅色文字（游戏没有开启光线重建、驱动在这块显卡上拒绝了降噪器、Ray Regeneration 放弃了这款游戏以及
-  原因，或它上一次运行的时间）。该选项卡的 **Denoiser backend** 行（`[FSR-RR] RrBackend = auto | off`）可以告诉游戏光线
-  重建不受支持，于是游戏保留自己的降噪器（在下次启动游戏时生效）。在 **Vulkan** 游戏中，光线重建按设计为 "not
+  紧跟在 Upscaling 之后，在 Ray Regeneration 于游戏中运行时绘制；自 0.3.5.3 起 Neural 选项卡上已没有 Ray Regeneration 行，只有当 Ray Regeneration 在某款游戏中被关闭或无法在这块 GPU 上启动时，运行时下方的橙色提示行会说明。该选项卡的 **Denoiser backend** 行（`[FSR-RR] RrBackend` = auto / amd / amdnr / off）提供 Automatic（RX 9000 上为 AMD FSR Ray Regeneration，其他所有显卡上为 AMDNR Ray Denoiser (preview)）、AMD FSR Ray Regeneration、AMDNR Ray Denoiser (preview) 和 Off (the game's own)；前三项可在游戏运行时切换，Off 会告诉游戏光线重建不受支持，于是游戏保留自己的降噪器（在下次启动游戏时生效）。在 **Vulkan** 游戏中，光线重建按设计为 "not
   supported"（降噪器是 D3D12 的），选项卡会说明这一点。**路径追踪配置**（路径追踪下脸部噪点更少）自 0.3.3.1 起需手动开启：
   想在 Resident Evil Requiem 或 PRAGMATA 中试用，请在那里勾选。同一选项卡还有 bias mask 强度和
   **皮肤平滑**（实验性，用于提供 SSS 引导的游戏；默认关闭，但自 0.3.3.2 起在 Resident Evil Requiem 中默认开启）；
   时域调节滑块在 *More Ray Regeneration options* 中，RR 调试视图和噪点数值（输入与输出的颗粒、静止镜头下的闪烁）位于该
   选项卡自己的 Diagnostics 区块中。在 RX 7000（RDNA 3）上，Ray Regeneration 以 preview 形式提供
-  （0.3.5.1；0.3.5 未默认提供）：游戏可以开启光线重建，Ray Regeneration 的设置也会显示，但 AMD 的降噪器没有面向 RDNA 3
-  的提供程序，因此降噪器会拒绝启动，光线重建画面在不带降噪的情况下被升采样，看起来可能比游戏自己的降噪更嘈杂；
+  （0.3.5.1；0.3.5 未默认提供）：游戏可以开启光线重建，Ray Regeneration 的设置也会显示，并由 AMDNR Ray Denoiser（preview）降噪，在 RDNA 3 / 3.5 APU 上也是如此（AMD FSR Ray Regeneration 是为 RDNA 4 打造的）；
   Ray Regeneration 页面会说明实际运行的是什么。Upscaling 选项卡中的 **Preview: Ray Regeneration on this card (restart)**
   （带有 "preview - on by default" 标签）默认勾选；取消勾选，或设为 `[FSR-RR] FfxDenoiserAllowPreRdna4=false`，
-  游戏便保留自己的降噪器。AMDNR 自己的 RX 7000 降噪器已在计划中。
-  RX 6000 及更早的显卡只有设为 `[FSR-RR] FfxDenoiserAllowPreRdna4=true` 才会提供（Upscaling
-  选项卡：**Offer FSR Ray Regeneration on this GPU (restart)**）。**RR 之后的锐化**（0.3.4.1）：当游戏没有传入锐化值时，
+  游戏便保留自己的降噪器。RX 6000 及更早的显卡只作为可选项提供，需设为 `[FSR-RR] FfxDenoiserAllowPreRdna4=true`（Upscaling 选项卡：**Offer Ray Regeneration on this GPU (restart)**，带 "preview" 标签），同样由 AMDNR Ray Denoiser 降噪。**RR 之后的锐化**（0.3.4.1）：当游戏没有传入锐化值时，
   AMDNR 在 Windows 上会在 RR 之后加 0.25 的锐化（Linux / Proton 上为 0）；关闭方法：Image > Sharpness，勾选
   Override，滑块拉到 0。自 0.3.4.2 起这个数值有了自己的 ini 键 `[Sharpness] RrDefaultSharpness`（默认值仍是 0.25）：
   可以在那里直接写 0.15、0.10 或 0，不必动 Override；而你的 ini 在 Override 关闭时保留的 `[Sharpness] Sharpness`
   数值，菜单里会标出它正在等待 Override。
-- **AMDNR Screen GI**（preview，0.3.4 新增，默认关闭；Neural > Experimental，或 `[AmdGi] Enabled=true`）—— AMDNR 自己的屏幕空间反弹光和环境光遮蔽，基于游戏的深度，在 NR 和放大器之前运行；NR 开或关都能用；在 RX 9070 XT 上 1080p 渲染、High 档约 1 ms（在游戏外测得）。它是屏幕空间效果：来自屏幕外的光会缺失。见 `CHANGELOG.md`。
+- **AMDNR Screen-space GI by 3zwr1**（默认关闭；Neural > Screen-space GI，或 `[AmdGi] Enabled=true`）—— AMDNR 自己的屏幕空间反弹光和环境光遮蔽，基于游戏的深度，在 NR、放大器和 UI 之前运行；NR 开或关都能用；Low / Medium / High / Ultra（Auto 按显卡选择），在 RX 9070 XT 上 1080p 渲染、High 档约 0.6 ms（实测）。它是屏幕空间效果：来自屏幕外的光会缺失。见 `CHANGELOG.md`。
 - **Save report**（Neural > Diagnostics 或 Advanced > Logging）—— 一个包含所有日志和 ini 文件的 zip，用于反馈；见上文"如果不起作用"。
 
 ## 出了问题怎么办
@@ -701,13 +689,7 @@ Streamline 插件钩子可能引发该错误的一条途径，但尚未确认这
 `slInit returned ...` 和 `[SLINIT]` 行：反馈时请附上日志。
 
 **找不到 Ray Regeneration 的设置？** 自 0.3.5 起，它们位于其独立的 **Ray Regeneration** 选项卡上，紧跟在 Upscaling
-之后，在 Ray Regeneration 于游戏中运行时绘制（一旦运行过，本次会话内会一直保留）；此时 Neural 选项卡中的 **Ray
-Regeneration** 一行会提供一个 **Open Ray Regeneration** 按钮。它没有运行时，该选项卡不会绘制，Neural 选项卡中的那一行
-会说明原因：游戏没有开启光线重建、Ray Regeneration 放弃了这款游戏以及原因，或者它上一次运行是多少秒前。在 RX 7000 上，
-还有一行浅色文字会补上：那里以 preview 形式提供它，AMD 的降噪器没有面向 RDNA 3 的提供程序，因此一旦游戏开启光线重建，其画面就会
-在不带降噪的情况下被升采样，而 `[FSR-RR] FfxDenoiserAllowPreRdna4=false`（或取消勾选 Upscaling 选项卡中的
-**Preview: Ray Regeneration on this card (restart)**）会关闭该 preview，让游戏保留自己的降噪器。在 RX 6000 及更早的显卡上则说明：
-这块显卡上不提供它，AMD 只为 RDNA 4 发布该降噪器，而 `[FSR-RR] FfxDenoiserAllowPreRdna4=true` 仍可让它提供。
+之后，在 Ray Regeneration 于游戏中运行时绘制（一旦运行过，本次会话内会一直保留）；自 0.3.5.3 起 Neural 选项卡上已没有 Ray Regeneration 行。它没有运行时，该选项卡不会绘制；如果 Ray Regeneration 在这款游戏中被关闭或无法在这块 GPU 上启动，Neural 选项卡中运行时下方的橙色提示行会说明。在 RX 7000 以及 RDNA 3 / 3.5 APU 上，Ray Regeneration 以 preview 形式提供并默认开启，由 AMDNR Ray Denoiser（preview）降噪（AMD FSR Ray Regeneration 是为 RDNA 4 打造的）；`[FSR-RR] FfxDenoiserAllowPreRdna4=false`（或取消勾选 Upscaling 选项卡中的 **Preview: Ray Regeneration on this card (restart)**）会关闭该 preview，让游戏保留自己的降噪器。在 RX 6000 及更早的显卡上默认不提供：Upscaling 选项卡中的 **Offer Ray Regeneration on this GPU (restart)**（`[FSR-RR] FfxDenoiserAllowPreRdna4=true`）可让它提供，同样由 AMDNR Ray Denoiser（preview）降噪。
 要让它运行，请在游戏自身的画面设置里：把升采样器选为 **DLSS**（不是 FSR，也不是 XeSS），开启**光线追踪**或路径追踪，
 并开启**光线重建**（DLSS-RR）；此时 Upscaling 选项卡会显示 "FSR Ray Regeneration"。哪个问题该调哪个设置，见 Ray Regeneration 设置指南
 **RR-BEST-SETTINGS.md**（不在 zip 内）。
@@ -723,7 +705,7 @@ Override"）。两件我们不会含糊其辞的事：一部分颗粒来自游�
 修复相关性噪声而设计，而提供 DLSS 光线重建的游戏会关掉自己的降噪器、把原始信号交给我们；静止画面里蠕动的颗粒在我们这边
 有一个结构性原因，任何滑块都无法把它完全去掉。那是一个已知问题。0.3.5 给它加上了一个数值：Ray Regeneration 选项卡的
 Diagnostics 区块会显示输入与输出的颗粒以及静止镜头下的闪烁（在该选项卡打开时测量），并且该选项卡的 **Denoiser backend**
-行可以设为 Off，它会告诉游戏光线重建不受支持，于是游戏保留自己的降噪器（重启后生效）。AMDNR 自己的降噪器属于 0.3.6 的工作。
+行可以设为 Off，它会告诉游戏光线重建不受支持，于是游戏保留自己的降噪器（重启后生效）。自 0.3.5.3 起，同一行还提供 AMDNR 自己的降噪器 AMDNR Ray Denoiser（preview），Automatic 在除 RX 9000 以外的所有显卡上都使用它。
 
 **游戏里 Ray Reconstruction 已开启，但 Neural 选项卡显示 "Ray Regeneration is off in this title"？**
 该游戏没有提供 FSR Ray Regeneration 所需的数据：它的 DLSS 插件传入的是空的相机矩阵（Satisfactory），NVIDIA 的光线
@@ -798,19 +780,19 @@ OptiScaler 问题：把游戏目录中的 `sl.common.dll` 重命名为 `sl.commo
 - **lmxxf**（Kien）—— https://github.com/lmxxf/dlss5-on-amd-9070xt-porting （网络移植、内核与 HIP 运行时，MIT）
 - **TheAutomatic** —— `LmxxfNrRuntime.cpp`、`LmxxfNrApi.h`、`LmxxfProductionOptions.h`：portions contributed to lmxxf by TheAutomatic (MIT)
 - **lmxxf 0.31 内核**，位于 `LmxxfNrRuntime.pak` 中（the ViT projection (lmxxf031-vit-wide-deep), the C512 QKV and mix kernels (lmxxf031-c512-m32-mh, lmxxf031-c512-m32-deep) and one-wave-per-head attention (lmxxf031-c64-wave2)）—— 属于 lmxxf（Kien，MIT），由 AMDNR 按 lmxxf 的源码与构建方法构建；AMDNR 负责加载、SHA-256 固定校验、按显卡启用与回退
-- **lmxxf 0.37 和 0.39 内核**，位于 `LmxxfNrRuntime.pak` 中（面向 RX 9000 的 lmxxf037-* 和 lmxxf039-* 模块），其启动代码位于 `LmxxfNrRuntime.dll` 中 —— lmxxf 0.37 / 0.39 by Kien (MIT)，按 lmxxf 构建的原样提供；AMDNR 负责作为一个固定组加载、SHA-256 固定校验、按显卡的默认设置、关闭开关与回退
+- **lmxxf 0.37、0.39 和 0.41 内核**，位于 `LmxxfNrRuntime.pak` 中（面向 RX 9000 的 lmxxf037-*、lmxxf039-* 和 lmxxf041-* 模块），其启动代码位于 `LmxxfNrRuntime.dll` 中 —— lmxxf 0.37 / 0.39 / 0.41 by Kien (MIT)，按 lmxxf 构建的原样提供；AMDNR 负责作为一个固定组加载、SHA-256 固定校验、按显卡的默认设置、关闭开关与回退
 - **c32w 内核**（0.3.3.2）—— AMDNR 自有的 RDNA 4 单 wave 内核，用于 lmxxf 的网络，Copyright (c) 2026 3zwr1 (AMDNR)；思路参考 AMD 公开的 RDNA 4 WMMA 文档（GPUOpen、ROCm matrix instruction calculator）
 - **AMDNR 的 RDNA 3 后端**（0.3.3；0.3.4 中新增掌机构建 gfx1103 / gfx1150）、网络尺寸档位策略和小网络尺寸（0.3.4）—— Copyright (c) 2026 3zwr1 (AMDNR)
 - **Matheus / dlss-5-amd** —— https://github.com/MatheusGViana/dlss-5-amd-project
 - **Dagherbou / OptiScaler_DLSSNR** —— https://github.com/Dagherbou/OptiScaler_DLSSNR
 - **wilsjo2 / OptiScaler-DLSSNR-PreSR-Multipass** —— https://github.com/wilsjo2/OptiScaler-DLSSNR-PreSR-Multipass
 - **Nukem9** —— dlssg-to-fsr3 —— https://github.com/Nukem9/dlssg-to-fsr3 （GPLv3，未经修改）
-- **Magpie by Blinue, experimental fork by SAOG0721 (GPL-3.0), fetched from the author, not redistributed by AMDNR** —— AMDNR Anywhere 在其中运行的窗口捕获宿主 —— https://github.com/Blinue/Magpie （该分支：<https://github.com/SAOG0721/Magpie>）
+- **Magpie by Blinue, experimental fork by SAOG0721 (GPL-3.0)** —— AMDNR Anywhere 在其中运行的窗口捕获宿主，使用 AMDNR 自己的构建版，发布在 AMDNR 的 GitHub 发布页上（`Magpie.exe` 经重新构建，带四项修复；补丁、基础提交和构建选项在旁边的 `Anywhere-host-source/` 中；不含 NVIDIA 文件）—— https://github.com/Blinue/Magpie （该分支：<https://github.com/SAOG0721/Magpie>）
 - **RenoDX** —— clshortfuse —— https://github.com/clshortfuse/renodx （色彩合成算法，MIT）
 - **Coldwood1026** —— XeFGUnlock（GPL-3.0），内置 XeFG 多帧解锁及其节拍的基础
 - **Zach Hembree (DarkHelmet)** —— OptiScaler 的 FSR Ray Regeneration，AMDNR 光线再生路径的源头；由 **burak113** 继续开发，AMDNR 从其分支移植（OptiScaler 分支 ffx-denoise-experimental，GPL-3.0）
 - **Screen-space GI**（继承的效果；0.3.4 起已从菜单中移除，ini 中为 `[AmdRtgi] Enabled`）—— AMDNR 从 OptiScaler-AMD-PreSR 一脉继承的效果；功劳归于其原作者。它需要 danielblnc 包中的 `experimental_lighting` 文件夹，AMDNR 不附带该文件夹。
-- **AMDNR Screen GI**（0.3.4 preview）—— AMDNR 自己的作品，Copyright (c) 2026 3zwr1 (AMDNR)，依据已发表的论文编写（Therrien、Levesque 和 Gilet 2023；Jimenez 等 2016；Schied 等 2017；其余见 `CHANGELOG.md` 和 `Licenses/AMDNR_NOTICE.txt`）
+- **AMDNR Screen-space GI by 3zwr1** —— AMDNR 自己的作品，Copyright (c) 2026 3zwr1 (AMDNR)，依据已发表的研究编写（列于 `CHANGELOG.md` 和 `Licenses/AMDNR_NOTICE.txt`）。
 - **OptiScaler** —— Overclockers —— https://github.com/Overclockers/OptiScaler-Releases
 
 ## AMDNR Launcher
@@ -825,7 +807,7 @@ AMDNR Launcher：
 
 **Launcher 0.3.5.1 新内容**（位于 Alpha0.3.5 发布页；它会先更新自己，再更新你的游戏）：
 
-- 在自身没有放大器的游戏上使用 **PLAY ANYWHERE**（见"AMDNR Anywhere"）：启动器从作者的发布页获取捕获宿主，启动游戏，
+- 在自身没有放大器的游戏上使用 **PLAY ANYWHERE**（见"AMDNR Anywhere"）：启动器从 AMDNR 的 GitHub 发布页获取捕获宿主，启动游戏，
   并在游戏窗口上运行神经渲染，按钮旁显示宿主设置的只读摘要（设置本身在菜单的 Anywhere 选项卡中）。本次发布支持
   RX 9000。模组无法加载进去的游戏（32 位、没有放大器的 DirectX 9 / OpenGL 游戏）会在 INSTALL 时被拒绝，附上一行清楚的
   说明，并改为提供 Anywhere。

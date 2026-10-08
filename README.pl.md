@@ -27,8 +27,7 @@ buildy.
 > FSR 2 - jeden przycisk **PLAY ANYWHERE** w AMDNR Launcherze, nic nie jest zapisywane w folderze gry; w tym wydaniu
 > RX 9000 (RDNA 4) (patrz "AMDNR Anywhere"). **Ray Regeneration ma własną zakładkę**, zaraz po Upscaling, a jej linie
 > stanu mówią, osobno dla każdej karty i każdego API, co działa, a jeśli nie działa, to dlaczego; na RX 7000 od
-> 0.3.5.1 jest znów oferowane jako preview, domyślnie włączone (denoiser AMD nie ma providera dla RDNA 3, więc obraz jest
-> skalowany bez odszumiania; pole w zakładce Upscaling albo `[FSR-RR] FfxDenoiserAllowPreRdna4=false` je wyłącza, a gra
+> 0.3.5.1 jest znów oferowane jako preview, domyślnie włączone (od 0.3.5.3 odszumia je tam AMDNR Ray Denoiser (preview); pole w zakładce Upscaling albo `[FSR-RR] FfxDenoiserAllowPreRdna4=false` je wyłącza, a gra
 > zostaje przy swoim denoiserze). **Przebieg neuronowy
 > może działać po upscalingu** (`[DlssNr] AmdPlacement=post`, Neural > Performance > Placement; domyślne `pre` się nie
 > zmienia). **Zakładka Frame Gen mówi, dlaczego nic nie jest generowane**, i wymienia pięć kroków (patrz FAQ
@@ -325,8 +324,7 @@ bit w bit, sprawdzone sumami kontrolnymi przez testera); moduły dla Z2 Extreme 
 w folderze gry. AMDNR działa wewnątrz hosta przechwytującego okno: host przechwytuje okno gry, skaluje je do
 rozdzielczości Twojego ekranu przez FSR 3, a Neural Rendering działa na przechwyconym obrazie; nasze menu jest
 rysowane wewnątrz hosta (Twój klawisz menu, domyślnie `INSERT`) z własną zakładką **Anywhere**. Hostem jest
-**Magpie by Blinue, experimental fork by SAOG0721 (GPL-3.0), fetched from the author, not redistributed by AMDNR**:
-AMDNR Launcher pobiera go z wydania jego autora (467 MB, jednorazowo).
+**Magpie by Blinue, experimental fork by SAOG0721 (GPL-3.0)** we własnym buildzie AMDNR: jego `Magpie.exe` jest przebudowany z czterema poprawkami (łatki, bazowy commit i opcje kompilacji są obok, w `Anywhere-host-source/`), a pakiet nie zawiera żadnych plików NVIDIA. AMDNR Launcher pobiera go z wydania AMDNR na GitHubie (około 100 MB, jednorazowo).
 
 **Jak tego używać.** W AMDNR Launcherze gra bez upscalera pokazuje **PLAY ANYWHERE** zamiast INSTALL. Naciśnij go:
 launcher pobiera hosta (za pierwszym razem), uruchamia grę, a host przechwytuje jej okno. Uruchom grę **w oknie albo
@@ -354,8 +352,7 @@ pikseli ekranu widziała sieć. Wiersz NR resolution pokazuje prawdziwy rozmiar 
 
 **Status: preview.** W tym wydaniu tylko RX 9000 (RDNA 4); RX 7000 dołączy, gdy zostanie tam przetestowane. Lekkie
 migotanie lub przycinanie (judder) przy szybkim ruchu może pozostać (obniż poziom NR do 720, ogranicz grę do 60-90
-fps, zostaw Model interleave wyłączone - host go odrzuca). Host przechwytujący jest pobierany z wydania jego autora na
-GitHubie, nie z naszego. Zgłoszenia: zip z **Save report** z menu wewnątrz hosta (jego tytuł podaje skalowaną grę)
+fps, zostaw Model interleave wyłączone - host go odrzuca). Host przechwytujący to własny build AMDNR, pobierany z wydania AMDNR na GitHubie. Zgłoszenia: zip z **Save report** z menu wewnątrz hosta (jego tytuł podaje skalowaną grę)
 albo COLLECT LOGS w launcherze.
 
 ## Linux / Proton (Steam Deck, Linux na komputerze)
@@ -543,14 +540,11 @@ Menu Scale, Save Settings i Close. Pomoc otwiera się po najechaniu na etykietę
   style, Tone curve i Black lift od danielblnc), **Exposure and highlights** (Auto-exposure, jego limit jasnych
   partii, Highlight colour guard, Game exposure) i **Appearance filter** (ze słowem off / on po nazwie). Przygaszone "default" lub "custom" po nazwie zwijanej sekcji
   mówi, czy coś w niej zmieniono.
-- **Ray Regeneration**: od 0.3.5 odsyłacz. Gdy Ray Regeneration działa w danym tytule, jego ustawienia są na
-  własnej zakładce **Ray Regeneration** (zaraz po Upscaling), a ta linia oferuje przycisk **Open Ray Regeneration**;
-  gdy nie działa, linia mówi dlaczego (gra nie włączyła Ray Reconstruction, sterownik odrzucił denoiser na tej karcie,
-  Ray Regeneration zrezygnowało z tej gry i dlaczego, albo kiedy działało ostatni raz).
+- **Ray Regeneration**: od 0.3.5.3 nie ma go na tej zakładce; jego ustawienia i stan są na własnej zakładce **Ray Regeneration** (zaraz po Upscaling). Tutaj tylko pomarańczowa linia pod runtime'em może napisać "Ray Regeneration is off in this title" albo "Ray Regeneration could not start on this GPU" (najedź na nią, żeby zobaczyć powód).
+- **Screen-space GI** (nowość w 0.3.5.3): **AMDNR Screen-space GI**, domyślnie wyłączone, z przygaszonym "by 3zwr1" po nazwie; pod nim, gdy jest włączone: GI quality (Low / Medium / High / Ultra; Auto wybiera jeden dla Twojego GPU, dopóki sam nie naciśniesz któregoś, a jego etykieta pokazuje zmierzony czas GPU albo szacunek, zanim GI zadziała), Bounce light, Ambient occlusion, Radius, Object thickness, Camera FOV, **More GI options** (Bounce colour, Sky light, Multi-bounce, FOV axis, Colour encoding, Debug view) i Reset GI. Na każdym GPU AMD, z runtime'em NR lub bez; wewnątrz AMDNR Anywhere jest wyszarzone z podaniem powodu.
 - **Wiersz narzędzi**, zamknięty na starcie: **Diagnostics** (Network output, Debug view, Edit shaper A/B, NR cost,
   odczyty ghostingu i samostrojenia, linia GPU, **Save report**; widok debug RR jest od 0.3.5 na zakładce Ray
-  Regeneration), **Runtime options** (Encoding, Every-frame NR, NR slots, Highlight proxy) i **Experimental** (AMDNR
-  Screen-space GI, w wersji preview).
+  Regeneration) i **Runtime options** (Encoding, Every-frame NR, NR slots, Highlight proxy); **Experimental** pojawia się tylko wtedy, gdy Twój ini ma włączony odziedziczony efekt Screen-space GI, wycofany z menu (`[AmdRtgi] Enabled`), i zawiera tylko jego pole z etykietą "retired".
 
 Ustawienie, którego aktywny runtime nie ma, jest wyszarzone z krótką etykietą (np. "not in lmxxf yet") albo ukryte
 z licznikiem ("3 danielblnc-only options hidden"); zmiana runtime'u nie przesuwa żadnego innego wiersza.
@@ -558,8 +552,7 @@ z licznikiem ("3 danielblnc-only options hidden"); zmiana runtime'u nie przesuwa
 **Pozostałe zakładki:** Upscaling zaczyna się od upscalera, jednej linii stanu i Render resolution (dawne Upscale
 Ratio Override i Output Scaling); na karcie innej niż NVIDIA "DLSS w/Dx12" nie jest już wyświetlane. **Ray
 Regeneration** (nowość w 0.3.5) następuje po Upscaling, gdy Ray Regeneration działa w danym tytule: linie stanu (dla
-każdej karty i każdego API), wiersz **Denoiser backend** (Automatic / Off - Off mówi grze, że Ray Reconstruction nie
-jest obsługiwane, więc gra zachowuje własny denoiser; po restarcie), ustawienia, More Ray Regeneration options oraz
+każdej karty i każdego API), wiersz **Denoiser backend** (Automatic / AMD FSR Ray Regeneration / AMDNR Ray Denoiser (preview) / Off (the game's own): Automatic to denoiser AMD na RX 9000 i AMDNR Ray Denoiser na każdej innej karcie, trzy pierwsze przełączają się w trakcie gry, a Off mówi grze, że Ray Reconstruction nie jest obsługiwane, więc gra zachowuje własny denoiser, po restarcie), ustawienia, More Ray Regeneration options oraz
 własny blok Diagnostics z widokiem debug RR i liczbą szumu (ziarno na wejściu i wyjściu, migotanie przy nieruchomej
 kamerze); ta zakładka nigdy nie jest rysowana wewnątrz AMDNR Anywhere. Image zawiera Sharpness, Textures, Init Flags
 i Magnifier. Frame Gen zaczyna się od FG Input i FG Output oraz, od 0.3.5, jednej linii, która podaje krok wciąż
@@ -627,16 +620,11 @@ najlepiej zmieniać jedną rzecz naraz.
   kopia XeSS 3 dostarczana z grą pozostaje ograniczona do 6X. 10X wymaga monitora 360 Hz+ i limitu klatek
   ustawionego na odświeżanie / 10; opóźnienie jest wysokie, a provider rezerwuje około 128 MiB więcej VRAM w 4K.
   7X-10X nie jest jeszcze potwierdzone w żadnej grze: testerzy, prosimy o przesłanie `OptiScaler.log`.
-- **FSR Ray Regeneration** — na RX 9000 (RDNA 4); na RX 7000 (RDNA 3) jako preview, domyślnie włączone, bez denoisera (patrz niżej); tylko w grach korzystających z DLSS Ray Reconstruction (Cyberpunk 2077,
+- **FSR Ray Regeneration** — na RX 9000 (RDNA 4); na RX 7000 (RDNA 3) jako preview, domyślnie włączone, z AMDNR Ray Denoiser jako denoiserem (patrz niżej); tylko w grach korzystających z DLSS Ray Reconstruction (Cyberpunk 2077,
   Alan Wake 2), gdy gra działa na DLSS (spoofing włączony), a ray tracing i Ray Reconstruction są
   włączone w jej własnych ustawieniach. Neural Rendering działa wtedy po nim, na jego wyjściu, co kosztuje
   więcej: obniż NR resolution, jeśli spadnie liczba klatek. Od 0.3.5 jego ustawienia są na własnej zakładce **Ray
-  Regeneration**, zaraz po Upscaling, rysowanej, gdy Ray Regeneration działa w danym tytule; zakładka Neural na nią
-  wskazuje i, gdy Ray Regeneration nie działa, zachowuje przygaszoną linijkę, która mówi dlaczego (gra nie włączyła
-  Ray Reconstruction, sterownik odrzucił denoiser na tej karcie, Ray Regeneration zrezygnowało z tej gry i dlaczego,
-  albo kiedy działało ostatni raz). Wiersz **Denoiser backend** tej zakładki (`[FSR-RR] RrBackend = auto | off`) może
-  powiedzieć grze, że Ray Reconstruction nie jest obsługiwane, więc gra zachowuje własny denoiser (od następnego
-  uruchomienia gry). W tytule **Vulkan** Ray Reconstruction jest z założenia "not supported" (denoiser działa na
+  Regeneration**, zaraz po Upscaling, rysowanej, gdy Ray Regeneration działa w danym tytule; od 0.3.5.3 zakładka Neural nie ma żadnej linii Ray Regeneration, tylko pomarańczową linię pod runtime'em, gdy Ray Regeneration jest wyłączone w danym tytule albo nie mogło wystartować na tym GPU. Wiersz **Denoiser backend** tej zakładki (`[FSR-RR] RrBackend` = auto / amd / amdnr / off) oferuje Automatic (AMD FSR Ray Regeneration na RX 9000, AMDNR Ray Denoiser (preview) na każdej innej karcie), AMD FSR Ray Regeneration, AMDNR Ray Denoiser (preview) i Off (the game's own); trzy pierwsze przełączają się w trakcie gry, a Off mówi grze, że Ray Reconstruction nie jest obsługiwane, więc gra zachowuje własny denoiser (od następnego uruchomienia gry). W tytule **Vulkan** Ray Reconstruction jest z założenia "not supported" (denoiser działa na
   D3D12), a zakładka to mówi. **Profil path-traced** (mniej ziarna na twarzach przy path tracingu) jest opcjonalny od
   0.3.3.1: zaznacz go tam, jeśli chcesz go wypróbować w Resident Evil Requiem lub PRAGMATA. Ta sama zakładka ma siłę
   bias mask i **wygładzanie skóry** (eksperymentalne, dla gier udostępniających SSS guide; domyślnie wyłączone, ale
@@ -644,19 +632,16 @@ najlepiej zmieniać jedną rzecz naraz.
   options*, a widok debug RR i liczba szumu (ziarno na wejściu i wyjściu, migotanie przy nieruchomej kamerze) są we
   własnym bloku Diagnostics zakładki. Na RX 7000 (RDNA 3) Ray Regeneration jest
   oferowane jako preview (0.3.5.1; 0.3.5 nie oferowało go domyślnie): gra może włączyć Ray Reconstruction i ustawienia
-  Ray Regeneration się pokazują, ale denoiser AMD nie ma providera dla RDNA 3, więc denoiser odmawia startu, a obraz
-  Ray Reconstruction jest skalowany bez odszumiania, co może wyglądać na bardziej zaszumione niż własny denoiser gry;
+  Ray Regeneration się pokazują, a odszumia je AMDNR Ray Denoiser (preview), także na APU RDNA 3 / 3.5 (AMD FSR Ray Regeneration powstało dla RDNA 4);
   strona Ray Regeneration mówi, co działa. Pole w zakładce Upscaling **Preview: Ray Regeneration on this card (restart)**
   (z dopiskiem "preview - on by default") jest domyślnie zaznaczone; odznacz je albo ustaw
-  `[FSR-RR] FfxDenoiserAllowPreRdna4=false`, a gra zostanie przy swoim denoiserze. Własny denoiser AMDNR dla RX 7000 jest
-  planowany. RX 6000 i starsze dostają je tylko z `[FSR-RR] FfxDenoiserAllowPreRdna4=true`
-  (zakładka Upscaling: **Offer FSR Ray Regeneration on this GPU (restart)**). **Wyostrzanie po RR** (0.3.4.1): gdy
+  `[FSR-RR] FfxDenoiserAllowPreRdna4=false`, a gra zostanie przy swoim denoiserze. RX 6000 i starsze dostają je tylko jako opcję, z `[FSR-RR] FfxDenoiserAllowPreRdna4=true` (zakładka Upscaling: **Offer Ray Regeneration on this GPU (restart)**, z dopiskiem "preview"), również z AMDNR Ray Denoiser. **Wyostrzanie po RR** (0.3.4.1): gdy
   gra nie przekazuje ostrości, AMDNR wyostrza obraz o 0.25 po RR na Windows (0 na Linux / Proton); aby to wyłączyć:
   Image > Sharpness, zaznacz Override, suwak na 0. Od 0.3.4.2 ta liczba ma własny klucz w ini,
   `[Sharpness] RrDefaultSharpness` (ta sama wartość domyślna 0.25): wpisz tam 0.15, 0.10 albo 0 bez ruszania
   Override, a wartość, którą twój ini zachował pod `[Sharpness] Sharpness` przy wyłączonym Override, jest w menu
   oznaczona jako oczekująca.
-- **AMDNR Screen GI** (preview, nowość w 0.3.4, domyślnie wyłączone; Neural > Experimental albo `[AmdGi] Enabled=true`) — własne światło odbite i okluzja otoczenia w przestrzeni ekranu od AMDNR, z głębi gry, przed NR i upscalerem; działa z włączonym i wyłączonym NR; około 1 ms na High przy renderze 1080p na RX 9070 XT (zmierzone poza grą). To przestrzeń ekranu: brakuje światła spoza ekranu. Patrz `CHANGELOG.md`.
+- **AMDNR Screen-space GI by 3zwr1** (domyślnie wyłączone; Neural > Screen-space GI albo `[AmdGi] Enabled=true`) — własne światło odbite i okluzja otoczenia w przestrzeni ekranu od AMDNR, z głębi gry, przed NR, upscalerem i interfejsem; działa z włączonym i wyłączonym NR; Low / Medium / High / Ultra (Auto według GPU), około 0.6 ms na High przy renderze 1080p na RX 9070 XT (zmierzone). To przestrzeń ekranu: brakuje światła spoza ekranu. Patrz `CHANGELOG.md`.
 - **Save report** (Neural > Diagnostics albo Advanced > Logging) — jeden zip ze wszystkimi logami i plikami ini do zgłoszenia; patrz "Jeśli to
   nie działa" wyżej.
 
@@ -825,14 +810,7 @@ wyślij log razem ze zgłoszeniem.
 
 **Nie możesz znaleźć ustawień Ray Regeneration?** Od 0.3.5 są na własnej zakładce **Ray Regeneration**, zaraz po
 Upscaling, rysowanej, gdy Ray Regeneration działa w danym tytule (i zachowanej do końca sesji, gdy raz zadziałało);
-linia **Ray Regeneration** w zakładce Neural oferuje wtedy przycisk **Open Ray Regeneration**. Gdy nie działa,
-zakładka nie jest rysowana, a ta linia w zakładce Neural mówi dlaczego: gra nie włączyła Ray Reconstruction, Ray
-Regeneration zrezygnowało z tej gry i dlaczego, albo ile sekund temu działało ostatni raz. Na RX 7000 kolejna
-przygaszona linijka dodaje, że jest tam oferowane jako preview: denoiser AMD nie ma providera dla RDNA 3, więc gdy tylko
-gra włączy Ray Reconstruction, jej obraz jest skalowany bez odszumiania, a `[FSR-RR] FfxDenoiserAllowPreRdna4=false`
-(albo odznaczone pole w zakładce Upscaling **Preview: Ray Regeneration on this card (restart)**) wyłącza preview, więc
-gra zostaje przy swoim denoiserze. Na RX 6000 i starszych mówi, że na tej karcie nie jest oferowane, że AMD udostępnia denoiser dla RDNA 4
-i że `[FSR-RR] FfxDenoiserAllowPreRdna4=true` udostępnia je mimo to. Aby je uruchomić, w ustawieniach graficznych gry: wybierz **DLSS** jako upscaler (nie FSR, nie XeSS),
+od 0.3.5.3 zakładka Neural nie ma żadnej linii Ray Regeneration. Gdy nie działa, zakładka nie jest rysowana; jeśli Ray Regeneration jest wyłączone w tym tytule albo nie mogło wystartować na tym GPU, mówi o tym pomarańczowa linia pod runtime'em w zakładce Neural. Na RX 7000 i APU RDNA 3 / 3.5 Ray Regeneration jest oferowane jako preview, domyślnie włączone, a odszumia je AMDNR Ray Denoiser (preview) (AMD FSR Ray Regeneration powstało dla RDNA 4); `[FSR-RR] FfxDenoiserAllowPreRdna4=false` (albo odznaczone pole w zakładce Upscaling **Preview: Ray Regeneration on this card (restart)**) wyłącza preview, więc gra zostaje przy swoim denoiserze. Na RX 6000 i starszych nie jest domyślnie oferowane: pole w zakładce Upscaling **Offer Ray Regeneration on this GPU (restart)** (`[FSR-RR] FfxDenoiserAllowPreRdna4=true`) je udostępnia, z AMDNR Ray Denoiser (preview). Aby je uruchomić, w ustawieniach graficznych gry: wybierz **DLSS** jako upscaler (nie FSR, nie XeSS),
 włącz **ray tracing** lub path tracing i włącz **Ray Reconstruction** (DLSS-RR); zakładka Upscaling pokaże wtedy "FSR
 Ray Regeneration". Co zmienić przy którym problemie, opisuje przewodnik po ustawieniach Ray Regeneration
 **RR-BEST-SETTINGS.md** (nie ma go w zipie).
@@ -854,7 +832,7 @@ nieruchomej scenie ma po naszej stronie przyczynę strukturalną, której żaden
 problem. 0.3.5 wyraża go liczbą: blok Diagnostics zakładki Ray Regeneration pokazuje ziarno na wejściu i wyjściu oraz
 migotanie przy nieruchomej kamerze (mierzone, gdy zakładka jest otwarta), a wiersz **Denoiser backend** tej zakładki
 można ustawić na Off, co mówi grze, że Ray Reconstruction nie jest obsługiwane, więc gra zachowuje własny denoiser
-(po restarcie). Własny denoiser AMDNR to praca na 0.3.6.
+(po restarcie). Od 0.3.5.3 ten sam wiersz oferuje też własny denoiser AMDNR, AMDNR Ray Denoiser (preview), którego Automatic używa na każdej karcie poza RX 9000.
 
 **Ray Reconstruction w grze jest włączone, ale zakładka Neural mówi "Ray Regeneration is off in this title"?**
 Gra nie udostępnia tego, czego potrzebuje FSR Ray Regeneration: jej wtyczka DLSS przekazuje puste macierze kamery
@@ -945,19 +923,19 @@ podziękowania należą się autorom projektów źródłowych (upstream).
 - **lmxxf** (Kien) — https://github.com/lmxxf/dlss5-on-amd-9070xt-porting (port sieci, kernele i runtime HIP, MIT)
 - **TheAutomatic** — `LmxxfNrRuntime.cpp`, `LmxxfNrApi.h`, `LmxxfProductionOptions.h`: portions contributed to lmxxf by TheAutomatic (MIT)
 - **kernele lmxxf 0.31** w `LmxxfNrRuntime.pak` (the ViT projection (lmxxf031-vit-wide-deep), the C512 QKV and mix kernels (lmxxf031-c512-m32-mh, lmxxf031-c512-m32-deep) and one-wave-per-head attention (lmxxf031-c64-wave2)) — autorstwa lmxxf (Kien, MIT), zbudowane przez AMDNR ze źródeł i przepisu budowania lmxxf; część AMDNR to ładowanie, przypięte sumy SHA-256, filtrowanie według GPU i rozwiązania zapasowe
-- **kernele lmxxf 0.37 i 0.39** w `LmxxfNrRuntime.pak` (moduły lmxxf037-* i lmxxf039-* dla RX 9000) i ich kod uruchamiający w `LmxxfNrRuntime.dll` — lmxxf 0.37 / 0.39 by Kien (MIT), dostarczane w takiej postaci, w jakiej zbudował je lmxxf; część AMDNR to ładowanie jako jedna przypięta grupa, przypięte sumy SHA-256, ustawienia domyślne według GPU, wyłączniki i rozwiązania zapasowe
+- **kernele lmxxf 0.37, 0.39 i 0.41** w `LmxxfNrRuntime.pak` (moduły lmxxf037-*, lmxxf039-* i lmxxf041-* dla RX 9000) i ich kod uruchamiający w `LmxxfNrRuntime.dll` — lmxxf 0.37 / 0.39 / 0.41 by Kien (MIT), dostarczane w takiej postaci, w jakiej zbudował je lmxxf; część AMDNR to ładowanie jako jedna przypięta grupa, przypięte sumy SHA-256, ustawienia domyślne według GPU, wyłączniki i rozwiązania zapasowe
 - **c32w kernels** (0.3.3.2) — własne jednofalowe (one-wave) kernele AMDNR dla RDNA 4, przeznaczone dla sieci lmxxf, Copyright (c) 2026 3zwr1 (AMDNR); pomysły z publicznej dokumentacji AMD dotyczącej RDNA 4 WMMA (GPUOpen, ROCm matrix instruction calculator)
 - **Backend RDNA 3 od AMDNR** (0.3.3; buildy dla handheldów gfx1103 / gfx1150 w 0.3.4), polityka poziomów rozmiaru sieci i małe rozmiary sieci (0.3.4) — Copyright (c) 2026 3zwr1 (AMDNR)
 - **Matheus / dlss-5-amd** — https://github.com/MatheusGViana/dlss-5-amd-project
 - **Dagherbou / OptiScaler_DLSSNR** — https://github.com/Dagherbou/OptiScaler_DLSSNR
 - **wilsjo2 / OptiScaler-DLSSNR-PreSR-Multipass** — https://github.com/wilsjo2/OptiScaler-DLSSNR-PreSR-Multipass
 - **Nukem9** — dlssg-to-fsr3 — https://github.com/Nukem9/dlssg-to-fsr3 (GPLv3, bez modyfikacji)
-- **Magpie by Blinue, experimental fork by SAOG0721 (GPL-3.0), fetched from the author, not redistributed by AMDNR** — host przechwytujący okno, wewnątrz którego działa AMDNR Anywhere — https://github.com/Blinue/Magpie (fork: https://github.com/SAOG0721/Magpie)
+- **Magpie by Blinue, experimental fork by SAOG0721 (GPL-3.0)** — host przechwytujący okno, wewnątrz którego działa AMDNR Anywhere, we własnym buildzie AMDNR publikowanym w wydaniach AMDNR na GitHubie (`Magpie.exe` przebudowany z czterema poprawkami; łatki, bazowy commit i opcje kompilacji obok, w `Anywhere-host-source/`; bez plików NVIDIA) — https://github.com/Blinue/Magpie (fork: https://github.com/SAOG0721/Magpie)
 - **RenoDX** — clshortfuse — https://github.com/clshortfuse/renodx (matematyka kompozycji koloru, MIT)
 - **Coldwood1026** — XeFGUnlock (GPL-3.0), podstawa wbudowanego odblokowania generowania wielu klatek XeFG i jego frame pacingu
 - **Zach Hembree (DarkHelmet)** — FSR Ray Regeneration dla OptiScalera, źródło ścieżki Ray Regeneration w AMDNR, kontynuowane przez **burak113**, z którego gałęzi AMDNR wykonał port (gałąź OptiScaler ffx-denoise-experimental, GPL-3.0)
 - **Screen-space GI** (odziedziczony efekt; wycofany z menu w 0.3.4, `[AmdRtgi] Enabled` w ini) — efekt, który AMDNR odziedziczył z linii OptiScaler-AMD-PreSR; zasługa należy do jego pierwotnych autorów. Wymaga folderu `experimental_lighting` z paczki danielblnc, której AMDNR nie dostarcza.
-- **AMDNR Screen GI** (preview 0.3.4) — własna praca AMDNR, Copyright (c) 2026 3zwr1 (AMDNR), napisana na podstawie opublikowanych prac (Therrien, Levesque i Gilet 2023; Jimenez i in. 2016; Schied i in. 2017; oraz pozostałe wymienione w `CHANGELOG.md` i `Licenses/AMDNR_NOTICE.txt`)
+- **AMDNR Screen-space GI by 3zwr1** — własna praca AMDNR, Copyright (c) 2026 3zwr1 (AMDNR), napisana na podstawie opublikowanych badań (wymienionych w `CHANGELOG.md` i `Licenses/AMDNR_NOTICE.txt`).
 - **OptiScaler** — Overclockers — https://github.com/Overclockers/OptiScaler-Releases
 
 ## AMDNR Launcher
@@ -974,7 +952,7 @@ Pobierz `AMDNR-Launcher.exe`, czyli AMDNR Launcher z najnowszego wydania, ze str
 **Nowość w Launcherze 0.3.5.1** (w wydaniu Alpha0.3.5; najpierw aktualizuje sam siebie, potem Twoje gry):
 
 - **PLAY ANYWHERE** przy grze bez własnego upscalera (patrz "AMDNR Anywhere"): launcher pobiera host przechwytujący
-  z wydania jego autora, uruchamia grę i uruchamia Neural Rendering na jej oknie, z podsumowaniem ustawień hosta
+  z wydania AMDNR na GitHubie, uruchamia grę i uruchamia Neural Rendering na jej oknie, z podsumowaniem ustawień hosta
   tylko do odczytu obok przycisku (same ustawienia są w zakładce Anywhere w menu). W tym wydaniu RX 9000. Gry, do
   których mod nie może się załadować (32-bit, DirectX 9 / OpenGL bez upscalera), są odrzucane przy INSTALL z jasnym
   komunikatem i dostają propozycję Anywhere.

@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "launcher": {
-    "version": "0.3.5.6",
-    "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.2/AMDNR-Launcher.exe",
-    "sha256": "2cc7a267b794fa5b3d2e818c2065fa2065ce12978ff854558ba9b828653c5f1a"
+    "version": "0.3.5.7",
+    "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.3/AMDNR-Launcher.exe",
+    "sha256": "72e2bfa20d71eb3405dba8d4255f42ebe23587df5f5bbe494770ec7aa4f36f6b"
   },
   "sources": [
     {
@@ -19,7 +19,7 @@
       "runtimes": [
         {
           "package": "runtime-060",
-          "gpus": ["rdna2"]
+          "gpus": ["rdna4", "rdna3", "rdna2"]
         },
         {
           "package": "runtime-051",
@@ -68,7 +68,7 @@
       "runtimes": [
           {
           "package": "runtime-060",
-          "gpus": ["rdna2"]
+          "gpus": ["rdna4", "rdna3", "rdna2"]
         },
         {
           "package": "runtime-051",
@@ -96,10 +96,10 @@
   "packages": [
     {
       "id": "amdnr",
-      "version": "0.3.5.2",
-      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.2/AMDNR-v0.3.5.2.zip",
-      "sha256": "e7b147f9c0be5b3c79fd02bbc26e347c5cb145b1ccb4361428e79ff86dd1f15e",
-      "size": 629396152,
+      "version": "0.3.5.3",
+      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.3/AMDNR-v0.3.5.3.zip",
+      "sha256": "ad41b3bb5d09bcdb987a37f4f018ed6007fdc78a2d06f8762a4124e2046230e3",
+      "size": 642734666,
       "exclude": []
     },
     {
@@ -278,16 +278,15 @@
       "sha256": "27f17f9a2bb136b0755dfe5259ab9f40ce62ec47d28895458506f074a9696cb0",
       "size": 1254400,
       "mirrors": [
-        "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.1/nvngx.dll_dlssnr.dll",
         "https://2020.filemail.com/api/file/get?filekey=bKdG35yFdj1fmfNLfdJ6kQ_ECZSFRdCcn0xXnpCJSB-9uLOo2IQZwWbhJ90--uI"
       ]
     },
     {
     "id": "anywhere-host",
     "version": "0.6.8-experimental.1",
-    "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.2.1/Magpie-Experimental-x64-AMDNR.zip",
-    "sha256": "013055ba19b5a797d4aac8a0e6ca03a8460c3ec389e06efcdc0cce0ffc363846",
-    "size": 489439536,
+    "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.3/Magpie-Experimental-x64-AMDNR-3e.zip",
+    "sha256": "6e708287c82c9d3159e6dcefbd53a71a1f05760292b5f06696807b286d43e984",
+    "size": 101875356,
     "exclude": ["nvngx_*.dll", "sl.*.dll", "nvofapi*.dll", "NvLowLatency*.dll", "nvsdk_ngx*.dll"]
     }
   ],

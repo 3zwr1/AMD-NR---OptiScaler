@@ -1038,6 +1038,7 @@ static AmdPreSr::Settings BuildSettings(float sessionScale)
         s.lmxxfAutoExposure = cfg.AmdLmxxfAutoExposure.value_or_default();
         s.lmxxfCpuWait = State::Instance().api == API::Vulkan; // running over the Vulkan-on-D3D12 bridge
         s.vulkanBridge = s.lmxxfCpuWait; // the same fact, read by both hosts (AmdPreSr.h)
+        s.d3d11Bridge = State::Instance().api == API::DX11; // running over the D3D11-on-D3D12 bridge
         s.lmxxfEdgeGuard = std::clamp(cfg.AmdLmxxfEdgeGuard.value_or_default(), 0.f, 1.f);
         s.lmxxfOutputSmooth = std::clamp(cfg.AmdLmxxfOutputSmooth.value_or_default(), 0.f, 1.f);
         // LOCKED OFF in this build by the user's decision (the code stays): in normal play it

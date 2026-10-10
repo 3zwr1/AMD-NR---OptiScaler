@@ -3637,50 +3637,59 @@ ID3D12Resource* Backend::Impl::Record(ID3D12GraphicsCommandList* cmd, const AmdP
     //    the runtime's idle_syncs / idle_sync_skips (IdleSyncNote, totals for the current network
     //    build) and the process's video memory / budget and private bytes (MemoryNote, read now).
     //    The GPU numbers are read back one window later (no stall).
+    //    On the D3D11 bridge (cfg.d3d11Bridge) only the CPU half runs: the GPU half, recorded on
+    //    IFeature_Dx11wDx12's list, made that list's Close return E_INVALIDARG on its first window
+    //    (frame 600), and the bridge never recovered - every later Reset of the list failed too, so
+    //    the picture stayed broken for the rest of the session. With the GPU half out, the line keeps
+    //    the counters and says the GPU values are n/a, as the NR cost readout does on this bridge.
     if (statsPass && statsTex && freshEdit && fed && frames % kStatsEvery == kStatsEvery - 1)
     {
         const unsigned slot = static_cast<unsigned>((frames / kStatsEvery) & 1u);
-        ID3D12Resource* srv[2] = { freshEdit.Get(), fed.Get() };
-        const DXGI_FORMAT fmts[2] = { kFp16, kFp16 };
-        Barrier(cmd, statsTex.Get(), kSrv, kUav);
-        statsPass->Run(cmd, srv, fmts, statsTex.Get(), DXGI_FORMAT_R32_UINT, w, h, 1u, 0.f, 0.f, 0.f, 0.f, false);
-        UavBarrier(cmd, statsTex.Get());
-        statsPass->Run(cmd, srv, fmts, statsTex.Get(), DXGI_FORMAT_R32_UINT, w, h, 0u);
-        if (ID3D12Resource* carried = noMotion ? carryHist.Get() : temporal->ResidualHistory())
+        const bool gpuStats = !cfg.d3d11Bridge;
+        if (gpuStats)
         {
+            ID3D12Resource* srv[2] = { freshEdit.Get(), fed.Get() };
+            const DXGI_FORMAT fmts[2] = { kFp16, kFp16 };
+            Barrier(cmd, statsTex.Get(), kSrv, kUav);
+            statsPass->Run(cmd, srv, fmts, statsTex.Get(), DXGI_FORMAT_R32_UINT, w, h, 1u, 0.f, 0.f, 0.f, 0.f, false);
             UavBarrier(cmd, statsTex.Get());
-            ID3D12Resource* srv2[2] = { carried, fed.Get() };
-            statsPass->Run(cmd, srv2, fmts, statsTex.Get(), DXGI_FORMAT_R32_UINT, w, h, 2u);
+            statsPass->Run(cmd, srv, fmts, statsTex.Get(), DXGI_FORMAT_R32_UINT, w, h, 0u);
+            if (ID3D12Resource* carried = noMotion ? carryHist.Get() : temporal->ResidualHistory())
+            {
+                UavBarrier(cmd, statsTex.Get());
+                ID3D12Resource* srv2[2] = { carried, fed.Get() };
+                statsPass->Run(cmd, srv2, fmts, statsTex.Get(), DXGI_FORMAT_R32_UINT, w, h, 2u);
+            }
+            if (f.reactive)
+            {
+                const auto rd = f.reactive->GetDesc();
+                UavBarrier(cmd, statsTex.Get());
+                ID3D12Resource* srv3[2] = { freshEdit.Get(), f.reactive };
+                const DXGI_FORMAT fmts3[2] = { kFp16, ReactiveViewFormat(rd.Format) };
+                statsPass->Run(cmd, srv3, fmts3, statsTex.Get(), DXGI_FORMAT_R32_UINT, w, h, 3u, float(ReactiveChannels(rd.Format)));
+            }
+            if (motion)
+            {
+                const auto md = motion->GetDesc();
+                UavBarrier(cmd, statsTex.Get());
+                ID3D12Resource* srv4[2] = { motion, fed.Get() };
+                const DXGI_FORMAT fmts4[2] = { motion == motionScratch.Get() ? DXGI_FORMAT_R16G16_FLOAT : MotionViewFormat(md.Format), kFp16 };
+                Barrier(cmd, motion, motionState, kSrv);
+                statsPass->Run(cmd, srv4, fmts4, statsTex.Get(), DXGI_FORMAT_R32_UINT, w, h, 4u, sx, sy);
+                Barrier(cmd, motion, kSrv, motionState);
+            }
+            Barrier(cmd, statsTex.Get(), kUav, D3D12_RESOURCE_STATE_COPY_SOURCE);
+            Barrier(cmd, expoJob.Get(), kSrv, D3D12_RESOURCE_STATE_COPY_SOURCE);
+            CopyToReadback(cmd, statsTex.Get(), DXGI_FORMAT_R32_UINT, 12, statsRead[slot].Get(), 0);
+            CopyToReadback(cmd, expoJob.Get(), DXGI_FORMAT_R32_FLOAT, 2, statsRead[slot].Get(), 256);
+            statsExpoMode[slot] = expoModeFed; // the mode that wrote the expoJob just copied
+            statsTitleIgnored[slot] = expoTitleIgnored; // and whether AmdUseGameExposure=0 set the title's texture aside
+            statsKeyOff[slot] = expoKeyOff;             // and whether that key was 0 at all
+            Barrier(cmd, statsTex.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, kSrv);
+            Barrier(cmd, expoJob.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, kSrv);
         }
-        if (f.reactive)
-        {
-            const auto rd = f.reactive->GetDesc();
-            UavBarrier(cmd, statsTex.Get());
-            ID3D12Resource* srv3[2] = { freshEdit.Get(), f.reactive };
-            const DXGI_FORMAT fmts3[2] = { kFp16, ReactiveViewFormat(rd.Format) };
-            statsPass->Run(cmd, srv3, fmts3, statsTex.Get(), DXGI_FORMAT_R32_UINT, w, h, 3u, float(ReactiveChannels(rd.Format)));
-        }
-        if (motion)
-        {
-            const auto md = motion->GetDesc();
-            UavBarrier(cmd, statsTex.Get());
-            ID3D12Resource* srv4[2] = { motion, fed.Get() };
-            const DXGI_FORMAT fmts4[2] = { motion == motionScratch.Get() ? DXGI_FORMAT_R16G16_FLOAT : MotionViewFormat(md.Format), kFp16 };
-            Barrier(cmd, motion, motionState, kSrv);
-            statsPass->Run(cmd, srv4, fmts4, statsTex.Get(), DXGI_FORMAT_R32_UINT, w, h, 4u, sx, sy);
-            Barrier(cmd, motion, kSrv, motionState);
-        }
-        Barrier(cmd, statsTex.Get(), kUav, D3D12_RESOURCE_STATE_COPY_SOURCE);
-        Barrier(cmd, expoJob.Get(), kSrv, D3D12_RESOURCE_STATE_COPY_SOURCE);
-        CopyToReadback(cmd, statsTex.Get(), DXGI_FORMAT_R32_UINT, 12, statsRead[slot].Get(), 0);
-        CopyToReadback(cmd, expoJob.Get(), DXGI_FORMAT_R32_FLOAT, 2, statsRead[slot].Get(), 256);
-        statsExpoMode[slot] = expoModeFed; // the mode that wrote the expoJob just copied
-        statsTitleIgnored[slot] = expoTitleIgnored; // and whether AmdUseGameExposure=0 set the title's texture aside
-        statsKeyOff[slot] = expoKeyOff;             // and whether that key was 0 at all
-        Barrier(cmd, statsTex.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, kSrv);
-        Barrier(cmd, expoJob.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, kSrv);
         const unsigned prev = slot ^ 1u;
-        std::string gpu = "GPU values pending";
+        std::string gpu = gpuStats ? "GPU values pending" : "GPU values n/a on the D3D11 bridge";
         if (statsWritten[prev])
         {
             void* mapped = nullptr;
@@ -3818,7 +3827,7 @@ ID3D12Resource* Backend::Impl::Record(ID3D12GraphicsCommandList* cmd, const AmdP
                 }
             }
         }
-        statsWritten[slot] = true;
+        statsWritten[slot] = gpuStats; // nothing was copied into statsRead[slot] without the GPU half
         // RenoDX windows carry the composition values in force now (AMDNR 0.3.3), so a tester's log
         // shows that a slider move arrived even after the change lines above have run out.
         std::string composedNote;

@@ -430,6 +430,7 @@ bool IFeature_Dx11wDx12::Evaluate(ID3D11DeviceContext* InDeviceContext, NVSDK_NG
     bool dx12EvalResult = false;
     bool commandListRecording = false;
     bool commandListExecuted = false;
+    bool commandListCloseFailed = false;
     do
     {
         if (!ProcessDx11Textures(InParameters))
@@ -517,6 +518,7 @@ bool IFeature_Dx11wDx12::Evaluate(ID3D11DeviceContext* InDeviceContext, NVSDK_NG
         {
             LOG_ERROR("CommandList Close error: {:X}", (UINT) closeResult);
             dx12EvalResult = false;
+            commandListCloseFailed = true;
         }
     }
 
@@ -544,6 +546,22 @@ bool IFeature_Dx11wDx12::Evaluate(ID3D11DeviceContext* InDeviceContext, NVSDK_NG
     // wait for a submission that cannot come.
     if (commandListRecording && !commandListExecuted)
         DlssNr::AmdBridge::ListDiscarded(cmdList);
+
+    // A list whose Close failed is not reusable: every later Reset of it returns E_INVALIDARG, and since
+    // _frameCount does not advance on a failed frame the same slot is picked again on every Evaluate, so
+    // one bad frame kept the bridge down for the rest of the session ("CommandList Reset error: 80070057",
+    // "Can't process Dx11 textures!" each frame). Replace the list: CreateD3D12Objects creates the missing
+    // one on the same allocator and closes it; the next Evaluate resets both as usual.
+    if (commandListCloseFailed)
+    {
+        SAFE_RELEASE(Dx12CommandList[frame]);
+        cmdList = nullptr;
+
+        if (CreateD3D12Objects())
+            LOG_WARN("Command list {} recreated after a failed Close", frame);
+        else
+            LOG_ERROR("Could not recreate command list {} after a failed Close", frame);
+    }
 
     auto evalResult = false;
 

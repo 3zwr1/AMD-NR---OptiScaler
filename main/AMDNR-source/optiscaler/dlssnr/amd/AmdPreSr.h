@@ -193,6 +193,11 @@ struct Settings
     // danielblnc reads it to skip the post-submit job wait, to run one Neural pass, and to log a
     // gap between two Records (AmdPreSr.cpp: WaitAfterSubmitIfEveryFrame, Record).
     bool vulkanBridge = false;
+    // lmxxf only: the frame runs over OptiScaler's D3D11-on-D3D12 bridge (a DirectX 11 title,
+    // IFeature_Dx11wDx12). The GPU half of the every-kStatsEvery stats is left out there: recorded
+    // on that bridge's list it makes Close return E_INVALIDARG (LmxxfBackend.cpp, step 9), the same
+    // bridge the danielblnc NR cost readout already skips (AmdPreSr.cpp, timeNr).
+    bool d3d11Bridge = false;
     // lmxxf only, final image mode: the title has no motion vectors. The answer is consumed only
     // when the runtime reports it finished (the frame never waits for the network; the next feed
     // waits for the answer instead), and the edit is carried in place by an EMA (`stability`)

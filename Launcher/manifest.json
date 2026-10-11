@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "launcher": {
-    "version": "0.3.5.8",
-    "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.3/AMDNR-Launcher.exe",
-    "sha256": "bce4f138d2ff791b5e49e00cfa6d2608c6bcadee3f199b8c8c0340ee696c33f3"
+    "version": "0.3.5.9",
+    "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.5/AMDNR-Launcher.exe",
+    "sha256": "eb76075e9b0b662d18293e0fa5cd734894938d113f72a34e24c3deec54bd146d"
   },
   "sources": [
     {
@@ -14,32 +14,51 @@
       "homepage": "https://github.com/3zwr1/AMD-NR---OptiScaler",
       "package": "amdnr",
       "forwarder": "forwarder",
-      "runtimeRequired": false,
+      "runtimeRequired": true,
       "runtimeNote": "Recommended on every GPU. On RX 7000 and RX 9000, AMDNR can also use its built-in lmxxf runtime.",
       "runtimes": [
         {
           "package": "runtime-060",
-          "gpus": ["rdna4", "rdna3", "rdna2"]
+          "gpus": [
+            "rdna4",
+            "rdna3",
+            "rdna2"
+          ]
         },
         {
           "package": "runtime-051",
-          "gpus": ["rdna4", "rdna3"]
+          "gpus": [
+            "rdna4",
+            "rdna3"
+          ]
         },
         {
           "package": "runtime-050",
-          "gpus": ["rdna4", "rdna3"]
+          "gpus": [
+            "rdna4",
+            "rdna3"
+          ]
         },
         {
           "package": "runtime-043",
-          "gpus": ["rdna4", "rdna3"]
+          "gpus": [
+            "rdna4",
+            "rdna3"
+          ]
         },
         {
           "package": "runtime-041",
-          "gpus": ["rdna4", "rdna3"]
+          "gpus": [
+            "rdna4",
+            "rdna3"
+          ]
         },
         {
           "package": "runtime-040",
-          "gpus": ["rdna4", "rdna3"]
+          "gpus": [
+            "rdna4",
+            "rdna3"
+          ]
         }
       ]
     },
@@ -50,7 +69,7 @@
       "summary": "OptiScaler AMD pre-SR: TheAutomatic's independent fork of the same family, offered for comparison. Downloaded unchanged from their GitHub releases; same danielblnc files, his own lmxxf backend and menu, his own fixes.",
       "homepage": "https://github.com/TheAutomatic/dlss-5-amd-project",
       "package": "theautomatic",
-      "forwarder": null,
+      "forwarder": "forwarder",
       "runtimeRequired": true,
       "runtimeNote": "Required: this build does not include danielblnc's runtime, and its lmxxf backend needs model files that are not in its release.",
       "iniWhenRuntime": [
@@ -66,29 +85,48 @@
         }
       ],
       "runtimes": [
-          {
+        {
           "package": "runtime-060",
-          "gpus": ["rdna4", "rdna3", "rdna2"]
+          "gpus": [
+            "rdna4",
+            "rdna3",
+            "rdna2"
+          ]
         },
         {
           "package": "runtime-051",
-          "gpus": ["rdna4", "rdna3"]
+          "gpus": [
+            "rdna4",
+            "rdna3"
+          ]
         },
         {
           "package": "runtime-050",
-          "gpus": ["rdna4", "rdna3"]
+          "gpus": [
+            "rdna4",
+            "rdna3"
+          ]
         },
         {
           "package": "runtime-043",
-          "gpus": ["rdna4", "rdna3"]
+          "gpus": [
+            "rdna4",
+            "rdna3"
+          ]
         },
         {
           "package": "runtime-041",
-          "gpus": ["rdna4", "rdna3"]
+          "gpus": [
+            "rdna4",
+            "rdna3"
+          ]
         },
         {
           "package": "runtime-040",
-          "gpus": ["rdna4", "rdna3"]
+          "gpus": [
+            "rdna4",
+            "rdna3"
+          ]
         }
       ]
     }
@@ -96,10 +134,10 @@
   "packages": [
     {
       "id": "amdnr",
-      "version": "0.3.5.4",
-      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.3/AMDNR-v0.3.5.4.zip",
-      "sha256": "a3627eed9a27c3e70952d37a3625de8acaee1c9752f521a14a27359339ae94f3",
-      "size": 642770982,
+      "version": "0.3.5.5",
+      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.5/AMDNR-v0.3.5.5.zip",
+      "sha256": "b5a659cc8820d490b1e99b099e38c84048febb59f646c82bf32a1fc2009d8892",
+      "size": 642922490,
       "exclude": []
     },
     {
@@ -108,15 +146,20 @@
       "url": "https://github.com/TheAutomatic/dlss-5-amd-project/releases/download/v1.9.1-alpha/OptiScaler-AMD-PreSR-1.9.1-alpha.zip",
       "sha256": "bc0799ee408f50a0766f250118022a6c030f46a3d2bf75e9715266ad2a3c247a",
       "size": 132549025,
-      "exclude": ["Setup.bat", "Setup.ps1", "Uninstall_OptiScaler_NR.bat", "Uninstall_OptiScaler_NR.ps1"]
-        },
-       {
-        "id": "runtime-060",
-        "version": "0.6.0",
-        "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.1/v0.6.0-Runtime.zip",
-        "sha256": "d2bb17027b2e13e11e2198dd0bf70d4dc11fa9a6cba6bdd9fe5b44d9cf351f7e",
-        "size": 176366023,
-        "passSha256": [
+      "exclude": [
+        "Setup.bat",
+        "Setup.ps1",
+        "Uninstall_OptiScaler_NR.bat",
+        "Uninstall_OptiScaler_NR.ps1"
+      ]
+    },
+    {
+      "id": "runtime-060",
+      "version": "0.6.0",
+      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.1/v0.6.0-Runtime.zip",
+      "sha256": "d2bb17027b2e13e11e2198dd0bf70d4dc11fa9a6cba6bdd9fe5b44d9cf351f7e",
+      "size": 176366023,
+      "passSha256": [
         "bc97f3b06718e19042acaf227bfe15d1e43d4977f9dc2e39994fcc511445ff4e",
         "8321cae728d28cb7632d0d58d3d913e91132bf7645c126505698fbe4cd5a0138",
         "b108d6407eb7f094a4f9111edd778eee7b978b648d413a9fc7aeedfdd914c154",
@@ -129,7 +172,7 @@
         "cddfb09e019347957bf7b96c95c0e900e8d3062dfaed697a8a96b0a039aec31a",
         "493b4a3b80a21f7255109172ab7bb01ba08d35f2941718f441768f1abfc48acd",
         "195c4a891b6eac4c1cb7671e10ff62bbbe2b17f1dfae1344dc5a6714e4775721"
-       ]
+      ]
     },
     {
       "id": "runtime-050",
@@ -282,16 +325,44 @@
       ]
     },
     {
-    "id": "anywhere-host",
-    "version": "0.6.8-experimental.1",
-    "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.3/Magpie-Experimental-x64-AMDNR-3e.zip",
-    "sha256": "6e708287c82c9d3159e6dcefbd53a71a1f05760292b5f06696807b286d43e984",
-    "size": 101875356,
-    "exclude": ["nvngx_*.dll", "sl.*.dll", "nvofapi*.dll", "NvLowLatency*.dll", "nvsdk_ngx*.dll"]
+      "id": "anywhere-host",
+      "version": "0.6.8-experimental.1",
+      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.3/Magpie-Experimental-x64-AMDNR-3e.zip",
+      "sha256": "6e708287c82c9d3159e6dcefbd53a71a1f05760292b5f06696807b286d43e984",
+      "size": 101875356,
+      "exclude": [
+        "nvngx_*.dll",
+        "sl.*.dll",
+        "nvofapi*.dll",
+        "NvLowLatency*.dll",
+        "nvsdk_ngx*.dll"
+      ]
+    },
+    {
+      "id": "optipatcher",
+      "version": "0.41",
+      "url": "https://github.com/optiscaler/OptiPatcher/releases/download/v0.41/OptiPatcher_v0.41.asi",
+      "sha256": "fb12735bfcc0d47f534f2206d57ec34129dc3d22b6405a1c2ef86745ab48b2eb",
+      "size": 95232
+    },
+    {
+      "id": "optipatcher",
+      "version": "0.40",
+      "url": "https://github.com/optiscaler/OptiPatcher/releases/download/v0.40/OptiPatcher_v0.40.asi",
+      "sha256": "a4ed60da15ea5ffb16cb94e1b029a4fb97dcc9e36f034e032e05ae0157119d9a",
+      "size": 78336
     }
   ],
   "compatibility": [],
-  "proxyDefaults": ["dxgi.dll", "d3d12.dll", "winmm.dll", "version.dll", "dbghelp.dll", "winhttp.dll", "wininet.dll"],
+  "proxyDefaults": [
+    "dxgi.dll",
+    "d3d12.dll",
+    "winmm.dll",
+    "version.dll",
+    "dbghelp.dll",
+    "winhttp.dll",
+    "wininet.dll"
+  ],
   "proxyOverrides": [
     {
       "exe": "re9.exe",
@@ -446,5 +517,8 @@
       "reason": "GTA V Legacy offers only FSR 1, which gives AMDNR no motion vectors or depth to work with"
     }
   ],
-  "hiddenSteamAppIds": []
+  "hiddenSteamAppIds": [],
+  "communityLab": {
+    "baseUrl": "https://lab.amdnr.workers.dev"
+  }
 }

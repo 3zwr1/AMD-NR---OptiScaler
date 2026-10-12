@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "launcher": {
-    "version": "0.3.5.9",
-    "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.5/AMDNR-Launcher.exe",
-    "sha256": "eb76075e9b0b662d18293e0fa5cd734894938d113f72a34e24c3deec54bd146d"
+    "version": "0.3.5.10",
+    "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.5R2/AMDNR-Launcher.exe",
+    "sha256": "497b87d17a81ddce0f28d5867e33754902674d1979dac22de0b14cc7f28e04a7"
   },
   "sources": [
     {
@@ -14,7 +14,7 @@
       "homepage": "https://github.com/3zwr1/AMD-NR---OptiScaler",
       "package": "amdnr",
       "forwarder": "forwarder",
-      "runtimeRequired": true,
+      "runtimeRequired": false,
       "runtimeNote": "Recommended on every GPU. On RX 7000 and RX 9000, AMDNR can also use its built-in lmxxf runtime.",
       "runtimes": [
         {
@@ -70,7 +70,7 @@
       "homepage": "https://github.com/TheAutomatic/dlss-5-amd-project",
       "package": "theautomatic",
       "forwarder": "forwarder",
-      "runtimeRequired": true,
+      "runtimeRequired": false,
       "runtimeNote": "Required: this build does not include danielblnc's runtime, and its lmxxf backend needs model files that are not in its release.",
       "iniWhenRuntime": [
         {
@@ -134,10 +134,10 @@
   "packages": [
     {
       "id": "amdnr",
-      "version": "0.3.5.5",
-      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.5/AMDNR-v0.3.5.5.zip",
-      "sha256": "63a3d4571db0310a359fc088fbd4b48275be63feb8999423f9f2ef35a31e56b5",
-      "size": 642931453,
+      "version": "0.3.5.5R2",
+      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.5R2/AMDNR-v0.3.5.5R2.zip",
+      "sha256": "e952a9cedf3410d2b9a7597d9e71861fb3a69a945139a1c6b3eec293fbfd15a2",
+      "size": 743938461,
       "exclude": []
     },
     {

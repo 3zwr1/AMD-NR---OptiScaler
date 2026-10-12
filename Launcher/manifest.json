@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
   "launcher": {
-    "version": "0.3.5.10",
-    "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.5R2/AMDNR-Launcher.exe",
-    "sha256": "497b87d17a81ddce0f28d5867e33754902674d1979dac22de0b14cc7f28e04a7"
+    "version": "0.3.5.11",
+    "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.5R3/AMDNR-Launcher.exe",
+    "sha256": "3dc19520f8ca634727ac8334f8973fc4449fb0e2285cb819394169a5805d2bb1"
   },
   "sources": [
     {
       "id": "amdnr",
-      "name": "AMDNR",
+      "name": "AMDNR - Optiscaler / Anywhere",
       "author": "3zwr1",
       "summary": "AMDNR: our build of OptiScaler with AMD Neural Rendering. Its own lmxxf runtime built in for RX 7000 and RX 9000, the optional DLSSNR AMD files by danielblnc, FSR frame generation, our own engine fixes, the in-game menu, crash reports, and this launcher's Doctor and support.",
       "homepage": "https://github.com/3zwr1/AMD-NR---OptiScaler",
@@ -134,11 +134,67 @@
   "packages": [
     {
       "id": "amdnr",
-      "version": "0.3.5.5R2",
-      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.5R2/AMDNR-v0.3.5.5R2.zip",
-      "sha256": "e952a9cedf3410d2b9a7597d9e71861fb3a69a945139a1c6b3eec293fbfd15a2",
-      "size": 743938461,
-      "exclude": []
+      "version": "0.3.5.5R3",
+      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.5R3/AMDNR-v0.3.5.5R3.zip",
+      "sha256": "b4230889a91daffb7c0b9f7dddc6e984b5c876f74abfebf117e0edc7c3048bcf",
+      "size": 743970421,
+      "exclude": [],
+      "previous": [
+        {
+          "version": "0.3.5.5R2",
+          "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.5R2/AMDNR-v0.3.5.5R2.zip",
+          "sha256": "e952a9cedf3410d2b9a7597d9e71861fb3a69a945139a1c6b3eec293fbfd15a2",
+          "size": 743938461
+        },
+        {
+          "version": "0.3.5.5",
+          "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.5/AMDNR-v0.3.5.5.zip",
+          "sha256": "63a3d4571db0310a359fc088fbd4b48275be63feb8999423f9f2ef35a31e56b5",
+          "size": 642931453
+        },
+        {
+          "version": "0.3.5.4",
+          "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.3/AMDNR-v0.3.5.4.zip",
+          "sha256": "a3627eed9a27c3e70952d37a3625de8acaee1c9752f521a14a27359339ae94f3",
+          "size": 642770982
+        },
+        {
+          "version": "0.3.5.2",
+          "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.2/AMDNR-v0.3.5.2.zip",
+          "sha256": "e7b147f9c0be5b3c79fd02bbc26e347c5cb145b1ccb4361428e79ff86dd1f15e",
+          "size": 629396152
+        },
+        {
+          "version": "0.3.5.1",
+          "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.1/AMDNR-v0.3.5.1.zip",
+          "sha256": "6ede7b984fc02f2285f6355b98d3009391cb082992250292d6e2bbc7d442fc8a",
+          "size": 629270812
+        },
+        {
+          "version": "0.3.5",
+          "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5/AMDNR-v0.3.5.zip",
+          "sha256": "677c6844787bef6b637787422c5232cc57a705308aa8c3be4d8cbdcc07ff2c96",
+          "size": 616269737
+        },
+        {
+          "version": "0.3.4.2",
+          "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.4.2/AMDNR-v0.3.4.2.zip",
+          "sha256": "013081a3a225ef927d96d8996b64910d62f796022b20bef6a6ea102670b0cb63",
+          "size": 603542981
+        },
+        {
+          "version": "0.3.4.1",
+          "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.4.1/AMDNR-v0.3.4.1.zip",
+          "sha256": "de7a2a1749cc44a5885034821ea33a7412ee9596df276d9b9cefad0d7ff78e63",
+          "size": 603486024
+        },
+        {
+          "version": "0.3.4",
+          "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.4/AMDNR-v0.3.4.zip",
+          "sha256": "c49aa4afb508e3ef84c1e6bb0e7dd7509b9bb33b583a8b14232097151ba6c4ce",
+          "size": 603436972
+        }
+      ]
     },
     {
       "id": "theautomatic",

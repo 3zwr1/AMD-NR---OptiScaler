@@ -231,6 +231,9 @@ licences:
   * Coldwood1026 - XeFGUnlock, the base of the built-in XeFG multi-frame unlock
     (GPL-3.0).
   * Nukem9 - dlssg-to-fsr3 (GPL-3.0; see dlssg-to-fsr3_ATTRIBUTION.txt).
+  * zgauthier2000 (cyboman) - fsr4-shader-performance-overrides, the Fast FSR 4
+    shaders (Exact / Lossy) in FSR4Fast\ (GNU GPL v2 or later; see
+    FSR4Fast\NOTICE.md and FSR4Fast\LICENSE-GPL-2.0.txt).
   * Screen-space GI (the inherited effect; retired from the Neural tab's menu in
     0.3.4, still available from the ini) - an effect AMDNR
     inherited from the OptiScaler-AMD-PreSR lineage; the credit belongs to its

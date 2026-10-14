@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
   "launcher": {
-    "version": "0.3.5.11",
-    "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.5R3/AMDNR-Launcher.exe",
-    "sha256": "3dc19520f8ca634727ac8334f8973fc4449fb0e2285cb819394169a5805d2bb1"
+    "version": "0.3.5.12",
+    "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.5R4/AMDNR-Launcher.exe",
+    "sha256": "acc7c6ef834bf6e4cb746816dbf15dfbd95d79accf21264cb999c2eef7dd284b"
   },
   "sources": [
     {
       "id": "amdnr",
-      "name": "AMDNR - Optiscaler / Anywhere",
+      "name": "AMDNR - Optiscaler / AMDNR - Anywhere",
       "author": "3zwr1",
       "summary": "AMDNR: our build of OptiScaler with AMD Neural Rendering. Its own lmxxf runtime built in for RX 7000 and RX 9000, the optional DLSSNR AMD files by danielblnc, FSR frame generation, our own engine fixes, the in-game menu, crash reports, and this launcher's Doctor and support.",
       "homepage": "https://github.com/3zwr1/AMD-NR---OptiScaler",
@@ -134,12 +134,18 @@
   "packages": [
     {
       "id": "amdnr",
-      "version": "0.3.5.5R3",
-      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.5R3/AMDNR-v0.3.5.5R3.zip",
-      "sha256": "b4230889a91daffb7c0b9f7dddc6e984b5c876f74abfebf117e0edc7c3048bcf",
-      "size": 743970421,
+      "version": "0.3.5.5R4",
+      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.5R4/AMDNR-v0.3.5.5R4.zip",
+      "sha256": "725cef9da0608621fe3233a7127e6511b9543061fcecaba8348b2c55c608d448",
+      "size": 742081441,
       "exclude": [],
       "previous": [
+        {
+          "version": "0.3.5.5R3",
+          "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.5R3/AMDNR-v0.3.5.5R3.zip",
+          "sha256": "b4230889a91daffb7c0b9f7dddc6e984b5c876f74abfebf117e0edc7c3048bcf",
+          "size": 743970421
+        },
         {
           "version": "0.3.5.5R2",
           "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.5R2/AMDNR-v0.3.5.5R2.zip",
@@ -212,7 +218,7 @@
     {
       "id": "runtime-060",
       "version": "0.6.0",
-      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.1/v0.6.0-Runtime.zip",
+      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.5R4/v0.6.0-Runtime.zip",
       "sha256": "d2bb17027b2e13e11e2198dd0bf70d4dc11fa9a6cba6bdd9fe5b44d9cf351f7e",
       "size": 176366023,
       "passSha256": [

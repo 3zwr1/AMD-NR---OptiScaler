@@ -1,4 +1,4 @@
-# AMDNR — DLSS 5 Neural Rendering on AMD (OptiScaler build) — v0.3.5.5
+# AMDNR — DLSS 5 Neural Rendering on AMD (OptiScaler build) — v0.3.5.6
 
 **English** | [中文](README.zh-CN.md) | [Português](README.pt-BR.md) | [Español](README.es.md) | [العربية](README.ar.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Русский](README.ru.md) | [Polski](README.pl.md)
 
@@ -10,7 +10,9 @@ Direct3D 12 game OptiScaler already hooks. On top of the neural pass: model inte
 large frame-rate gain, residual composition, XeSS frame generation unlocked up to 6X (up to 10X
 opt-in in D3D12 games), and FSR Ray Regeneration for games that use DLSS Ray Reconstruction. Since 0.3.5,
 **AMDNR Anywhere** (preview) brings Neural Rendering to games that have no upscaler of their own, through the
-AMDNR Launcher, with nothing written into the game folder (see "AMDNR Anywhere").
+AMDNR Launcher, with nothing written into the game folder (see "AMDNR Anywhere"). Since 0.3.5.6 the upscaler list
+also offers two experimental, opt-in choices made by other authors, **Model E** (HelixSR) and **Model L** (d4r), which
+the AMDNR Launcher fetches from their own releases (see "Model E and Model L").
 
 **Discord: <https://discord.gg/AMDNR>** — support, bug reports (`#bug-report`), test
 builds.
@@ -23,16 +25,51 @@ builds.
 > AMDNR ships it unmodified, with his permission; it is not AMDNR's work. Please support his project.
 > Full credits for everyone else are at the end of this page.
 
+> **New in 0.3.5.6** (2026-10-17, release Alpha0.3.5.6, with AMDNR Launcher 0.3.5.25):
+> - **Two new upscaler choices, experimental and opt-in:** **Model E** (HelixSR by lonewolf0622) and **Model L** (d4r
+>   by countervolts), fetched by the launcher from their authors' own releases when you choose them. AMDNR does not
+>   host or ship their files or NVIDIA's. Model L is RX 9070 / RX 9070 XT only and runs with the lmxxf runtime or with
+>   Neural Rendering off; danielblnc's runtime pairs with Model E. Read "Model E and Model L" before you enable them.
+> - **Full Model Look is the default NR style:** a fuller look on both runtimes, run after upscaling on the cards that
+>   can afford it - the cost gate and the TDR guard move it back before upscaling where they must, and say so. Picking
+>   a look in NR style also sets its Neural placement and Full network, and the menu tells you when your own placement
+>   setting holds the look back.
+> - **Extra detail on faces**, always on, on both runtimes (`[DlssNr] AmdFaceDetail=false` turns it off).
+> - **Less ghosting with lmxxf:** trails behind moving objects are shorter, before and after upscaling, and the flash
+>   after a scene cut is about half as strong. Ghosting is reduced, not gone.
+> - **RX 7000 and handhelds:** Neural Rendering now runs one network size smaller by default (lmxxf Fast mode), which
+>   costs less time per frame. `[DlssNr] AmdLmxxfFastMode=false` turns it off; RX 9000 keeps it off.
+> - **New and renamed controls:** Game exposure (Auto / On / Off), Anti-halo (formerly Halo protection), and on
+>   danielblnc **Refine passes** (passes 2 and 3 run one network size smaller). **NR resolution** now goes up to 200% on
+>   both runtimes.
+> - **The menu shows only what your runtime can use:** a control a runtime cannot run is hidden on that runtime (its
+>   ini key keeps working), and the runtime entry names the lmxxf version that really runs (e.g. `lmxxf 0.41`).
+> - **Fixes:** danielblnc's false "timeouts" (tested in Silent Hill 2) - a wait that gives up no longer turns Neural
+>   Rendering off, the text claiming the driver reset the GPU is gone (there was no reset), and the "runtime failed"
+>   note is written only after a real failure. FSR 3 / FSR 4 should no longer drop back to FSR 2.1.2 when another
+>   upscaler choice fails or is not ready: your own FSR pick is kept. XeFG frame generation's memory is counted
+>   correctly (the 6X setting included).
+> - **Replace every file of the zip together** (`OptiScaler.dll` and `LmxxfNrRuntime.dll` must come from the same
+>   release); launcher users: it updates for you. What is still open: "Known limits (0.3.5.6)". Details: `CHANGELOG.md`.
+
+> **Between 0.3.5 and 0.3.5.6** (0.3.5.1 to 0.3.5.5R4): danielblnc 0.6.0 is driven and is now the recommended
+> danielblnc runtime (it also runs on RX 6000, with AMD's HIP SDK installed); lmxxf 0.41 by Kien (MIT) is the default
+> set on RX 9000; the NVIDIA look (the default NR style from 0.3.5.3 to 0.3.5.5R4); a freeze guard that lowers or stops
+> NR after a counted GPU fault; the redesigned AMDNR Launcher (thirteen languages, ASK AI); and many crash fixes from
+> your reports. Details: `CHANGELOG.md` and the release notes on GitHub.
+
 > **New in 0.3.5:** **AMDNR Anywhere** (preview): Neural Rendering for games that have no DLSS, XeSS or FSR 2 of
 > their own - one **PLAY ANYWHERE** button in the AMDNR Launcher, nothing written into the game folder; RX 9000
 > (RDNA 4) in this release (see "AMDNR Anywhere"). **Ray Regeneration has its own tab**, right after Upscaling, and
 > its status lines say per card and per API what runs and why not; on RX 7000 it is, since 0.3.5.1, offered again as a preview, on by default (since 0.3.5.3 the AMDNR Ray Denoiser (preview) denoises it there; the Upscaling tab's box or
 > `[FSR-RR] FfxDenoiserAllowPreRdna4=false` turns it off and the game keeps its own denoiser). **The neural pass can run after upscaling**
-> (`[DlssNr] AmdPlacement=post`, Neural > Performance > Placement; the default `pre` is unchanged). **The Frame Gen
+> (`[DlssNr] AmdPlacement=post`, Neural > Performance > Neural placement; the default `pre` was unchanged in 0.3.5 -
+> since 0.3.5.6 the default NR style asks for `post`, see "Settings worth knowing"). **The Frame Gen
 > tab says why nothing generates** and names the five steps (see the frame-generation FAQ). **Faster on RX 7000 and
 > Z1 Extreme-class handhelds:** about 10 percent less network time, same picture bit for bit (the 0.3.5 module set in
 > `LmxxfNrRuntime.pak`). **lmxxf 0.37 by Kien (MIT) is on by default on RX 9000:** about 20 percent less network
-> time on an RX 9070 XT (experimental on the RX 9060 / 9060 XT; `[DlssNr] AmdLmxxfL37=false` turns it off). On RDNA 3
+> time on an RX 9070 XT (experimental on the RX 9060 / 9060 XT; `[DlssNr] AmdLmxxfL37=false` turns it off; since
+> 0.3.5.3 the default set there is lmxxf 0.41). On RDNA 3
 > handhelds, **FSR 4 (INT8)** is an experimental opt-in, and custom style slots now keep the whole look. Dynamic-resolution games no longer rebuild the network at every
 > step, the carried edit no longer vanishes when you move on a handheld with Model interleave, Uncharted: Legacy of
 > Thieves no longer crashes on RX 9000, and many more fixes. **All three files change: replace `OptiScaler.dll`,
@@ -74,14 +111,17 @@ below). By hand:
 ### 1. Download the files
 
 Download these files from the latest release on GitHub (<https://github.com/3zwr1/AMD-NR---OptiScaler/releases>;
-0.3.5 is the tag Alpha0.3.5):
+0.3.5.6 is the tag Alpha0.3.5.6):
 
-* `AMDNR-vX.X.X.zip` (for 0.3.5: `AMDNR-v0.3.5.zip`), with the complete lmxxf runtime.
-* For the danielblnc runtime, one runtime zip: on **RX 9000 and RX 7000** alike, `v0.5.0-Runtime.zip`
-  (recommended) from Alpha0.3.4.2; `v0.4.3-Runtime.zip` (Alpha0.3.4.2 and Alpha0.3.4.1), `v0.4.1-Runtime.zip` and
-  `v0.4.0-Runtime.zip` (Alpha0.3.4.1) are still accepted. The lmxxf runtime is
-  in `AMDNR-vX.X.X.zip` and needs no runtime zip on RX 7000 and RX 9000; handheld APUs use lmxxf only. The AMDNR
-  Launcher picks the right zip for your GPU. See "What is in the archives".
+* `AMDNR-vX.X.X.zip` (for 0.3.5.6: `AMDNR-v0.3.5.6.zip`), with the complete lmxxf runtime.
+* For the danielblnc runtime, one runtime zip: `v0.6.0-Runtime.zip` (recommended; RX 9000, RX 7000 and, with AMD's
+  HIP SDK installed, RX 6000) from Alpha0.3.5.5R4; `v0.5.1-Runtime.zip` (Alpha0.3.5), `v0.5.0-Runtime.zip`
+  (Alpha0.3.4.2; it can freeze some games on some cards), `v0.4.3-Runtime.zip` (Alpha0.3.4.2 and Alpha0.3.4.1),
+  `v0.4.1-Runtime.zip` and `v0.4.0-Runtime.zip` (Alpha0.3.4.1) are still accepted on RX 9000 and RX 7000. The lmxxf
+  runtime is in `AMDNR-vX.X.X.zip` and needs no runtime zip on RX 7000 and RX 9000; handheld APUs use lmxxf only. The
+  AMDNR Launcher picks the right zip for your GPU. See "What is in the archives".
+* Nothing to download by hand for Model E or Model L: the AMDNR Launcher fetches them from their authors' own
+  releases when you choose them (see "Model E and Model L").
 
 ### 2. Extract both files
 
@@ -92,14 +132,15 @@ Extract the contents of both `.zip` files.
 First, copy all files from `AMDNR-vX.X.X` into the game's root folder — the same folder where
 the game's `.exe` is located.
 
-Then, do the same with all files from the runtime zip (e.g. `v0.5.0-Runtime` on RX 9000 and on RX 7000).
+Then, do the same with all files from the runtime zip (e.g. `v0.6.0-Runtime` on RX 9000, RX 7000 and RX 6000).
 
-> **Updating from an older AMDNR?** Copy everything again and overwrite. **In 0.3.5 three files changed
-> together:** `OptiScaler.dll` (replace the file you renamed, e.g. `dxgi.dll`, with the new one renamed the
-> same way), `LmxxfNrRuntime.dll` and `LmxxfNrRuntime.pak` (440 MB). Do not mix them with older copies. You can
+> **Updating from an older AMDNR?** Copy everything again and overwrite. **Replace these three together:**
+> `OptiScaler.dll` (replace the file you renamed, e.g. `dxgi.dll`, with the new one renamed the
+> same way), `LmxxfNrRuntime.dll` and `LmxxfNrRuntime.pak` (440 MB). Do not mix them with older copies: in 0.3.5.6
+> `OptiScaler.dll` hands `LmxxfNrRuntime.dll` new frame data, and an older runtime runs without it. You can
 > keep your own `OptiScaler.ini`: new settings use their defaults. Your danielblnc runtime zip's files stay as they
-> are. The AMDNR Launcher does this for you: UPDATE ALL, or REPAIR / UPDATE on a game that shows "Update
-> available" (the launcher updates itself first).
+> are (the launcher's Doctor offers the recommended one for your card). The AMDNR Launcher does this for you: UPDATE
+> ALL, or REPAIR / UPDATE on a game that shows "Update available" (the launcher updates itself first).
 
 ### 4. Rename OptiScaler.dll
 
@@ -203,8 +244,8 @@ motion scale, depth direction, mask, exposure) and an `lmxxf stats @N:` line eve
 (exposure, fed brightness, the model's edit, the carried edit, keep, reactive mean, vector
 length and rejected fraction). Attach the log to a report; those two lines usually say why.
 
-Both runtimes share one Neural tab (see "The menu" below). Controls the running runtime does not
-have are greyed with a short tag or hidden with a count. lmxxf-only: **Full network**, **Output
+Both runtimes share one Neural tab (see "The menu" below). Since 0.3.5.6 a control the running runtime cannot
+run is hidden on that runtime, with a count (its ini key keeps working). lmxxf-only: **Full network**, **Output
 smoothing** (Quality > More quality options, needs Network history), **Edit detail**, **Edit colour** and
 **Edge guard** (Image look > Model strength: gain on the fine part of the model's edit, its colour against
 its brightness change, and a fade of the edit across depth edges) and the auto-exposure highlight cap. New
@@ -216,9 +257,11 @@ Character structure (each change rebuilds the network: about a 1 s hitch).
 network's blocks instead of skipping 42, 43 and 46: slightly more faithful, about 0.5 ms slower at 1080p
 (16.6 -> 17.1 ms on an RX 9070 XT, measured in 0.3.3). Off by default.
 
-**Fast mode** (Neural > Performance, `[DlssNr] AmdLmxxfFastMode`, lmxxf, opt-in, off by default) runs the network
-one size tier lower (1080 -> 900, 900 -> 720): about 29% less network time at 1080p (RX 9070 XT, measured outside a
-game), with fine detail a little softer. danielblnc builds that have their own Fast mode get a Fast mode row there
+**Fast mode** (Neural > Performance, `[DlssNr] AmdLmxxfFastMode`, lmxxf) runs the network one size tier lower
+(1080 -> 900, 900 -> 720; 720 -> 576 and 576 -> 360 where the small sizes are on): about 29% less network time at 1080p
+(RX 9070 XT, measured outside a game), with fine detail a little softer. **Since 0.3.5.6 it is on by default on RX
+7000, Radeon 8060S / 8050S and the handheld APUs** and off by default on RX 9000; `false` (or the tick) turns it off,
+`true` turns it on, and the tick shows what runs. danielblnc builds that have their own Fast mode get a Fast mode row there
 too (`[DlssNr] AmdDanielFastMode`); the runtimes in this release's runtime zips do not have it, so the row is hidden.
 
 ### RX 7000 (RDNA 3): faster with the network size tier (new in 0.3.4)
@@ -243,12 +286,12 @@ runs; the 900-tier time was measured at 1600x900):
 - In game the gain per displayed frame is smaller: with Model interleave the network runs every 2nd frame,
   and the game has its own cost. Not yet measured in a game.
 - The network sees a slightly smaller picture (at 1440p Quality about 6% fewer pixels per side), so fine
-  detail can be a little softer. `[DlssNr] AmdLmxxfTierSnap=false` restores 0.3.3.2's sizes. RX 9000 keeps
-  0.3.3.2's sizes unless you set it to `true`.
-- **RX 9000:** `[DlssNr] AmdLmxxfTierSnap=true` (off by default there) moves lmxxf's NR size to a network size at
-  every render resolution: some sizes drop a tier (1440p FSR Quality, 1707x960 -> the 900 size: network 14.08 ->
-  9.96 ms per run on an RX 9070 XT, measured outside a game, a slightly softer image), others grow inside their tier
-  (80% of a 1080p render -> 1600x900: same cost, a little more detail). Left unset, RX 9000 keeps 0.3.3.2's sizes.
+  detail can be a little softer. `[DlssNr] AmdLmxxfTierSnap=false` restores 0.3.3.2's sizes. Since 0.3.5.2 RX 9000
+  snaps by default too.
+- **RX 9000:** `[DlssNr] AmdLmxxfTierSnap` (on by default there since 0.3.5.2; opt-in before) moves lmxxf's NR size to
+  a network size at every render resolution: some sizes drop a tier (1440p FSR Quality, 1707x960 -> the 900 size:
+  network 14.08 -> 9.96 ms per run on an RX 9070 XT, measured outside a game, a slightly softer image), others grow
+  inside their tier (80% of a 1080p render -> 1600x900: same cost, a little more detail). `false` keeps 0.3.3.2's sizes.
 - Start at NR resolution 70% or lower (the 720 tier at a 1080p render; the Performance preset is 70%). The
   cost beside NR resolution is priced by the tier the network runs; its hover names the tier.
 - **0.3.5: about 10 percent less network time on RX 7000**, same picture bit for bit: the 0.3.5 module set in
@@ -257,6 +300,13 @@ runs; the 900-tier time was measured at 1600x900):
   XT at the 1080 size (14.0 -> about 11.3 ms, measured outside a game; the picture is not bit-identical to 0.3.4.2's).
   On the RX 9060 / 9060 XT it is on too, together with the c32w and FastK kernels, as an experiment (not yet run on
   that card). Off switches: `[DlssNr] AmdLmxxfL37=false`, `AmdLmxxfC32w=false`, `AmdLmxxfFastK=false`.
+- **Since 0.3.5.3 the default set on RX 9000 is lmxxf 0.41 by Kien (MIT)** (`[DlssNr] AmdLmxxfL41=false` turns it
+  off); since 0.3.5.6 the Neural runtime entry names the set that really runs. **Since 0.3.5.5R4 RX 7000 and the Z1
+  Extreme-class handhelds run newer kernel sets**, the same picture bit for bit (hash-checked on testers' machines).
+- **0.3.5.6: Fast mode is on by default on RDNA 3** (RX 7000, Radeon 8060S / 8050S and the handheld APUs): the
+  network runs one size below the one the render size would use (a 1080p render runs at the 900 size), which costs
+  less time per frame, with fine detail a little softer. RX 9000 is unchanged (off). There are no game reports from
+  these GPUs yet: please send yours. `[DlssNr] AmdLmxxfFastMode=false` (or the Fast mode tick) turns it off.
 
 ### Handheld APUs (experimental, new in 0.3.4)
 
@@ -270,23 +320,25 @@ those numbers on the Z1 Extreme class** (Z1 Extreme, Z2, Radeon 780M: about 50 m
 same picture bit for bit, hash-checked by a tester); the Z2 Extreme / 890M / 880M modules are unchanged.
 
 - **Not supported:** Z1 and Radeon 740M (4 compute units), Radeon 760M (8), Radeon 860M / 840M. danielblnc's
-  runtime does not run on handheld APUs. RX 6000 (RDNA 2) is planned for 0.3.6; the Steam Deck and other
-  RDNA 2 APUs are not supported.
-- **What it does by itself** (only while your ini has no value of its own): the network runs at its smallest
-  size, 360p (640x360), and the model runs every 4th frame (Model interleave; not saved). Neural passes stay
-  at 1.
+  runtime does not run on handheld APUs. RX 6000 (RDNA 2) desktop cards run danielblnc's runtime 0.6.0 (see
+  "Requirements"; lmxxf there is planned for 0.3.6); the Steam Deck and other RDNA 2 APUs are not supported.
+- **What it does by itself** (only while your ini has no value of its own): the network size is capped at 576
+  (1024x576; since 0.3.5.5R3, it was 360p before), and since 0.3.5.6 Fast mode is on by default, so the network runs
+  one size lower, at 360p (640x360); the model runs every 4th frame (Model interleave; not saved). Since 0.3.5.5R3
+  your Neural passes are kept (they used to be held at 1); the NR cost prices them.
 - **Speed, honestly:** For scale: an
   RX 7800 XT (60 compute units) needs 34.4 ms per network run at the 720 size; these chips have 12 to 16 and
   run at lower clocks. Expect a large frame-rate cost even at 360p with the model every 4th frame, some
   ghosting from the long interleave, and a softer look than on a desktop GPU. The NR cost at the end of the
   Neural tab's status line (and in Diagnostics) shows the real number on your device.
 - **Settings:**
-  - Sharper but slower: `[DlssNr] AmdLmxxfTierCap=576` (the 1024x576 network size).
-  - At a 720p or 800p render, NR resolution 100% already feeds the 360p size, so a lower NR resolution does
-    not make it cheaper.
+  - Sharper but slower: `[DlssNr] AmdLmxxfFastMode=false` (the 1024x576 network size; `[DlssNr] AmdLmxxfTierCap=360`
+    holds the smallest size even with Fast mode off).
+  - With Fast mode on, a 720p or 800p render at NR resolution 100% already runs the 360p size, so a lower NR
+    resolution does not make it cheaper.
   - Model interleave Off is saved as `[DlssNr] AmdInterleave=1` (also off), so the handheld default does not
     come back at the next start. To turn it off by hand, write 1, not 0.
-  - Preset > **Handheld** sets NR resolution 100%, Dynamic NR off, the model every 4th frame, 1 Neural pass and Full network off. The button shows only on these APUs; Quality, Balanced and Performance keep the 360p network size here too (the menu says so).
+  - Preset > **Handheld** (since 0.3.5.1) sets NR resolution 80%, Dynamic NR off, the model every 4th frame with Edit accumulation, 1 Neural pass, Full network on, Fast mode on and Before upscaling, plus its own look values (Residual limit 0.32, Temporal stability 0.70, Sharpening 0.10, Output smoothing 0.65 and a few more; the button's hover lists them all). The button shows only on these APUs; Quality, Balanced and Performance keep the handheld network size here too (the menu says so).
 - **FSR 4:** FSR 4 (INT8) is available as an experimental opt-in on RDNA 3 handhelds (Upscaling tab); not validated by AMD.
   The box **FSR 4 (INT8) - Experimental on this GPU (restart)** writes `[FSR] Fsr4ForceModel=2`; it is never switched on by itself
   (with `Dx12Upscaler=auto` the upscaler is XeSS). About 1.5-3 ms per frame on a Z1 Extreme (an estimate); with NR,
@@ -299,8 +351,8 @@ same picture bit for bit, hash-checked by a tester); the Z2 Extreme / 890M / 880
   effect is gone when moving"): the network runs on frames of unequal length under Model interleave, and the
   carry's guard assumed equal frames. It now reads the previous frame's vectors at this frame's duration (both
   runtimes).
-- **Use the 0.3.5 files together:** 0.3.5 changes all three files (`OptiScaler.dll`, `LmxxfNrRuntime.dll` and
-  `LmxxfNrRuntime.pak`), so replace them together; the runtime refuses a handheld when `OptiScaler.dll` is older
+- **Use the files of one release together:** replace `OptiScaler.dll`, `LmxxfNrRuntime.dll` and
+  `LmxxfNrRuntime.pak` together; the runtime refuses a handheld when `OptiScaler.dll` is older
   than 0.3.4 ("this handheld needs OptiScaler.dll 0.3.4 or newer").
 - **Testers with a handheld:** ask on Discord for the handheld test kit (`handheld-test.zip`). Its
   `run_probe.bat` measures the network on your device and writes `handheld_result.txt` (your Windows user name
@@ -310,16 +362,17 @@ same picture bit for bit, hash-checked by a tester); the Z2 Extreme / 890M / 880
 
 **What it is.** Neural Rendering for games that have no DLSS, XeSS or FSR 2 of their own - and nothing is written
 into the game folder. AMDNR runs inside a window-capture host: the host captures the game's window, scales it to
-your screen with FSR 3, and Neural Rendering runs on the captured picture; our menu draws inside the host (your
+your screen, and Neural Rendering runs on the captured picture; our menu draws inside the host (your
 menu key, `INSERT` by default) with its own **Anywhere** tab. The host is **Magpie by Blinue, experimental fork by
-SAOG0721 (GPL-3.0)**, in AMDNR's own build: its `Magpie.exe` is rebuilt with four fixes (the patches, the base commit and the build options are in `Anywhere-host-source/` beside it), and the package carries no NVIDIA files. The AMDNR Launcher downloads it from AMDNR's GitHub release (about 100 MB, once).
+SAOG0721 (GPL-3.0)**, in AMDNR's own build: its `Magpie.exe` is rebuilt with AMDNR's changes (the source offer, one diff from the fork's tag and the build options are in `Anywhere-host-source/` beside it), and the package carries no NVIDIA files. The AMDNR Launcher downloads it from AMDNR's GitHub release (about 130 MB for 0.3.5.6, once per host version).
 
 **How to use it.** In the AMDNR Launcher a game with no upscaler shows **PLAY ANYWHERE** instead of INSTALL. Press
 it: the launcher fetches the host (the first time), starts the game, and the host captures its window. Run the game
 **windowed or borderless**, not exclusive fullscreen, and press your menu key for the AMDNR menu inside the host.
 A game with an upscaler of its own keeps the normal INSTALL route: Anywhere is for the games that have none.
 
-**The host settings live in the menu**, in the Anywhere tab's Host settings, not in the launcher: the game window
+**The host settings live in the menu**, in the Anywhere tab's Host settings (the launcher has its own panel too, see
+below): the game window
 size (720p / 900p / 1080p - advice on what to set in the game; the host captures whatever window the game opens),
 the stage list (V1: one FSR 3 pass to the screen; V2: FSR 3 at 1x, then a fill pass), the NR tier (Auto / 720 /
 900 / 1080), VRR, frame pacing and the **host frame rate** (Default = your display's refresh rate, at most 60;
@@ -327,7 +380,11 @@ Auto = the rate the network sustained in the last session; 30 to 120; Display re
 **next** PLAY ANYWHERE, and the launcher shows a read-only summary beside the button. In the host's own
 `OptiScaler.ini` they are `[DlssNr] AnywhereWindow`, `AnywhereEffect`, `AnywhereNrTier`, `AnywhereVrr`,
 `AnywherePacing` and `AnywhereHostFps`. Cap the game too, with its own limiter, at 60 to 90 fps: the host can only
-show frames the game drew, and every host frame runs the network once.
+show frames the game drew, and every host frame runs the network once. **Since AMDNR Launcher 0.3.5.25 the
+launcher has an Anywhere settings panel too** (the NR runtime, Neural passes, the neural size, FSR Auto / FSR 4 /
+FSR 3 / Off - Off keeps NR -, frame generation (experimental), motion for upscaling, sharpness, and Model E / Model L
+(experimental; with Neural Rendering inside Anywhere they are still being tested)); it writes the same host ini and
+applies at the next PLAY ANYWHERE.
 
 **What the host cannot give the network.** A captured window has no depth, motion vectors, jitter or exposure of
 its own; the host estimates the motion. So the Anywhere tab names what is estimated; the Neural tab's rows that
@@ -341,6 +398,59 @@ the screen's pixels the network saw. The NR resolution row shows the network's r
 judder in fast motion can remain (lower the NR tier to 720, cap the game at 60-90 fps, leave Model interleave off -
 the host refuses it). The capture host is AMDNR's own build, downloaded from AMDNR's GitHub release. Reports: the
 **Save report** zip from the menu inside the host (its title names the scaled game), or the launcher's COLLECT LOGS.
+
+## Model E and Model L (experimental, opt-in, new in 0.3.5.6)
+
+Two more Super Resolution (upscaler) choices beside FSR and XeSS. **They are not AMDNR's work or AMDNR's models, and
+neither is in the AMDNR zip.** When you choose one in the AMDNR Launcher (a game's GAME SETTINGS > **SR model**: Auto /
+Model E / Model L), the launcher shows that model's disclosure once, asks you to accept it, and fetches the files from
+the author's own release, checked by hash. AMDNR does not host or ship their files or any NVIDIA files. Both are
+experimental: expect breakage, and send a report when something goes wrong. **Auto** keeps the game's normal route (and
+takes Model L's files out of the game folder).
+
+**Model E - HelixSR by lonewolf0622** (<https://github.com/lonewolf0622/HelixSR>), under its own licence.
+- HelixSR builds its network on your PC from NVIDIA's DLSS file, which the launcher downloads from NVIDIA's own GitHub
+  (or takes from your game); what it builds stays on your PC.
+- In the game: Upscaling > **HelixSR (Model E) - restart required** (D3D12 games; `[Upscalers] FfxSRProvider=helix_e`).
+  It takes effect at the next start of the game.
+- Works with **both** NR runtimes, danielblnc and lmxxf. In our tests it ran in a game on an RX 9070 XT.
+
+**Model L - d4r by countervolts** (<https://github.com/countervolts/d4r>), under d4r's own licence.
+- **What it is:** d4r runs **NVIDIA's DLSS runtime, under NVIDIA's EULA, through ZLUDA / HIP** on an AMD card. The
+  launcher fetches the d4r package from d4r's own GitHub release and lays it out in the game folder as `AMDNR-SR-L\`;
+  AMDNR does not host or ship any NVIDIA files. **d4r's author has not tested it on Windows.**
+- **RX 9070 / RX 9070 XT only** (tested on an RX 9070 XT; the RX 9060 XT and older cards are refused), and **D3D12
+  games only** in the game.
+- **It runs with the lmxxf runtime, or with Neural Rendering off. danielblnc's runtime pairs with Model E:** with
+  danielblnc as the NR runtime the Model L row is greyed ("Model L runs with the lmxxf runtime (or with Neural
+  Rendering off); danielblnc's runtime pairs with Model E. Pick lmxxf under Neural Rendering first."), and a game
+  started with both runs your FSR upscaler instead.
+- In the game: Upscaling > **Model L (d4r) - restart required**, greyed with its reason when it cannot run here (not a
+  D3D12 game, not prepared in the launcher, not an RX 9070 / 9070 XT, the danielblnc runtime, or a restart is still
+  needed). Picking it writes `[DlssNr] AmdSrModel=L` (picking another upscaler removes that line); it takes effect at
+  the next start of the game.
+- **Experimental:** its speed is not tuned yet and it can run far slower than FSR. If it cannot start, the game should
+  keep your FSR upscaler (not FSR 2.1.2), and `OptiScaler.log` says why in a `[MODELL` line.
+
+Inside **AMDNR Anywhere** both are offered in the launcher's Anywhere settings; together with Neural Rendering there they
+are still being tested.
+
+## Known limits (0.3.5.6)
+
+- **Ghosting with lmxxf is reduced, not removed:** a shorter trail can still follow fast-moving objects.
+- **Fast mode on RX 7000 and handhelds** is a new default with no game reports yet: please send yours.
+  `[DlssNr] AmdLmxxfFastMode=false` gives the earlier network size.
+- **The Full Model Look after upscaling costs more**, because the network gets the display-sized picture. Where the cost
+  gate or this game's TDR record says the card cannot pay it, it runs before upscaling and the Neural status line says
+  so; your own `[DlssNr] AmdPlacement=pre` also holds it before upscaling (said once: pick Full Model Look again in NR
+  style, or clear the line).
+- **FSR 2.2 fallback:** in some D3D11 and Vulkan games a failed upscaler can still fall back to FSR 2.2.
+- **Model L** is RX 9070 / RX 9070 XT and D3D12 only, does not pair with danielblnc's runtime, is experimental and can
+  be far slower than FSR; d4r is untested by its author on Windows.
+- **Model E and Model L inside AMDNR Anywhere**, together with Neural Rendering, are still being tested.
+- **danielblnc on RX 7000:** his runtime's same-frame mode costs a lot of time per frame on RDNA 3 by its design; use
+  lmxxf there.
+- **Linux / Proton:** Neural Rendering does not run there (see below).
 
 ## Linux / Proton (Steam Deck, desktop Linux)
 
@@ -389,8 +499,8 @@ this ourselves yet: if you try it, tell us on Discord whether it works. To try i
 
 **Install by hand** (without the launcher):
 
-1. Download `AMDNR-vX.X.X.zip` from the releases page (for 0.3.5: `AMDNR-v0.3.5.zip`). The danielblnc runtime
-   zips (`v0.5.0-Runtime.zip` and the others) are only used by Neural Rendering, so you do not need them on Linux
+1. Download `AMDNR-vX.X.X.zip` from the releases page (for 0.3.5.6: `AMDNR-v0.3.5.6.zip`). The danielblnc runtime
+   zips (`v0.6.0-Runtime.zip` and the others) are only used by Neural Rendering, so you do not need them on Linux
    (copying one does no harm).
 2. Extract the zip and copy everything into the game folder, next to the game's `.exe`.
 3. Rename `OptiScaler.dll` to `dxgi.dll`.
@@ -428,19 +538,23 @@ Please add your distribution, GPU, Mesa version and Proton version.
   (experimental, not tested by us yet). Under Linux / Proton AMDNR runs as an OptiScaler build without NR (see
   "Linux / Proton").
 - An AMD GPU with AMD Software: Adrenalin Edition 26.9.1 or newer. The neural runtime uses HIP through
-  the driver; no HIP SDK and no developer mode are needed. Which chips:
+  the driver; no HIP SDK and no developer mode are needed (except on RX 6000, below). Which chips:
   - RX 9000 (RDNA 4): both runtimes.
   - RX 7000 (RDNA 3, desktop and mobile): both runtimes - lmxxf through AMDNR's RDNA 3 backend, slower than on
-    RDNA 4 (the network size tier is on by default, see above).
+    RDNA 4 (the network size tier and, since 0.3.5.6, Fast mode are on by default, see above).
   - Strix Halo (Radeon 8060S / 8050S): lmxxf.
   - Handheld APUs with 12+ compute units (Z1 Extreme / Z2 / 780M, Z2 Extreme / 890M / 880M): lmxxf,
     experimental and slow. Z1 (4 CU), 760M / 740M and 860M / 840M: not supported.
-  - RX 6000 (RDNA 2): not supported yet, planned for 0.3.6. Steam Deck and RDNA 2 APUs: not supported (for
-    Neural Rendering; for the upscalers under Proton see "Linux / Proton").
+  - RX 6000 (RDNA 2, desktop): danielblnc's runtime 0.6.0 (`v0.6.0-Runtime.zip`), with AMD's HIP SDK (HIP 7.2)
+    installed, which puts the HIP runtime RX 6000 needs in its own folder (AMDNR looks there); lmxxf does not run on
+    RX 6000 yet (planned for 0.3.6). Steam Deck and RDNA 2 APUs: not supported (for Neural Rendering; for the
+    upscalers under Proton see "Linux / Proton").
 
   The Neural tab says what your GPU can run (hover the runtime entries, or the GPU line in Diagnostics).
 - **AMDNR Anywhere** (preview): Windows, an RX 9000 (RDNA 4) card in this release, and the AMDNR Launcher, which
   fetches the capture host; the game runs windowed or borderless. See "AMDNR Anywhere".
+- **Model E / Model L** (experimental, opt-in): the AMDNR Launcher, which fetches them, and a D3D12 game; Model L also
+  needs an RX 9070 / RX 9070 XT and the lmxxf runtime (or Neural Rendering off). See "Model E and Model L".
 - A Direct3D 12, Direct3D 11 or Vulkan game. The AMD neural path itself is D3D12; D3D11 and
   Vulkan titles reach it through OptiScaler's D3D12 bridge, which means the upscaler must be
   one of the "w/Dx12" backends (`ffx_12`). Leave `Dx11Upscaler` / `VulkanUpscaler` on `auto`
@@ -454,35 +568,44 @@ Please add your distribution, GPU, Mesa version and Proton version.
 
 | File | What it is |
 |---|---|
-| `OptiScaler.dll` | OptiScaler with the DLSS-NR AMD backend (AMDNR 0.3.5). Rename it as the guide says. |
+| `OptiScaler.dll` | OptiScaler with the DLSS-NR AMD backend (AMDNR 0.3.5.6). Rename it as the guide says. |
 | `OptiScaler.ini` | Settings. Neural Rendering is enabled; logging is on so a bug report has something to attach. |
-| `LmxxfNrRuntime.dll` | The lmxxf neural runtime (0.3.5: it checks every HIP module in the pak against the pak's own digest list before use, names both sides when no HIP adapter matches the game's GPU, holds dynamic-resolution steps without a network rebuild, and no longer reads lmxxf's picture-changing environment variables; lmxxf's kernels, including lmxxf 0.31's, AMDNR's c32w kernels, the small network sizes and the native character mask). Used only when chosen; reads `LmxxfNrRuntime.pak` beside it, see "The lmxxf runtime". |
+| `LmxxfNrRuntime.dll` | The lmxxf neural runtime (0.3.5.6: a test of the network's history where each pixel came from, which shortens ghost trails, and a reset frame that no longer flashes as strongly; it must come from the same release as `OptiScaler.dll`. 0.3.5: it checks every HIP module in the pak against the pak's own digest list before use, names both sides when no HIP adapter matches the game's GPU, holds dynamic-resolution steps without a network rebuild, and no longer reads lmxxf's picture-changing environment variables; lmxxf's kernels, including lmxxf 0.31's, AMDNR's c32w kernels, the small network sizes and the native character mask). Used only when chosen; reads `LmxxfNrRuntime.pak` beside it, see "The lmxxf runtime". |
 | `LmxxfNrRuntime.pak` | The lmxxf runtime's weights, HIP modules and shaders in one encrypted file (465 MB; 0.3.5: the module set for RX 7000 and for Z1 Extreme-class handhelds - Z1 Extreme, Z2, Radeon 780M - is about 10 percent faster, same picture; RX 9000 gets lmxxf 0.37's and 0.39's modules by Kien (MIT) beside its unchanged base set; the Z2 Extreme / 890M / 880M and Strix Halo modules are unchanged). Only the lmxxf runtime reads it; harmless to keep with the danielblnc runtime. |
 | `OptiScaler\` | FSR, XeSS, the FidelityFX denoiser and the D3D12 Agility SDK OptiScaler uses. |
 | `OptiScaler/amdnr_dlssg_fsr3.dll` | Nukem9's dlssg-to-fsr3, unmodified and renamed: the game's DLSS Frame Generation calls served by FSR 3 frame generation, also on Vulkan (`FGNvngxReplacement=Nukems`). GPLv3, see `Licenses/`. |
 | `Licenses\`, `LICENSE` | Third-party licences, AMDNR's notice (`AMDNR_NOTICE.txt`) and the GPL-3.0 licence of this build. |
 | `SHA256SUMS.txt` | Checksums of every file in this zip, and of the files in the danielblnc runtime zips it lists. |
 
+**Not in this zip** (the AMDNR Launcher fetches each one by hash, only when you choose it): the danielblnc runtime
+zips (below); the AMDNR Anywhere capture host (AMDNR's own build, from AMDNR's GitHub release); Model E's HelixSR and
+Model L's d4r, from their authors' own releases (see "Model E and Model L"); and OptiPatcher, from the OptiScaler
+project's releases (GAME SETTINGS).
+
 **The danielblnc runtime zips** (DLSS-NR on AMD by Daniel Blanco, unmodified, with his permission; use one)
 
-Which one: on **RX 9000 and RX 7000** alike, `v0.5.0-Runtime.zip` (recommended) from Alpha0.3.4.2;
-`v0.4.3-Runtime.zip` (Alpha0.3.4.2 and Alpha0.3.4.1), `v0.4.1-Runtime.zip` and `v0.4.0-Runtime.zip` (Alpha0.3.4.1)
-are still accepted. The lmxxf runtime needs no runtime zip on RX 7000 and RX 9000; handheld APUs use lmxxf only.
-The AMDNR Launcher offers 0.5.0 (recommended), 0.4.3, 0.4.1 and 0.4.0, and picks it for you.
+Which one: `v0.6.0-Runtime.zip` (recommended) from Alpha0.3.5.5R4 - on RX 9000 and RX 7000, and the only one for RX
+6000; `v0.5.1-Runtime.zip` (Alpha0.3.5), `v0.5.0-Runtime.zip` (Alpha0.3.4.2), `v0.4.3-Runtime.zip` (Alpha0.3.4.2 and
+Alpha0.3.4.1), `v0.4.1-Runtime.zip` and `v0.4.0-Runtime.zip` (Alpha0.3.4.1) are still accepted on RX 9000 and RX
+7000. The lmxxf runtime needs no runtime zip on RX 7000 and RX 9000; handheld APUs use lmxxf only. The AMDNR
+Launcher offers 0.6.0 (recommended, listed first), 0.5.1, 0.5.0, 0.4.3, 0.4.1 and 0.4.0 for your card, and picks it for you.
 
 | Zip | Release | danielblnc runtime |
 |---|---|---|
-| `v0.5.0-Runtime.zip` | Alpha0.3.4.2 | 0.5.0, **recommended on RX 9000 and RX 7000**; the danielblnc runtime settings work with it, and since 0.3.5 your own `Async` key in its `dlssnr_on_amd.ini` reaches it |
+| `v0.6.0-Runtime.zip` | Alpha0.3.5.5R4 | 0.6.0, **recommended on RX 9000 and RX 7000, and the one for RX 6000** (with AMD's HIP SDK installed); the danielblnc runtime settings work with it |
+| `v0.5.1-Runtime.zip` | Alpha0.3.5 | 0.5.1, still accepted; the danielblnc runtime settings work with it |
+| `v0.5.0-Runtime.zip` | Alpha0.3.4.2 | 0.5.0, still accepted (it can freeze some games on some cards: a newer one is safer); the danielblnc runtime settings work with it |
 | `v0.4.3-Runtime.zip` | Alpha0.3.4.2 (and Alpha0.3.4.1) | 0.4.3, still accepted; the danielblnc runtime settings work with it |
 | `v0.4.1-Runtime.zip` | Alpha0.3.4.1 (and Alpha0.3.4) | 0.4.1, still accepted. Network style, Tone curve, Black lift and Game exposure are greyed with it |
 | `v0.4.0-Runtime.zip` | Alpha0.3.4.1 (and Alpha0.3.4) | 0.4.0, still accepted; the danielblnc runtime settings work with it |
 | `v0.3.3-Runtime.zip` | [Alpha0.3.4](https://github.com/3zwr1/AMD-NR---OptiScaler/releases/tag/Alpha0.3.4) | 0.3.3, retired: no longer recommended. It still runs if you already have it; the danielblnc runtime settings work with it |
 | `Runtime.zip` | Alpha0.3.4 | 0.3.1; the danielblnc runtime settings are greyed with it |
 
-**danielblnc 0.5.0 is the recommended danielblnc runtime since 0.3.5** (it runs on 0.3.4.2 too). 0.3.5 also passes
-your own `Async` (or the older `Inline`) key from `dlssnr_on_amd.ini` through to it instead of forcing the same-frame
-mode; with neither key a default install is unchanged. A danielblnc build newer than 0.5.0 is not driven by this
-release.
+**danielblnc 0.6.0 is the recommended danielblnc runtime** (the launcher lists it first for your card). Since
+0.3.5.5R4 AMDNR runs his runtime in its same-frame mode: under AMDNR his async mode completed three jobs and then
+nothing, so an `Async=1` in his `dlssnr_on_amd.ini` is run as same-frame and said once (`[DlssNr] AmdDanielAsync=true`
+lets it through). Since 0.3.5.6 danielblnc's runtime pairs with Model E, not with Model L. A danielblnc build newer
+than 0.6.0 is not driven by this release.
 
 Each one holds:
 
@@ -502,16 +625,18 @@ Scale, Save Settings and Close. Help opens when you hover a control's label.
 **The Neural tab, top to bottom:**
 
 - **Enable Neural Rendering** and its key (the button, e.g. `Home`: click it, then press another key to rebind).
-- **Neural runtime** (danielblnc / lmxxf, with the exact version of your files, e.g. `lmxxf 0.3.4`) with one state word: running, restart the game to switch, not
+- **Neural runtime** (danielblnc / lmxxf, with the version that runs, e.g. `danielblnc 0.6.0` or `lmxxf 0.41`; since 0.3.5.6 lmxxf's entry names the lmxxf kernel set that runs, not AMDNR's release) with one state word: running, restart the game to switch, not
   installed, not for this GPU, or stopped. Under it the running runtime's credit and one status line, e.g.
   `Running - 1920x1080 at 100% - NR 62/s - model 62/s - 15.3 ms` (the last number is the NR cost), and a closed **Live** row with more detail. When
   something needs you, one orange line follows, with a button when there is a fix (Retry lmxxf, Switch to
   danielblnc, Open Upscaling). In the default state there is none.
 - **Preset**: Quality / Balanced / Performance set NR resolution to 100 / 85 / 70% and turn Dynamic NR off;
-  nothing else. On handheld APUs a fourth button, **Handheld** (see "Handheld APUs"). **NR style**, and **Style
-  slots** (Store / Apply / Clear).
-- **Performance**: **Placement** (before / after upscaling, new in 0.3.5; see "Settings worth knowing"), NR
-  resolution (%) with its cost, Neural passes, Full network, Fast mode, Dynamic NR resolution, Model interleave
+  nothing else. On handheld APUs a fourth button, **Handheld** (see "Handheld APUs"). **NR style** (first the three
+  looks - **Full Model Look**, the default since 0.3.5.6, **NVIDIA look** and **AMDNR soft** - then four named styles;
+  see "Settings worth knowing"), and **Style slots** (Store / Apply / Clear).
+- **Performance**: **Neural placement** (Before / After upscaling, new in 0.3.5; see "Settings worth knowing"), NR
+  resolution (%) with its cost (25 to 200% since 0.3.5.6), Neural passes, **Refine passes** (danielblnc, new in
+  0.3.5.6), Full network, Fast mode, Dynamic NR resolution, Model interleave
   (Interleave preset and the pacing line appear under it while it is on).
 - **Quality**: Residual strength, Residual limit, Temporal stability, Sharpening (CAS), and **More quality
   options** (Network history - one checkbox for both runtimes -, Output smoothing, Stability mode, Residual
@@ -519,19 +644,24 @@ Scale, Save Settings and Close. Help opens when you hover a control's label.
 - **Image look**: Colour composition, Detail and Colour strength, and three folds: **Model strength** (Tone and
   Structure intensity, Character structure, Edit detail / colour, Edge guard, Native character mask, and
   danielblnc's Network style, Tone curve and Black lift), **Exposure and highlights** (Auto-exposure, its
-  highlight cap, Highlight colour guard, Game exposure) and **Appearance filter** (its off / on word after
-  the name). A dim "default" or "custom" after a fold's name says whether you changed something inside it.
+  highlight cap, Highlight colour guard, **Game exposure** Auto / On / Off) and **Appearance filter** (its off / on
+  word after the name; its **Anti-halo** slider was called Halo protection before 0.3.5.6). A dim "default" or
+  "custom" after a fold's name says whether you changed something inside it.
 - **Ray Regeneration**: not on this tab since 0.3.5.3; its controls and status are on its own **Ray Regeneration** tab (right after Upscaling). Here only the orange line under the runtime can say "Ray Regeneration is off in this title" or "Ray Regeneration could not start on this GPU" (hover it for the reason).
 - **Screen-space GI** (new in 0.3.5.3): **AMDNR Screen-space GI**, off by default, with a dim "by 3zwr1" after it; under it, while it is on: GI quality (Low / Medium / High / Ultra; Auto picks one for your GPU until you press one, and its tag shows the measured GPU time, or an estimate until GI has run), Bounce light, Ambient occlusion, Radius, Object thickness, Camera FOV, **More GI options** (Bounce colour, Sky light, Multi-bounce, FOV axis, Colour encoding, Debug view) and Reset GI. On every AMD GPU, with or without an NR runtime; greyed with its reason inside AMDNR Anywhere.
 - **The tools row**, closed at start: **Diagnostics** (Network output, Debug view, Edit shaper A/B, NR cost, the
   ghost and self-tuning readouts, the GPU line, **Save report**; the RR debug view is on the Ray Regeneration tab
   since 0.3.5) and **Runtime options** (Encoding, Every-frame NR, NR slots, Highlight proxy); **Experimental** is there only while your ini has the retired inherited Screen-space GI on (`[AmdRtgi] Enabled`), with just its checkbox, tagged "retired".
 
-A control the running runtime does not have is greyed with a short tag (e.g. "not in lmxxf yet") or hidden
-with a count ("3 danielblnc-only options hidden"); switching runtime moves no other row.
+Since 0.3.5.6 a control the running runtime cannot run is hidden on that runtime, with a count (e.g. Refine passes
+and Tone intensity on lmxxf; Edit detail, Edit colour, Edge guard, Output smoothing and Full network on danielblnc);
+its ini key keeps working. A control that works only in some condition stays, greyed with the reason (e.g. Residual
+limit, Debug view, Neural passes); switching runtime moves no other row.
 
 **The other tabs:** Upscaling starts with the upscaler, one status line and Render resolution (the former
-Upscale Ratio Override and Output Scaling); on a non-NVIDIA card "DLSS w/Dx12" is no longer listed. **Ray
+Upscale Ratio Override and Output Scaling); on a non-NVIDIA card "DLSS w/Dx12" is no longer listed. Since 0.3.5.6 the
+upscaler list also has **HelixSR (Model E) - restart required** (D3D12 games) and **Model L (d4r) - restart required**
+(greyed with its reason where it cannot run; see "Model E and Model L"). **Ray
 Regeneration** (new in 0.3.5) follows Upscaling while Ray Regeneration runs in the title: the status lines (per
 card and per API), the **Denoiser backend** row (Automatic / AMD FSR Ray Regeneration / AMDNR Ray Denoiser (preview) / Off (the game's own): Automatic is AMD's on RX 9000 and the AMDNR Ray Denoiser on every other card, the first three switch while the game runs, and Off tells the game Ray Reconstruction is unsupported, so it keeps its own denoiser, after a restart), the controls, More Ray Regeneration options, and its
 own Diagnostics block with the RR debug view and the noise number (grain in and out, still-camera flicker); it is
@@ -547,20 +677,39 @@ Settings writes are unchanged, except where `CHANGELOG.md` says so.
 Open the **Neural** tab. The defaults are the most recent tested arrangement, so the useful first
 move is to change one thing at a time.
 
+- **NR style** (top of the Neural tab, `[DlssNr] AmdNrLook = auto | 0 | 1`, both runtimes) — the first three items
+  are whole looks. **Full Model Look** (`auto`, the default since 0.3.5.6): the NVIDIA look's network (Style 0, all
+  71 blocks) with stronger model strengths - Structure intensity 2 on both runtimes, Edit detail 1.5 and Edit colour
+  1.25 on lmxxf - no residual limit or edge guard, Temporal stability 0.5, while output smoothing, the network history
+  and the other steadiness guards stay on; it asks for Neural placement After upscaling while you have not set the
+  placement yourself (see Neural placement below). **NVIDIA look** (`0`, the default from 0.3.5.3 to 0.3.5.5R4): the
+  closest to NVIDIA's own output, Before upscaling. **AMDNR soft** (`1`): the earlier AMDNR look, softer and steadier.
+  A look supplies its values only while you have not set those controls yourself, and under Model interleave the
+  guards keep their earlier values. Picking a look in the combo also writes its Neural placement (Full Model Look:
+  After upscaling; the other two: Before) and Full network as your own values. The four named styles after them set
+  their sliders over whichever look runs.
 - **NR resolution** — the main quality/cost lever. Below 100% the model works on a smaller
   picture and only its *correction* is carried back up to the full-resolution frame, so the
-  frame keeps its own detail. Above 100% cost grows with the square (150% is 2.25x). The slider
+  frame keeps its own detail. Above 100% cost grows with the square (150% is 2.25x, 200% is 4x). Since 0.3.5.6 the
+  slider goes from 25% to 200% on both runtimes (it stopped at 150% before); lmxxf's network still tops out at
+  1920x1080, and the row says so when it is the limit. The slider
   moves in 5% steps: each new NR size can keep VRAM until the game restarts, so restart the game
   after many changes. The cost beside it reads 1.00x at 100%; on lmxxf it is the price of the network size
   tier it runs (its hover names the tier). The Preset buttons set it to 100 / 85 / 70%.
-- **Placement** (Neural > Performance, `[DlssNr] AmdPlacement = pre | post`, new in 0.3.5, both runtimes) — where
-  the neural pass runs. `pre` (the default, and what every earlier build did) edits the render-resolution picture
-  the upscaler is about to read. `post` edits the upscaler's finished display-resolution picture instead: sharper,
-  because the upscaler no longer re-filters the edit, and more expensive - the network runs at display size up to
-  its 1920x1080 ceiling, so a 1080p screen pays the top tier at any NR resolution, and a 1440p or 4K screen gets a
-  1080-line edit lifted back - a little less forgiving in motion, and the HUD is included if the game composites it
-  before upscaling. Refused (back to `pre`, one line in `amd_bridge.log`) inside AMDNR Anywhere, in final image
-  mode, and once Ray Regeneration has run in the title. The NR resolution row shows both sizes while `post` runs.
+- **Neural placement** (Neural > Performance, `[DlssNr] AmdPlacement = pre | post`, new in 0.3.5, both runtimes) —
+  where the neural pass runs. `pre` (the key's own default, and what every build before 0.3.5.6 ran) edits the
+  render-resolution picture the upscaler is about to read. `post` edits the upscaler's finished display-resolution
+  picture instead: sharper, because the upscaler no longer re-filters the edit, and more expensive - on lmxxf the
+  network runs at display size up to its 1920x1080 ceiling, so a 1080p screen pays the top tier at any NR resolution,
+  and a 1440p or 4K screen gets a 1080-line edit lifted back (danielblnc has no such ceiling, so `post` costs it
+  more) - a little less forgiving in motion, and the HUD is included if the game composites it before upscaling. **Since
+  0.3.5.6, while the line is empty or `auto`, the default Full Model Look asks for `post` on every card**; the cost
+  gate, this game's TDR record and the live TDR guard price it, and step it back to `pre` for the session where the
+  card cannot pay it (the Neural status line and `amd_bridge.log` say why). A `pre` you set yourself (the row, the
+  Handheld preset or the launcher) holds the look before upscaling; the status line says so, and picking Full Model
+  Look again in NR style writes `post`. Refused (back to `pre`, one line in `amd_bridge.log`) inside AMDNR Anywhere,
+  in final image mode, and once Ray Regeneration has run in the title. The NR resolution row shows both sizes while
+  `post` runs.
 - **Residual strength** — how much of the model's edit is applied; above 1 it amplifies. This is
   the control that changes the picture most.
 - **Residual limit** — a ceiling on how far one pixel may move. Blotchy patches: **lower** it.
@@ -574,6 +723,11 @@ move is to change one thing at a time.
 - **Neural passes** — 2 and 3 stack the model, with diminishing returns. Under lmxxf the
   network's history stays its first pass; the extra passes are spatial refinement only.
   danielblnc runs 1 pass on Vulkan titles (a note under the slider says so).
+- **Refine passes** (Neural > Performance, `[DlssNr] AmdRefineMode = full | refine`, danielblnc only, new in
+  0.3.5.6) — AMDNR's own pass mode. *Full* (the default) runs every pass at the full size. *Refine* runs pass 1 at
+  the full size and passes 2 and 3 one network size smaller on the previous pass's answer, then lifts their edit back
+  onto the full-size picture: every pass still runs, the extra ones cost less. No effect at 1 pass. lmxxf's runtime
+  builds one network size per session, so it runs Refine as Full and the row is hidden there.
 - **Colour composition** (Neural > Image look, both runtimes) — *Classic* (default) is the picture
   you had before. *RenoDX (experimental)* runs RenoDX's colour composition after the model, as the
   NVIDIA path does: Composition detail and colour, a two-sided **Highlight guard** (2x by default)
@@ -584,6 +738,17 @@ move is to change one thing at a time.
 - **Native character mask** (Image look > Model strength, `[DlssNr] AutoMask`, on by default) — the model's own
   treatment of faces and skin. Unticking it now acts on both runtimes (on lmxxf it rebuilds the network: about
   a 1 s hitch); on lmxxf, Structure intensity and Character structure now act too.
+- **Extra detail on faces** (new in 0.3.5.6, both runtimes, always on) — while Character structure follows Structure
+  intensity (the default tick), faces and skin get 1.5 times the scene's structure, at most 4 (with the Full Model
+  Look: 2.00 -> 3.00); no extra pass and no extra cost. A Character structure you set yourself always wins, and the
+  greyed value in the menu shows the lifted number. `[DlssNr] AmdFaceDetail=false` (ini only) turns it off.
+- **Game exposure** (Image look > Exposure and highlights, `[DlssNr] AmdUseGameExposure = auto | 1 | 0`, both
+  runtimes) — since 0.3.5.6 its items read **Auto / On / Off**. Auto uses the game's own brightness value when the
+  game publishes one; On always hands it to the network; Off never does, and the runtime's own auto-exposure takes
+  over - try Off if NR makes a game too dark or too bright. It acts at the next model frame.
+- **Anti-halo** (Image look > Appearance filter, `[AmdLook] AntiHalo`, 0..1, default 0.901; called Halo protection
+  before 0.3.5.6, same key) — limits the filter's edit next to strong edges so no light or dark ring forms; higher =
+  safer edges, slightly softer detail beside them. It needs the filter's Effect mix above 0.
 - **Frame generation is off in a fresh ini**, and it takes five steps: FG Input and FG Output on the Frame Gen
   tab (e.g. "DLSSG via Streamline" in a game with DLSS frame generation, and XeFG), **Save Settings**, a full
   restart of the game, the game's **own** frame generation switched on, then **Active** ticked under Frame
@@ -618,6 +783,8 @@ move is to change one thing at a time.
   `[Sharpness] RrDefaultSharpness` (same 0.25 default): set 0.15, 0.10 or 0 there without touching Override, and a
   value your ini kept under `[Sharpness] Sharpness` while Override is off is tagged in the menu as waiting.
 - **AMDNR Screen-space GI by 3zwr1** (off by default; Neural > Screen-space GI, or `[AmdGi] Enabled=true`) - AMDNR's own screen-space bounce light and ambient occlusion from the game's depth, before NR, the upscaler and the UI; works with NR on or off; Low / Medium / High / Ultra (Auto per GPU), about 0.6 ms at High for a 1080p render on an RX 9070 XT (measured). Screen-space: light from off screen is missing. See `CHANGELOG.md`.
+- **Model E / Model L** (Upscaling tab, new in 0.3.5.6) — experimental upscaler choices made by other authors and
+  fetched by the AMDNR Launcher; Model L runs with lmxxf or with NR off. See "Model E and Model L".
 - **Save report** (Neural > Diagnostics, or Advanced > Logging) — one zip with every log and the ini files for a bug report; see "If it
   doesn't work" above.
 
@@ -634,18 +801,32 @@ longer after a normal quit).
 **NR frames 0/s, and the Neural tab or `amd_presr.log` says the pass DLL is a build this AMDNR does not
 drive?** Your `dlssnr_amd_pass1..3.dll` are a danielblnc build this AMDNR does not know (a 0.2.16 set was
 seen in the wild), or one of the three is missing. Since 0.3.3.2 the Neural tab names the file and its
-version and says what to do. Use the recommended runtime, all three pass DLLs from the same zip: on **RX 9000 and
-RX 7000** alike, `v0.5.0-Runtime.zip` from Alpha0.3.4.2 (149,550,553 bytes, SHA256 starting `7a49ab0e`);
-`v0.4.3-Runtime.zip` (Alpha0.3.4.2 and Alpha0.3.4.1; 116,484,918 bytes, SHA256 starting `07dd7774`),
+version and says what to do. Use the recommended runtime, all three pass DLLs from the same zip:
+`v0.6.0-Runtime.zip` from Alpha0.3.5.5R4 (176,366,023 bytes, SHA256 starting `d2bb1702`; on RX 9000, RX 7000 and RX
+6000); `v0.5.1-Runtime.zip` (Alpha0.3.5), `v0.5.0-Runtime.zip` (Alpha0.3.4.2; 149,550,553 bytes, SHA256 starting
+`7a49ab0e`), `v0.4.3-Runtime.zip` (Alpha0.3.4.2 and Alpha0.3.4.1; 116,484,918 bytes, SHA256 starting `07dd7774`),
 `v0.4.1-Runtime.zip` and `v0.4.0-Runtime.zip` (Alpha0.3.4.1) are still accepted (the `dlssnr_amd_pass1.dll`
 in `v0.4.1-Runtime.zip` is 9,916,928 bytes, SHA256 starting `823063eb`; in `v0.4.0-Runtime.zip`: 10,027,008 bytes,
 `d62be3d8`). Supported builds: 0.2.17,
-0.3.0, 0.3.1, 0.3.2, 0.3.3, 0.4.0 and the runtime zips named above, up to 0.5.0. Do not install danielblnc's own
+0.3.0, 0.3.1, 0.3.2, 0.3.3, 0.4.0 and the runtime zips named above, up to 0.6.0. Do not install danielblnc's own
 setup or its `dxgi.dll` / `version.dll` /
-`winhttp.dll` next to AMDNR: AMDNR already runs his runtime. **A danielblnc build newer than 0.5.0 is not driven by
-this release:** the Neural tab names the file and its version and says so. With 0.5.0, 0.4.3, 0.4.1 and 0.4.0 the
-danielblnc-only settings (Network style, Tone curve, Black lift, Game exposure, Fast mode) work, and since 0.3.5
-your own `Async` key in `dlssnr_on_amd.ini` reaches the runtime (see "What is in the archives").
+`winhttp.dll` next to AMDNR: AMDNR already runs his runtime. **A danielblnc build newer than 0.6.0 is not driven by
+this release:** the Neural tab names the file and its version and says so. With 0.6.0, 0.5.1, 0.5.0, 0.4.3, 0.4.1 and 0.4.0 the
+danielblnc-only settings (Network style, Tone curve, Black lift, Game exposure, Fast mode) work; since 0.3.5.5R4 an
+`Async=1` in `dlssnr_on_amd.ini` is run as same-frame (`[DlssNr] AmdDanielAsync=true` lets it through; see "What is
+in the archives").
+
+**danielblnc: NR stopped after a few "timeouts", or the screen said the display driver reset the GPU?** Fixed in
+0.3.5.6 (tested in Silent Hill 2). The cause was found: with Model L's files in the game folder, danielblnc's runtime
+was handed Model L's own copy of HIP, and its wait never saw the job finish. AMDNR now gives every caller outside
+Model L the driver's HIP. A wait that gives up is reported as one and no longer turns Neural Rendering off; there was
+no driver reset, and that text is gone; and the "runtime failed" note the launcher's Doctor reads is written only
+after a real failure. danielblnc's runtime pairs with Model E; use lmxxf for Model L.
+
+**You picked FSR 3 / FSR 4 and the game ran FSR 2.1.2?** Since 0.3.5.6 a failed or not-ready upscaler choice (Model E,
+Model L or another one) should keep your own FSR pick (FSR 4 / FSR 3.1) instead of dropping to FSR 2.1.2 (D3D12);
+FSR 2.1.2 runs only when you pick it, or when no other FSR library can run, and the log says so. In some D3D11 and
+Vulkan games a failed upscaler can still fall back to FSR 2.2. If you still see it, send the report zip.
 
 **lmxxf does nothing, or stops at once, on a PC with integrated graphics?** Fixed in 0.3.3.2. On a Ryzen
 desktop with its integrated graphics on, a laptop with an AMD APU and a Radeon, or a PC with two AMD GPUs,
@@ -823,7 +1004,17 @@ Full notes for every version: `CHANGELOG.md` (in the zip and in the repository).
 
 ## Roadmap
 
-- **0.3.5** (this build) — **AMDNR Anywhere** (preview, RX 9000, through the launcher); the Ray Regeneration tab
+- **0.3.5.6** (this build) — **Model E** (HelixSR by lonewolf0622) and **Model L** (d4r by countervolts) as
+  experimental, opt-in upscaler choices fetched from their authors' own releases (Model L: RX 9070 / 9070 XT, with
+  lmxxf or with NR off); the Full Model Look as the default NR style, after upscaling where the card can pay it; extra
+  detail on faces; less lmxxf ghosting; Fast mode by default on RX 7000 and handhelds; Game
+  exposure (Auto / On / Off) and Anti-halo; NR resolution up to 200%; a menu that hides what a runtime cannot run;
+  Refine passes on danielblnc; the danielblnc false-timeout fix; FSR 3 / 4 kept instead of FSR 2.1.2; XeFG memory
+  accounting; AMDNR Launcher 0.3.5.25.
+- **0.3.5.1 to 0.3.5.5R4** — danielblnc 0.6.0 (also on RX 6000, with AMD's HIP SDK); lmxxf 0.41 on RX 9000; the
+  NVIDIA look; the AMDNR Ray Denoiser (preview) and AMDNR Screen-space GI (0.3.5.3); a freeze guard after counted GPU
+  faults; crash fixes from your reports; the redesigned AMDNR Launcher with ASK AI. See `CHANGELOG.md`.
+- **0.3.5** — **AMDNR Anywhere** (preview, RX 9000, through the launcher); the Ray Regeneration tab
   with status lines per card and per API, the Denoiser backend Off row and the noise number; the neural pass after
   upscaling (`AmdPlacement`); the Frame Gen tab and the log say why nothing generates; lmxxf 0.37 by Kien (MIT) on
   RX 9000; the 0.3.5 module set (about 10 percent faster on RX 7000 and Z1 Extreme-class handhelds, same picture); dynamic-resolution steps held without
@@ -867,9 +1058,10 @@ Full notes for every version: `CHANGELOG.md` (in the zip and in the repository).
   real Neural passes, the edit shaper, the after-Ray-Regeneration placement, per-title
   diagnostics and self-healing. Many thanks to TheAutomatic, whose DLSS 5 AMD project work
   this integration builds on.
-- **0.3.6** — RX 6000 (RDNA 2): AMDNR's own kernels behind a hardware gate, with the 360 tier and Model interleave
-  as the preview on Navi 21; the AMDNR denoiser (ARD) preview, a denoiser of AMDNR's own behind the Ray
-  Reconstruction call for the cards AMD's denoiser refuses; AMDNR Anywhere on RX 7000 once tested there.
+- **0.3.6** — RX 6000 (RDNA 2) on AMDNR's own kernels (danielblnc's runtime 0.6.0 already runs there): behind a
+  hardware gate, with the 360 tier and Model interleave as the preview on Navi 21; AMDNR Anywhere on RX 7000 once
+  tested there. (The AMDNR Ray Denoiser, AMDNR's own denoiser behind the Ray Reconstruction call, already ships as a
+  preview since 0.3.5.3.)
 - **0.4.0** — the 1440p network tier; Ray Regeneration on Vulkan titles through the bridge; cross-adapter Neural
   Rendering (the game on one card, the network on the AMD card); Anywhere beyond the preview (titles without an
   upscaler of their own, where OptiScaler supplies the upscaler and the neural pass together).
@@ -894,7 +1086,10 @@ upstream.
 - **Dagherbou / OptiScaler_DLSSNR** — https://github.com/Dagherbou/OptiScaler_DLSSNR
 - **wilsjo2 / OptiScaler-DLSSNR-PreSR-Multipass** — https://github.com/wilsjo2/OptiScaler-DLSSNR-PreSR-Multipass
 - **Nukem9** — dlssg-to-fsr3 — https://github.com/Nukem9/dlssg-to-fsr3 (GPLv3, unmodified)
-- **Magpie by Blinue, experimental fork by SAOG0721 (GPL-3.0)** — the window-capture host AMDNR Anywhere runs inside, in AMDNR's own build, published on AMDNR's GitHub releases (`Magpie.exe` rebuilt with four fixes; the patches, the base commit and the build options in `Anywhere-host-source/` beside it; no NVIDIA files) — https://github.com/Blinue/Magpie (the fork: https://github.com/SAOG0721/Magpie)
+- **HelixSR** — lonewolf0622 — https://github.com/lonewolf0622/HelixSR (Model E, 0.3.5.6: fetched by the AMDNR Launcher from its own release and used under its own licence; not shipped by AMDNR; it builds its network on your PC from NVIDIA's DLSS file, which the launcher fetches from NVIDIA's own GitHub or takes from your game)
+- **d4r** — countervolts — https://github.com/countervolts/d4r (Model L, 0.3.5.6: NVIDIA's DLSS runtime under NVIDIA's EULA, run through **ZLUDA** (vosen, https://github.com/vosen/ZLUDA) and HIP; fetched by the AMDNR Launcher from d4r's own release, under d4r's own licence; not shipped by AMDNR, untested by its author on Windows)
+- **OptiPatcher** — from the OptiScaler project's releases, https://github.com/optiscaler/OptiPatcher (fetched by the AMDNR Launcher's GAME SETTINGS when you ask for it; not shipped by AMDNR)
+- **Magpie by Blinue, experimental fork by SAOG0721 (GPL-3.0)** — the window-capture host AMDNR Anywhere runs inside, in AMDNR's own build, published on AMDNR's GitHub releases (`Magpie.exe` rebuilt with AMDNR's changes; the source offer, one diff from the fork's tag and the build options in `Anywhere-host-source/` beside it; no NVIDIA files) — https://github.com/Blinue/Magpie (the fork: https://github.com/SAOG0721/Magpie)
 - **RenoDX** — clshortfuse — https://github.com/clshortfuse/renodx (colour composition maths, MIT)
 - **Coldwood1026** — XeFGUnlock (GPL-3.0), the base of the built-in XeFG multi-frame unlock and its pacing
 - **Zach Hembree (DarkHelmet)** — FSR Ray Regeneration for OptiScaler, the origin of AMDNR's Ray Regeneration path, continued by **burak113**, whose branch AMDNR ported from (OptiScaler branch ffx-denoise-experimental, GPL-3.0)
@@ -907,10 +1102,28 @@ upstream.
 **AMDNR Launcher** (new in 0.3.4) is a Windows 10 / 11 program that can also run under Proton on Linux
 (experimental, not tested by us yet: see "Linux / Proton"). It installs and updates AMDNR per game: it finds your
 games (Steam, Epic, the Xbox app, Ubisoft Connect, the EA app, GOG, Rockstar, Battle.net and Amazon Games), picks
-the DLL name, downloads the build and the danielblnc runtime you choose, checks every install with its Doctor,
+the DLL name, downloads the build and the danielblnc runtime you choose (and, when you choose them, Model E and Model
+L from their authors' own releases), checks every install with its Doctor,
 runs AMDNR Anywhere for games with no upscaler of their own (PLAY ANYWHERE), and updates itself. Download
 `AMDNR-Launcher.exe`, the AMDNR Launcher from the latest release, from the releases page:
 <https://github.com/3zwr1/AMD-NR---OptiScaler/releases>
+
+**New in Launcher 0.3.5.25** (on the Alpha0.3.5.6 release; it updates itself first, then your games):
+
+- **SR model** in a game's GAME SETTINGS: Auto / Model E / Model L (see "Model E and Model L"). The first pick of a
+  model shows its disclosure (ACCEPT / Cancel, Cancel is the default); the launcher then fetches its files from the
+  author's own release, checked by hash. Model L pairs with the lmxxf runtime (or Neural Rendering off); with
+  danielblnc's runtime the launcher refuses it and says why. Auto takes Model L's files out again.
+- **Game exposure** (Auto / On / Off) and **Anti-halo** rows in GAME SETTINGS, written only into an AMDNR build that
+  reads them.
+- **Anywhere settings** on the launcher's ANYWHERE page: NR runtime, passes, neural size, FSR (Auto / FSR 4 / FSR 3 /
+  Off - Off keeps NR), frame generation (experimental), motion for upscaling, sharpness and SR model; they apply at
+  the next PLAY ANYWHERE.
+- **Most FPS** look: runs the network one size smaller (lmxxf), with a smaller neural size; no neural frames are
+  skipped (Refine passes on danielblnc where more than one pass runs).
+- **Public Chat** in Community Lab: messages are public and checked by AI, and can be auto-translated into your
+  launcher language; the team can remove messages.
+- A runtime you pick for one game is kept for that game.
 
 **New in Launcher 0.3.5.1** (on the Alpha0.3.5 release; it updates itself first, then your games):
 
@@ -925,7 +1138,7 @@ runs AMDNR Anywhere for games with no upscaler of their own (PLAY ANYWHERE), and
 - **PLAY** starts Xbox / Microsoft Store games by their app id.
 - **One PLAY** with a route chooser (the game's own upscaler or AMDNR Anywhere, remembered per game) and the
   graphics API (DX9 / 10 / 11 / 12 / Vulkan / OpenGL) on every game page.
-- **Twelve languages**: Turkish, Korean and Hungarian join the nine below.
+- **Twelve languages**: Turkish, Korean and Hungarian join the nine below (thirteen now: Uzbek too).
 - **Rockstar games start through their store** (Steam, Epic or the Rockstar Games Launcher), never by their exe.
 - **AMDNR Anywhere**: the game runs below normal GPU priority so the host and Neural Rendering go first; the capture
   host's tray icon is hidden.
@@ -939,8 +1152,8 @@ runs AMDNR Anywhere for games with no upscaler of their own (PLAY ANYWHERE), and
 
 **New in Launcher 0.3.4.1: you asked, we built it** (from the first Discord feedback):
 
-- Nine languages (twelve since 0.3.5.1): English, Arabic, Chinese (Simplified), French, Spanish, Portuguese,
-  Italian, Russian and Polish, plus Turkish, Korean and Hungarian.
+- Nine languages (twelve since 0.3.5.1, thirteen now): English, Arabic, Chinese (Simplified), French,
+  Spanish, Portuguese, Italian, Russian and Polish, plus Turkish, Korean, Hungarian and Uzbek.
   The launcher follows your Windows language (else English); pick another under LANGUAGE or in SETTINGS, where it is
   also offered on first start. Doctor findings, install messages and the COLLECT LOGS report stay in English so
   support can read them.
@@ -988,6 +1201,10 @@ in `Licenses\`. The AMD neural runtime and its weights are redistributed under t
 authorship as credited above, for convenience only, with no ownership claimed and no warranty
 offered.
 
-NVIDIA's `nvngx_dlssnr.dll` is not in these archives. None of this is endorsed by, affiliated
+NVIDIA's `nvngx_dlssnr.dll` is not in these archives, and no other NVIDIA file is either. Model L's d4r package
+(NVIDIA's DLSS runtime under NVIDIA's EULA) and the NVIDIA DLSS file Model E builds from are fetched by the AMDNR
+Launcher only when you choose them, from d4r's own release and NVIDIA's own GitHub (or your game); AMDNR does not host
+or ship them, and Model E and Model L are their authors' work, not AMDNR's. AMDNR is not affiliated with or endorsed
+by AMD or NVIDIA. None of this is endorsed by, affiliated
 with, or supported by NVIDIA, AMD, or any game publisher. It drives an undocumented feature
 directly. Use it at your own risk.

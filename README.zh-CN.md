@@ -1,4 +1,4 @@
-# AMDNR — AMD 显卡上的 DLSS 5 神经渲染（OptiScaler 构建版）— v0.3.5.5
+# AMDNR — AMD 显卡上的 DLSS 5 神经渲染（OptiScaler 构建版）— v0.3.5.6
 
 [English](README.md) | **中文** | [Português](README.pt-BR.md) | [Español](README.es.md) | [العربية](README.ar.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Русский](README.ru.md) | [Polski](README.pl.md)
 
@@ -9,7 +9,9 @@ DLSS 5 神经渲染（Neural Rendering）在 AMD 显卡上运行，内置于 Opt
 任何 Direct3D 12 游戏都可以使用。在神经渲染之上还有：大幅提升帧率的模型交错（model interleave）、
 残差合成（residual composition）、解锁至 6X 的 XeSS 帧生成（D3D12 游戏可选开启至 10X），以及面向使用
 DLSS 光线重建游戏的 FSR Ray Regeneration。自 0.3.5 起，**AMDNR Anywhere**（preview）通过 AMDNR Launcher 把神经渲染
-带到自身没有任何放大器的游戏中，且不会向游戏目录写入任何东西（见"AMDNR Anywhere"）。
+带到自身没有任何放大器的游戏中，且不会向游戏目录写入任何东西（见"AMDNR Anywhere"）。自 0.3.5.6 起，放大器列表还提供
+两个由其他作者制作的实验性、需手动开启的选项：**Model E**（HelixSR）和 **Model L**（d4r），由 AMDNR Launcher 从它们
+各自的发布页获取（见"Model E 和 Model L"）。
 
 **Discord：<https://discord.gg/AMDNR>** —— 支持、问题反馈（`#bug-report`）、测试版。
 
@@ -20,15 +22,45 @@ DLSS 光线重建游戏的 FSR Ray Regeneration。自 0.3.5 起，**AMDNR Anywhe
 > Copyright (c) 2026 Daniel Blanco, all rights reserved. AMDNR 经他许可，未经修改地分发它；它不是 AMDNR 的作品。
 > 请支持他的项目。其他所有人的完整致谢见本页末尾。
 
+> **0.3.5.6 新内容**（2026-10-17，发布标签 Alpha0.3.5.6，配合 AMDNR Launcher 0.3.5.25）：
+> - **两个新的放大器选项**（实验性，需手动开启）：**Model E**（HelixSR，作者 lonewolf0622）和 **Model L**（d4r，作者
+>   countervolts），在你选择它们时由启动器从其作者自己的发布页获取。AMDNR 不托管也不分发它们的文件或 NVIDIA 的文件。
+>   Model L 仅支持 RX 9070 / RX 9070 XT，配合 lmxxf 运行时或在关闭神经渲染时运行；danielblnc 的运行时与 Model E 搭配。
+>   启用之前请先阅读"Model E 和 Model L"。
+> - **Full Model Look 成为默认的 NR 风格**：两个运行时上都有更饱满的观感，在负担得起的显卡上于放大之后运行——开销门槛
+>   和 TDR 保护会在必要时把它移回放大之前，并会说明这一点。在 NR style 中选择一种外观，也会同时设置它的 Neural placement
+>   和 Full network；当你自己的 placement 设置让该外观无法完整呈现时，菜单会告诉你。
+> - **脸部额外细节**，始终开启，两个运行时都有（`[DlssNr] AmdFaceDetail=false` 可将其关闭）。
+> - **lmxxf 的拖影更少**：移动物体身后的拖尾更短（放大之前和之后都是），场景切换后的闪烁约减弱一半。拖影是减少了，
+>   而不是消失了。
+> - **RX 7000 与掌机**：神经渲染现在默认以小一档的网络尺寸运行（lmxxf Fast mode），每帧耗时更少。
+>   `[DlssNr] AmdLmxxfFastMode=false` 可将其关闭；RX 9000 上保持关闭。
+> - **新增与改名的控件**：Game exposure（Auto / On / Off）、Anti-halo（原名 Halo protection），以及 danielblnc 上的
+>   **Refine passes**（第 2、3 遍以小一档的网络尺寸运行）。**NR resolution** 现在在两个运行时上都可达 200%。
+> - **菜单只显示你的运行时能用的内容**：某个运行时无法运行的控件会在该运行时上隐藏（其 ini 键仍然有效），运行时条目会
+>   写出实际运行的 lmxxf 版本（例如 `lmxxf 0.41`）。
+> - **修复**：danielblnc 的假"超时"（在 Silent Hill 2 中测试）——放弃等待不再关闭神经渲染，声称驱动重置了 GPU 的文字已
+>   删除（实际上并没有发生重置），"runtime failed" 记录只在真正失败后才会写出。当其他放大器选项失败或尚未就绪时，FSR 3 /
+>   FSR 4 应该不会再退回到 FSR 2.1.2：你自己选的 FSR 会被保留。XeFG 帧生成的显存现在会被正确统计（包括 6X 设置）。
+> - **请同时替换 zip 中的全部文件**（`OptiScaler.dll` 和 `LmxxfNrRuntime.dll` 必须来自同一次发布）；启动器用户：它会
+>   自动为你更新。仍未解决的问题：见"已知限制（0.3.5.6）"。详情见 `CHANGELOG.md`。
+
+> **0.3.5 与 0.3.5.6 之间**（0.3.5.1 至 0.3.5.5R4）：danielblnc 0.6.0 已被驱动，现在是推荐的 danielblnc 运行时（在安装了
+> AMD 的 HIP SDK 时，它也能在 RX 6000 上运行）；Kien 的 lmxxf 0.41（MIT）是 RX 9000 上的默认内核集；NVIDIA look（0.3.5.3
+> 至 0.3.5.5R4 的默认 NR 风格）；在统计到 GPU 故障后降低或停止 NR 的防卡死保护；重新设计的 AMDNR Launcher（十三种语言、
+> ASK AI）；以及根据你们的反馈完成的大量崩溃修复。详情见 `CHANGELOG.md` 和 GitHub 上的发布说明。
+
 > **0.3.5 新内容：** **AMDNR Anywhere**（preview）：为自身没有 DLSS、XeSS 或 FSR 2 的游戏提供神经渲染——AMDNR Launcher
 > 中只需一个 **PLAY ANYWHERE** 按钮，不向游戏目录写入任何东西；本次发布支持 RX 9000（RDNA 4）（见"AMDNR Anywhere"）。
 > **Ray Regeneration 有了自己的选项卡**，紧跟在 Upscaling 之后，其状态行会按显卡、按 API 说明什么在运行、为什么没有运行；在 RX 7000 上，自 0.3.5.1 起它再次以
 > preview 形式提供并默认开启（自 0.3.5.3 起，在那里由 AMDNR Ray Denoiser（preview）降噪；Upscaling 选项卡中的
 > 勾选框或 `[FSR-RR] FfxDenoiserAllowPreRdna4=false` 可将其关闭，游戏便保留自己的降噪器）。
-> **神经通道可以在放大之后运行**（`[DlssNr] AmdPlacement=post`，Neural > Performance > Placement；默认的 `pre` 不变）。
+> **神经通道可以在放大之后运行**（`[DlssNr] AmdPlacement=post`，Neural > Performance > Neural placement；0.3.5 中默认的 `pre` 不变——
+> 自 0.3.5.6 起，默认的 NR 风格会请求 `post`，见"值得了解的设置"）。
 > **Frame Gen 选项卡会说明为什么没有生成任何帧**，并列出五个步骤（见帧生成的常见问题）。**在 RX 7000 和 Z1 Extreme
 > 级掌机上更快：**网络时间约少 10%，画面逐位相同（`LmxxfNrRuntime.pak` 中的 0.3.5 模块集）。**RX 9000 上默认启用 Kien 的 lmxxf 0.37（MIT）：**
-> RX 9070 XT 上的网络时间约少 20%（在 RX 9060 / 9060 XT 上为实验性；`[DlssNr] AmdLmxxfL37=false` 可将其关闭）。
+> RX 9070 XT 上的网络时间约少 20%（在 RX 9060 / 9060 XT 上为实验性；`[DlssNr] AmdLmxxfL37=false` 可将其关闭；自
+> 0.3.5.3 起，那里的默认内核集是 lmxxf 0.41）。
 > 在 RDNA 3 掌机上，**FSR 4 (INT8)** 作为需手动开启的实验性选项提供；自定义的 Style slots 现在会保存完整的外观。
 > 动态分辨率游戏不再在每一步都重建网络；在掌机上开启 Model interleave 移动时，被携带的编辑不再消失；Uncharted: Legacy of
 > Thieves 在 RX 9000 上不再崩溃；此外还有大量修复。**三个文件都有变化：请同时替换 `OptiScaler.dll`、
@@ -67,14 +99,17 @@ DLSS 光线重建游戏的 FSR Ray Regeneration。自 0.3.5 起，**AMDNR Anywhe
 ### 1. 下载文件
 
 从 GitHub 上的最新发布页下载这些文件（<https://github.com/3zwr1/AMD-NR---OptiScaler/releases>；
-0.3.5 对应的标签是 Alpha0.3.5）：
+0.3.5.6 对应的标签是 Alpha0.3.5.6）：
 
-* `AMDNR-vX.X.X.zip`（0.3.5 为 `AMDNR-v0.3.5.zip`），内含完整的 lmxxf 运行时。
-* 如需 danielblnc 运行时，再下载一个运行时 zip：**RX 9000 和 RX 7000** 都用 Alpha0.3.4.2 上的
-  `v0.5.0-Runtime.zip`（推荐）；`v0.4.3-Runtime.zip`（Alpha0.3.4.2 和 Alpha0.3.4.1）、`v0.4.1-Runtime.zip` 和
-  `v0.4.0-Runtime.zip`（Alpha0.3.4.1）仍然可用。lmxxf 运行时包含在
+* `AMDNR-vX.X.X.zip`（0.3.5.6 为 `AMDNR-v0.3.5.6.zip`），内含完整的 lmxxf 运行时。
+* 如需 danielblnc 运行时，再下载一个运行时 zip：Alpha0.3.5.5R4 上的 `v0.6.0-Runtime.zip`（推荐；适用于 RX 9000、
+  RX 7000，以及在安装了 AMD 的 HIP SDK 时的 RX 6000）；`v0.5.1-Runtime.zip`（Alpha0.3.5）、`v0.5.0-Runtime.zip`
+  （Alpha0.3.4.2；它可能在某些显卡上让某些游戏卡死）、`v0.4.3-Runtime.zip`（Alpha0.3.4.2 和 Alpha0.3.4.1）、
+  `v0.4.1-Runtime.zip` 和 `v0.4.0-Runtime.zip`（Alpha0.3.4.1）在 RX 9000 和 RX 7000 上仍然可用。lmxxf 运行时包含在
   `AMDNR-vX.X.X.zip` 中，在 RX 7000 和 RX 9000 上不需要任何运行时 zip；掌机 APU 只使用 lmxxf。AMDNR Launcher
   会为你的显卡选好正确的 zip。见"压缩包里有什么"。
+* Model E 和 Model L 无需手动下载任何东西：在你选择它们时，AMDNR Launcher 会从其作者自己的发布页获取（见
+  "Model E 和 Model L"）。
 
 ### 2. 解压两个文件
 
@@ -84,12 +119,13 @@ DLSS 光线重建游戏的 FSR Ray Regeneration。自 0.3.5 起，**AMDNR Anywhe
 
 先把 `AMDNR-vX.X.X` 里的全部文件复制到游戏根目录 —— 也就是游戏 `.exe` 所在的文件夹。
 
-然后把运行时 zip（例如 RX 9000 和 RX 7000 上的 `v0.5.0-Runtime`）里的全部文件同样复制过去。
+然后把运行时 zip（例如 RX 9000、RX 7000 和 RX 6000 上的 `v0.6.0-Runtime`）里的全部文件同样复制过去。
 
-> **从旧版 AMDNR 升级？** 重新复制全部文件并覆盖。**0.3.5 中有三个文件一起更新了：**`OptiScaler.dll`（用新文件替换你
+> **从旧版 AMDNR 升级？** 重新复制全部文件并覆盖。**请同时替换这三个文件**：`OptiScaler.dll`（用新文件替换你
 > 重命名过的那个，例如 `dxgi.dll`，并按同样方式重命名）、`LmxxfNrRuntime.dll` 和 `LmxxfNrRuntime.pak`
-> （440 MB）。不要与旧副本混用。你可以保留自己的 `OptiScaler.ini`：新设置会使用默认值。你的 danielblnc 运行时 zip
-> 中的文件保持不变。AMDNR Launcher 会替你完成这一步：点 UPDATE ALL，或在显示 "Update available" 的游戏上点
+> （440 MB）。不要与旧副本混用：在 0.3.5.6 中，`OptiScaler.dll` 会向 `LmxxfNrRuntime.dll` 传递新的帧数据，而旧的运行时
+> 会在没有这些数据的情况下运行。你可以保留自己的 `OptiScaler.ini`：新设置会使用默认值。你的 danielblnc 运行时 zip
+> 中的文件保持不变（启动器的 Doctor 会为你的显卡提供推荐的那个）。AMDNR Launcher 会替你完成这一步：点 UPDATE ALL，或在显示 "Update available" 的游戏上点
 > REPAIR / UPDATE（启动器会先更新自己）。
 
 ### 4. 重命名 OptiScaler.dll
@@ -187,8 +223,8 @@ HDR、运动向量及其缩放、深度及其方向、反应遮罩（reactive ma
 方向、遮罩、曝光），以及每 600 帧一行 `lmxxf stats @N:`（曝光、输入亮度、模型的编辑、被携带的编辑、
 keep、反应遮罩均值、向量长度与被拒比例）。反馈时附上日志；这两行通常就能说明原因。
 
-两个运行时共用同一个 Neural 选项卡（见下文"菜单"）。当前运行时不具备的控件会变灰并带简短标签，或被隐藏并显示
-数量。仅 lmxxf 具有：**Full network**、**Output smoothing**（Quality > More quality options，需要 Network history）、
+两个运行时共用同一个 Neural 选项卡（见下文"菜单"）。自 0.3.5.6 起，当前运行时无法运行的控件会在该运行时上隐藏，
+并显示数量（其 ini 键仍然有效）。仅 lmxxf 具有：**Full network**、**Output smoothing**（Quality > More quality options，需要 Network history）、
 **Edit detail**、**Edit colour** 和 **Edge guard**（Image look > Model strength：模型编辑细节部分的增益、编辑的色彩
 相对其亮度变化的比例、以及在深度边缘处对编辑的衰减），以及自动曝光的高光上限。0.3.4 中 lmxxf 新增：Network
 output、Encoding、Residual edge fade、Game exposure、Fast mode、交错节拍读数，以及模型原生的角色遮罩
@@ -197,8 +233,10 @@ output、Encoding、Residual edge fade、Game exposure、Fast mode、交错节�
 **Full network**（Neural > Performance，`[DlssNr] LmxxfFullNetwork`，仅 lmxxf）运行网络全部 71 个块，
 而不是跳过第 42、43、46 块：略微更忠实，1080p 下慢约 0.5 ms（RX 9070 XT 上 16.6 -> 17.1 ms，在 0.3.3 中测得）。默认关闭。
 
-**Fast mode**（Neural > Performance，`[DlssNr] AmdLmxxfFastMode`，仅 lmxxf，可选，默认关闭）让网络低一个尺寸档位运行
-（1080 -> 900，900 -> 720）：1080p 下网络时间约少 29%（RX 9070 XT，在游戏外测得），细节略软。自带 Fast mode 的
+**Fast mode**（Neural > Performance，`[DlssNr] AmdLmxxfFastMode`，lmxxf）让网络低一个尺寸档位运行
+（1080 -> 900，900 -> 720；启用了小网络尺寸时还有 720 -> 576 和 576 -> 360）：1080p 下网络时间约少 29%（RX 9070 XT，
+在游戏外测得），细节略软。**自 0.3.5.6 起，它在 RX 7000、Radeon 8060S / 8050S 和掌机 APU 上默认开启**，在 RX 9000 上
+默认关闭；`false`（或取消勾选）可将其关闭，`true` 可将其开启，勾选框显示实际运行的状态。自带 Fast mode 的
 danielblnc 版本在那里也会显示一行 Fast mode（`[DlssNr] AmdDanielFastMode`）；本次发布的运行时 zip 中的运行时没有
 该模式，因此该行隐藏。
 
@@ -223,11 +261,11 @@ RX 7800 XT 上每次网络运行的时间（由测试者用 lmxxf 的探针测�
 - 在游戏中，每个显示帧的收益更小：开启 Model interleave 时网络每隔一帧运行一次，而且游戏本身也有开销。尚未在
   游戏中实测。
 - 网络看到的画面会略小一些（1440p Quality 下每边约少 6% 的像素），因此细微细节可能稍软。
-  `[DlssNr] AmdLmxxfTierSnap=false` 可恢复 0.3.3.2 的尺寸。RX 9000 保持 0.3.3.2 的尺寸，除非你将它设为 `true`。
-- **RX 9000：** `[DlssNr] AmdLmxxfTierSnap=true`（那里默认关闭）会在每一种渲染分辨率下把 lmxxf 的 NR 尺寸移到一个网络
-  尺寸上：有些尺寸会降一档（1440p FSR Quality，1707x960 -> 900 尺寸：网络耗时 14.08 -> 9.96 ms/次，RX 9070 XT，在游戏外
-  实测，画面稍软），有些则在本档内放大（1080p 渲染的 80% -> 1600x900：开销相同，细节略多）。不设置时，RX 9000 保持
-  0.3.3.2 的尺寸。
+  `[DlssNr] AmdLmxxfTierSnap=false` 可恢复 0.3.3.2 的尺寸。自 0.3.5.2 起，RX 9000 也默认对齐档位。
+- **RX 9000：** `[DlssNr] AmdLmxxfTierSnap`（自 0.3.5.2 起在那里默认开启；此前需手动开启）会在每一种渲染分辨率下把
+  lmxxf 的 NR 尺寸移到一个网络尺寸上：有些尺寸会降一档（1440p FSR Quality，1707x960 -> 900 尺寸：网络耗时 14.08 ->
+  9.96 ms/次，RX 9070 XT，在游戏外实测，画面稍软），有些则在本档内放大（1080p 渲染的 80% -> 1600x900：开销相同，细节
+  略多）。`false` 保持 0.3.3.2 的尺寸。
 - NR resolution 请从 70% 或更低起步（1080p 渲染下为 720 档；Performance 预设即 70%）。NR resolution 旁显示的开销
   按网络实际运行的档位计算；其悬停提示会写出档位。
 - **0.3.5：RX 7000 上的网络时间约少 10%**，画面逐位相同：`LmxxfNrRuntime.pak` 中的 0.3.5 模块集（由一位测试者在
@@ -236,6 +274,12 @@ RX 7800 XT 上每次网络运行的时间（由测试者用 lmxxf 的探针测�
   （14.0 -> 约 11.3 ms，在游戏外测得；画面与 0.3.4.2 并非逐位相同）。在 RX 9060 / 9060 XT 上它也会启用，并与 c32w
   和 FastK 内核一起作为实验（尚未在该显卡上运行过）。关闭开关：`[DlssNr] AmdLmxxfL37=false`、`AmdLmxxfC32w=false`、
   `AmdLmxxfFastK=false`。
+- **自 0.3.5.3 起，RX 9000 上的默认内核集是 Kien 的 lmxxf 0.41（MIT）**（`[DlssNr] AmdLmxxfL41=false` 可将其关闭）；
+  自 0.3.5.6 起，Neural runtime 条目会写出实际运行的内核集。**自 0.3.5.5R4 起，RX 7000 和 Z1 Extreme 级掌机运行更新的
+  内核集**，画面逐位相同（在测试者的机器上经过哈希校验）。
+- **0.3.5.6：Fast mode 在 RDNA 3 上默认开启**（RX 7000、Radeon 8060S / 8050S 和掌机 APU）：网络以比渲染尺寸所对应的
+  尺寸小一档的尺寸运行（1080p 渲染以 900 尺寸运行），每帧耗时更少，细节略软。RX 9000 不变（关闭）。这些 GPU 上还没有
+  游戏中的反馈：请发送你的反馈。`[DlssNr] AmdLmxxfFastMode=false`（或取消勾选 Fast mode）可将其关闭。
 
 ### 掌机 APU（实验性，0.3.4 新增）
 
@@ -247,19 +291,23 @@ Radeon 780M**（gfx1103），**Z2 Extreme、Radeon 890M 和 880M**（gfx1150）�
 Radeon 780M：360p 下约 50 ms，576p 下约 105 ms，画面逐位相同，经一位测试者哈希校验）；Z2 Extreme / 890M / 880M 模块未变。
 
 - **不支持：** Z1 和 Radeon 740M（4 个计算单元）、Radeon 760M（8 个）、Radeon 860M / 840M。danielblnc 的运行时
-  不能在掌机 APU 上运行。RX 6000（RDNA 2）计划在 0.3.6 支持；Steam Deck 和其他 RDNA 2 APU 不受支持。
-- **它自动做的事**（仅当你的 ini 中没有自己设置的值时）：网络以最小尺寸 360p（640x360）运行，模型每 4 帧运行一次
-  （Model interleave；不会保存）。Neural passes 保持为 1。
+  不能在掌机 APU 上运行。RX 6000（RDNA 2）桌面显卡可运行 danielblnc 的运行时 0.6.0（见"系统要求"；那里的 lmxxf 计划在
+  0.3.6 支持）；Steam Deck 和其他 RDNA 2 APU 不受支持。
+- **它自动做的事**（仅当你的 ini 中没有自己设置的值时）：网络尺寸上限为 576（1024x576；自 0.3.5.5R3 起，此前为 360p），
+  并且自 0.3.5.6 起 Fast mode 默认开启，所以网络再低一档，以 360p（640x360）运行；模型每 4 帧运行一次（Model interleave；
+  不会保存）。自 0.3.5.5R3 起，你的 Neural passes 会被保留（以前会被固定为 1）；NR 开销会把它们计算在内。
 - **速度，实话实说：**作为参考：RX 7800 XT（60 个计算
   单元）在 720 尺寸下每次网络运行需要 34.4 ms；这些芯片只有 12 到 16 个计算单元，频率也更低。即使在 360p、模型每
   4 帧运行一次的情况下，也要预期帧率大幅下降、长交错带来一些拖影，以及比桌面显卡更软的画面。Neural 选项卡状态行
   末尾（以及 Diagnostics 中）的 NR 开销会显示你设备上的真实数字。
 - **设置：**
-  - 更清晰但更慢：`[DlssNr] AmdLmxxfTierCap=576`（1024x576 网络尺寸）。
-  - 在 720p 或 800p 渲染下，NR resolution 100% 已经输入 360p 尺寸，所以更低的 NR resolution 并不会更省。
+  - 更清晰但更慢：`[DlssNr] AmdLmxxfFastMode=false`（1024x576 网络尺寸；`[DlssNr] AmdLmxxfTierCap=360` 即使在
+    Fast mode 关闭时也会保持最小尺寸）。
+  - Fast mode 开启时，720p 或 800p 渲染在 NR resolution 100% 下已经以 360p 尺寸运行，所以更低的 NR resolution 并不会
+    更省。
   - Model interleave 选 Off 时会保存为 `[DlssNr] AmdInterleave=1`（同样是关闭），这样掌机的默认值不会在下次启动时
     回来。手动关闭时请写 1，而不是 0。
-  - Preset > **Handheld** 会设置 NR resolution 100%、关闭 Dynamic NR、模型每 4 帧运行一次、1 个 Neural pass 并关闭 Full network。该按钮只在这些 APU 上显示；在这里 Quality、Balanced 和 Performance 同样保持 360p 网络尺寸（菜单会说明）。
+  - Preset > **Handheld**（自 0.3.5.1 起）会设置 NR resolution 80%、关闭 Dynamic NR、模型每 4 帧运行一次并使用 Edit accumulation、1 个 Neural pass、开启 Full network、开启 Fast mode 以及 Before upscaling，另外还有它自己的外观数值（Residual limit 0.32、Temporal stability 0.70、Sharpening 0.10、Output smoothing 0.65 以及其他几项；按钮的悬停提示会全部列出）。该按钮只在这些 APU 上显示；在这里 Quality、Balanced 和 Performance 同样保持掌机的网络尺寸（菜单会说明）。
 - **FSR 4：** FSR 4 (INT8) 在 RDNA 3 掌机上作为实验性选项提供（Upscaling 选项卡）；未经 AMD 验证。
   勾选 **FSR 4 (INT8) - Experimental on this GPU (restart)** 会写入 `[FSR] Fsr4ForceModel=2`；它从不自动开启（`Dx12Upscaler=auto` 时放大器为 XeSS）。
   在 Z1 Extreme 上每帧约 1.5-3 ms（估计值）；开启 NR 时，FSR 4 与 576 尺寸二选一，不要同时使用。
@@ -269,8 +317,8 @@ Radeon 780M：360p 下约 50 ms，576p 下约 105 ms，画面逐位相同，经�
 - **开启 Model interleave 时移动（0.3.5 已修复）：**以前你一移动，被携带的编辑就会消失（"一移动效果就没了"）：在
   Model interleave 下，网络运行在长短不一的帧上，而携带的保护条件假定各帧等长。现在它会按本帧的时长读取上一帧的向量
   （两个运行时都适用）。
-- **请一起使用 0.3.5 的文件：**0.3.5 更改了全部三个文件（`OptiScaler.dll`、`LmxxfNrRuntime.dll` 和
-  `LmxxfNrRuntime.pak`），请一起替换；当 `OptiScaler.dll` 早于 0.3.4 时，运行时会拒绝在掌机上运行（"this handheld
+- **请一起使用同一次发布的文件**：请同时替换 `OptiScaler.dll`、`LmxxfNrRuntime.dll` 和
+  `LmxxfNrRuntime.pak`；当 `OptiScaler.dll` 早于 0.3.4 时，运行时会拒绝在掌机上运行（"this handheld
   needs OptiScaler.dll 0.3.4 or newer"）。
 - **有掌机的测试者：** 请在 Discord 上索取掌机测试包（`handheld-test.zip`）。其中的 `run_probe.bat` 会在你的设备上
   测量网络并写出 `handheld_result.txt`（你的 Windows 用户名会被隐藏）。
@@ -278,21 +326,24 @@ Radeon 780M：360p 下约 50 ms，576p 下约 105 ms，画面逐位相同，经�
 ## AMDNR Anywhere（preview，0.3.5 新增）
 
 **它是什么。** 为自身没有 DLSS、XeSS 或 FSR 2 的游戏提供神经渲染——而且不会向游戏目录写入任何东西。AMDNR 在一个窗口
-捕获宿主中运行：宿主捕获游戏窗口，用 FSR 3 把它缩放到你的屏幕，神经渲染在捕获到的画面上运行；我们的菜单绘制在宿主
+捕获宿主中运行：宿主捕获游戏窗口，把它缩放到你的屏幕，神经渲染在捕获到的画面上运行；我们的菜单绘制在宿主
 内部（用你的菜单键，默认为 `INSERT`），并有自己的 **Anywhere** 选项卡。宿主是
-**Magpie by Blinue, experimental fork by SAOG0721 (GPL-3.0)**，使用 AMDNR 自己的构建版：其 `Magpie.exe` 经重新构建，带四项修复（补丁、基础提交和构建选项都在旁边的 `Anywhere-host-source/` 中），且该包不含任何 NVIDIA 文件。AMDNR Launcher 从 AMDNR 的 GitHub 发布页下载它（约 100 MB，只需一次）。
+**Magpie by Blinue, experimental fork by SAOG0721 (GPL-3.0)**，使用 AMDNR 自己的构建版：其 `Magpie.exe` 经重新构建，带有 AMDNR 的修改（源代码提供声明、一份相对该分支标签的 diff 以及构建选项都在旁边的 `Anywhere-host-source/` 中），且该包不含任何 NVIDIA 文件。AMDNR Launcher 从 AMDNR 的 GitHub 发布页下载它（0.3.5.6 约 130 MB，每个宿主版本只需下载一次）。
 
 **怎么用。** 在 AMDNR Launcher 中，没有放大器的游戏会显示 **PLAY ANYWHERE**，而不是 INSTALL。点它：启动器会（首次）
 获取宿主、启动游戏，宿主随即捕获游戏窗口。请以**窗口化或无边框**模式运行游戏，不要用独占全屏，并在宿主内按你的菜单键
 打开 AMDNR 菜单。自带放大器的游戏仍走正常的 INSTALL 路线：Anywhere 是为那些没有放大器的游戏准备的。
 
-**宿主设置在菜单里**，位于 Anywhere 选项卡的 Host settings 中，而不在启动器里：游戏窗口尺寸（720p / 900p / 1080p——
+**宿主设置在菜单里**，位于 Anywhere 选项卡的 Host settings 中（启动器也有自己的面板，见下文）：游戏窗口尺寸（720p / 900p / 1080p——
 这是对游戏内该如何设置的建议；宿主会捕获游戏打开的任何窗口）、阶段列表（V1：一次 FSR 3 通道直接输出到屏幕；V2：先以
 1x 运行 FSR 3，再运行一次填充通道）、NR 档位（Auto / 720 / 900 / 1080）、VRR、帧节拍以及**宿主帧率**（Default = 你的
 显示器刷新率，最高 60；Auto = 上一次会话中网络所能维持的帧率；30 到 120；Display refresh = 不设上限）。它们在**下一次**
 PLAY ANYWHERE 时生效，启动器会在按钮旁显示一份只读摘要。在宿主自己的 `OptiScaler.ini` 中，它们是
 `[DlssNr] AnywhereWindow`、`AnywhereEffect`、`AnywhereNrTier`、`AnywhereVrr`、`AnywherePacing` 和 `AnywhereHostFps`。
 也请用游戏自己的限帧器把游戏限制在 60 到 90 fps：宿主只能显示游戏画出的帧，而宿主的每一帧都会运行一次网络。
+**自 AMDNR Launcher 0.3.5.25 起，启动器也有一个 Anywhere 设置面板**（NR 运行时、Neural passes、神经尺寸、FSR Auto /
+FSR 4 / FSR 3 / Off——Off 会保留 NR——、帧生成（实验性）、用于放大的运动、锐度，以及 Model E / Model L（实验性；在
+Anywhere 内与神经渲染一起使用的情况仍在测试中））；它写入同一个宿主 ini，并在下一次 PLAY ANYWHERE 时生效。
 
 **宿主无法给网络提供什么。** 捕获到的窗口自身没有深度、运动向量、抖动（jitter）或曝光；运动由宿主估算。因此 Anywhere
 选项卡会写出哪些是估算的；Neural 选项卡中在那里无法生效的行会被隐藏，或被拒绝并附上原因（Ray Regeneration、Screen GI
@@ -303,6 +354,55 @@ PLAY ANYWHERE 时生效，启动器会在按钮旁显示一份只读摘要。在
 **状态：preview。** 本次发布仅支持 RX 9000（RDNA 4）；RX 7000 在那里测试后跟进。快速运动时可能仍有轻微闪烁或抖动
 （把 NR 档位降到 720、把游戏限制在 60-90 fps、保持 Model interleave 关闭——宿主会拒绝它）。捕获宿主是 AMDNR 自己的构建版，从 AMDNR 的 GitHub 发布页获取。反馈：在宿主内的菜单中生成的 **Save report** zip（其标题写的是被缩放的游戏），或启动器的
 COLLECT LOGS。
+
+## Model E 和 Model L（实验性，需手动开启，0.3.5.6 新增）
+
+FSR 和 XeSS 之外的另外两个超分辨率（放大器）选项。**它们不是 AMDNR 的作品，也不是 AMDNR 的模型，两者都不在 AMDNR 的
+zip 中**。当你在 AMDNR Launcher 中选择其中一个时（游戏的 GAME SETTINGS > **SR model**：Auto / Model E / Model L），
+启动器会显示一次该模型的说明，请你接受，然后从作者自己的发布页获取文件，并按哈希校验。AMDNR 不托管也不分发它们的文件或
+任何 NVIDIA 文件。两者都是实验性的：可能会出问题，出问题时请发送反馈。**Auto** 保持游戏的正常路线（并会把 Model L 的
+文件移出游戏目录）。
+
+**Model E - HelixSR，作者 lonewolf0622**（<https://github.com/lonewolf0622/HelixSR>），适用其自己的许可证。
+- HelixSR 在你的电脑上根据 NVIDIA 的 DLSS 文件构建它的网络；该文件由启动器从 NVIDIA 自己的 GitHub 下载（或从你的游戏中
+  获取）；构建出的内容留在你的电脑上。
+- 游戏中：Upscaling > **HelixSR (Model E) - restart required**（D3D12 游戏；`[Upscalers] FfxSRProvider=helix_e`）。
+  在下次启动游戏时生效。
+- 可与**两个** NR 运行时（danielblnc 和 lmxxf）一起使用。在我们的测试中，它在 RX 9070 XT 上的一款游戏中运行过。
+
+**Model L - d4r，作者 countervolts**（<https://github.com/countervolts/d4r>），适用 d4r 自己的许可证。
+- **它是什么**：d4r 在 AMD 显卡上**通过 ZLUDA / HIP 运行 NVIDIA 的 DLSS 运行时，受 NVIDIA 的 EULA 约束**。启动器从 d4r
+  自己的 GitHub 发布页获取 d4r 包，并把它放到游戏目录中的 `AMDNR-SR-L\`；AMDNR 不托管也不分发任何 NVIDIA 文件。
+  **d4r 的作者尚未在 Windows 上测试过它。**
+- **仅支持 RX 9070 / RX 9070 XT**（在 RX 9070 XT 上测试过；RX 9060 XT 和更早的显卡会被拒绝），并且在游戏中
+  **仅支持 D3D12 游戏**。
+- **它配合 lmxxf 运行时运行，或在关闭神经渲染时运行。danielblnc 的运行时与 Model E 搭配**：当 NR 运行时为 danielblnc
+  时，Model L 一行会变灰，并显示 "Model L runs with the lmxxf runtime (or with Neural Rendering off); danielblnc's runtime
+  pairs with Model E. Pick lmxxf under Neural Rendering first."（即：Model L 配合 lmxxf 运行时运行，或在关闭神经渲染时
+  运行；danielblnc 的运行时与 Model E 搭配，请先在 Neural Rendering 下选择 lmxxf。）；同时启用两者启动的游戏则会改为
+  运行你的 FSR 放大器。
+- 游戏中：Upscaling > **Model L (d4r) - restart required**，无法在这里运行时会变灰并注明原因（不是 D3D12 游戏、未在
+  启动器中准备好、不是 RX 9070 / 9070 XT、使用的是 danielblnc 运行时，或仍需重启）。选择它会写入
+  `[DlssNr] AmdSrModel=L`（选择其他放大器会删除这一行）；在下次启动游戏时生效。
+- **实验性**：它的速度尚未调优，可能比 FSR 慢得多。如果它无法启动，游戏应该会保留你的 FSR 放大器（而不是 FSR 2.1.2），
+  `OptiScaler.log` 会在一行 `[MODELL` 中说明原因。
+
+在 **AMDNR Anywhere** 内，两者都在启动器的 Anywhere 设置中提供；在那里与神经渲染一起使用的情况仍在测试中。
+
+## 已知限制（0.3.5.6）
+
+- **lmxxf 的拖影是减少了，而不是消除了**：较短的拖尾仍可能跟在快速移动的物体后面。
+- **RX 7000 和掌机上的 Fast mode** 是新的默认设置，还没有游戏中的反馈：请发送你的反馈。
+  `[DlssNr] AmdLmxxfFastMode=false` 可恢复之前的网络尺寸。
+- **放大之后的 Full Model Look 开销更大**，因为网络得到的是显示尺寸的画面。当开销门槛或该游戏的 TDR 记录表明显卡负担
+  不起时，它会在放大之前运行，Neural 状态行会说明这一点；你自己设置的 `[DlssNr] AmdPlacement=pre` 也会让它保持在放大
+  之前（只提示一次：在 NR style 中重新选择 Full Model Look，或清除该行）。
+- **FSR 2.2 回退**：在某些 D3D11 和 Vulkan 游戏中，失败的放大器仍可能回退到 FSR 2.2。
+- **Model L** 仅支持 RX 9070 / RX 9070 XT 和 D3D12，不与 danielblnc 的运行时搭配，属实验性，可能比 FSR 慢得多；d4r 的
+  作者尚未在 Windows 上测试过它。
+- **AMDNR Anywhere 内的 Model E 和 Model L** 与神经渲染一起使用的情况仍在测试中。
+- **RX 7000 上的 danielblnc**：他的运行时的同帧模式按其设计在 RDNA 3 上每帧耗时很多；在那里请使用 lmxxf。
+- **Linux / Proton**：神经渲染不能在那里运行（见下文）。
 
 ## Linux / Proton（Steam Deck、桌面 Linux）
 
@@ -350,7 +450,7 @@ DXVK（D3D11）上，这也是 Proton 的默认设置。更早的版本未经测
 
 **手动安装**（不使用启动器）：
 
-1. 从发布页下载 `AMDNR-vX.X.X.zip`（0.3.5 为 `AMDNR-v0.3.5.zip`）。danielblnc 运行时 zip（`v0.5.0-Runtime.zip`
+1. 从发布页下载 `AMDNR-vX.X.X.zip`（0.3.5.6 为 `AMDNR-v0.3.5.6.zip`）。danielblnc 运行时 zip（`v0.6.0-Runtime.zip`
    及其他几个）只供神经渲染使用，所以在 Linux 上不需要它们（复制过去也没有坏处）。
 2. 解压该 zip，把全部内容复制到游戏目录，放在游戏的 `.exe` 旁边。
 3. 把 `OptiScaler.dll` 重命名为 `dxgi.dll`。
@@ -385,20 +485,23 @@ Mesa 版本和 Proton 版本。
 
 - Windows 10 或 11（64 位），用于神经渲染。AMDNR Launcher 是一个 Windows 程序，可以在 Proton 下运行（实验性，
   我们尚未测试）。在 Linux / Proton 下，AMDNR 作为不带 NR 的 OptiScaler 构建版运行（见"Linux / Proton"一节）。
-- 一块使用 AMD Software: Adrenalin Edition 26.9.1 或更新版本驱动的 AMD 显卡。神经运行时通过驱动使用 HIP；不需要 HIP SDK，也不需要开发者模式。
+- 一块使用 AMD Software: Adrenalin Edition 26.9.1 或更新版本驱动的 AMD 显卡。神经运行时通过驱动使用 HIP；不需要 HIP SDK，也不需要开发者模式（RX 6000 除外，见下文）。
   支持的芯片：
   - RX 9000（RDNA 4）：两个运行时。
-  - RX 7000（RDNA 3，桌面与移动）：两个运行时——lmxxf 通过 AMDNR 的 RDNA 3 后端运行，比 RDNA 4 慢（网络尺寸档位
-    默认开启，见上文）。
+  - RX 7000（RDNA 3，桌面与移动）：两个运行时——lmxxf 通过 AMDNR 的 RDNA 3 后端运行，比 RDNA 4 慢（网络尺寸档位以及
+    自 0.3.5.6 起的 Fast mode 默认开启，见上文）。
   - Strix Halo（Radeon 8060S / 8050S）：lmxxf。
   - 拥有 12 个以上计算单元的掌机 APU（Z1 Extreme / Z2 / 780M、Z2 Extreme / 890M / 880M）：lmxxf，实验性且较慢。
     Z1（4 CU）、760M / 740M 和 860M / 840M：不支持。
-  - RX 6000（RDNA 2）：暂不支持，计划在 0.3.6 支持。Steam Deck 与 RDNA 2 APU：不支持（指神经渲染；在 Proton 下
-    使用放大器见"Linux / Proton"一节）。
+  - RX 6000（RDNA 2，桌面）：danielblnc 的运行时 0.6.0（`v0.6.0-Runtime.zip`），需要安装 AMD 的 HIP SDK（HIP 7.2），
+    它会把 RX 6000 所需的 HIP 运行时放在它自己的文件夹中（AMDNR 会去那里查找）；lmxxf 暂不能在 RX 6000 上运行（计划在
+    0.3.6 支持）。Steam Deck 与 RDNA 2 APU：不支持（指神经渲染；在 Proton 下使用放大器见"Linux / Proton"一节）。
 
   Neural 选项卡会显示你的显卡能运行什么（把鼠标悬停在运行时条目上，或查看 Diagnostics 中的 GPU 一行）。
 - **AMDNR Anywhere**（preview）：Windows、本次发布中的一块 RX 9000（RDNA 4）显卡，以及负责获取捕获宿主的 AMDNR
   Launcher；游戏以窗口化或无边框模式运行。见"AMDNR Anywhere"。
+- **Model E / Model L**（实验性，需手动开启）：需要负责获取它们的 AMDNR Launcher 和一款 D3D12 游戏；Model L 还需要一块
+  RX 9070 / RX 9070 XT 以及 lmxxf 运行时（或关闭神经渲染）。见"Model E 和 Model L"。
 - 一款 Direct3D 12、Direct3D 11 或 Vulkan 游戏。AMD 神经路径本身是 D3D12；D3D11 与 Vulkan 游戏通过
   OptiScaler 的 D3D12 桥接到达它，这意味着放大器必须是 "w/Dx12" 后端之一（`ffx_12`）。把
   `Dx11Upscaler` / `VulkanUpscaler` 保持为 `auto`，开启神经渲染时本构建版会自动为你选择。开启 Neural Rendering 时，Upscaling 列表会把它们显示为 "... w/Dx12 - Neural"。
@@ -410,33 +513,41 @@ Mesa 版本和 Proton 版本。
 
 | 文件 | 说明 |
 |---|---|
-| `OptiScaler.dll` | 带 DLSS-NR AMD 后端的 OptiScaler（AMDNR 0.3.5）。按指南重命名。 |
+| `OptiScaler.dll` | 带 DLSS-NR AMD 后端的 OptiScaler（AMDNR 0.3.5.6）。按指南重命名。 |
 | `OptiScaler.ini` | 设置。神经渲染已启用；日志已开启，以便反馈时有内容可附。 |
-| `LmxxfNrRuntime.dll` | lmxxf 神经运行时（0.3.5：使用前会按 pak 自带的摘要列表校验 pak 中的每个 HIP 模块；当没有 HIP 适配器与游戏的 GPU 匹配时写出双方；动态分辨率的变化步骤会被保持而不重建网络；不再读取 lmxxf 那些会改变画面的环境变量；lmxxf 的内核，包括 lmxxf 0.31 的内核、AMDNR 的 c32w 内核、小网络尺寸以及原生角色遮罩）。仅在选中时使用；读取旁边的 `LmxxfNrRuntime.pak`，见"lmxxf 运行时"。 |
+| `LmxxfNrRuntime.dll` | lmxxf 神经运行时（0.3.5.6：一项检查网络历史中每个像素来自何处的检验，可缩短拖影的拖尾；重置帧不再闪得那么强；它必须与 `OptiScaler.dll` 来自同一次发布。0.3.5：使用前会按 pak 自带的摘要列表校验 pak 中的每个 HIP 模块；当没有 HIP 适配器与游戏的 GPU 匹配时写出双方；动态分辨率的变化步骤会被保持而不重建网络；不再读取 lmxxf 那些会改变画面的环境变量；lmxxf 的内核，包括 lmxxf 0.31 的内核、AMDNR 的 c32w 内核、小网络尺寸以及原生角色遮罩）。仅在选中时使用；读取旁边的 `LmxxfNrRuntime.pak`，见"lmxxf 运行时"。 |
 | `LmxxfNrRuntime.pak` | lmxxf 运行时的权重、HIP 模块和着色器，打包为一个加密文件（465 MB；0.3.5：面向 RX 7000 和 Z1 Extreme 级掌机——Z1 Extreme、Z2、Radeon 780M——的模块集快了约 10%，画面相同；RX 9000 在其未变的基础模块集之外获得 Kien 的 lmxxf 0.37 / 0.39 模块（MIT）；Z2 Extreme / 890M / 880M 和 Strix Halo 的模块未变）。只有 lmxxf 运行时会读取它；与 danielblnc 运行时并存也无妨。 |
 | `OptiScaler\` | OptiScaler 使用的 FSR、XeSS、FidelityFX 去噪器和 D3D12 Agility SDK。 |
 | `OptiScaler/amdnr_dlssg_fsr3.dll` | Nukem9 的 dlssg-to-fsr3，未修改、仅重命名：把游戏的 DLSS 帧生成调用交给 FSR 3 帧生成，Vulkan 也可用（`FGNvngxReplacement=Nukems`）。GPLv3，见 `Licenses/`。 |
 | `Licenses\`、`LICENSE` | 第三方许可证、AMDNR 声明（`AMDNR_NOTICE.txt`）以及本构建版的 GPL-3.0 许可证。 |
 | `SHA256SUMS.txt` | 本 zip 中每个文件的校验和，以及它所列出的 danielblnc 运行时 zip 中各文件的校验和。 |
 
+**不在本 zip 中的内容**（只有在你选择时，AMDNR Launcher 才会获取，并逐一按哈希校验）：danielblnc 运行时 zip（见下文）；
+AMDNR Anywhere 捕获宿主（AMDNR 自己的构建版，来自 AMDNR 的 GitHub 发布页）；Model E 的 HelixSR 和 Model L 的 d4r，
+来自其作者自己的发布页（见"Model E 和 Model L"）；以及 OptiPatcher，来自 OptiScaler 项目的发布页（GAME SETTINGS）。
+
 **danielblnc 运行时 zip**（DLSS-NR on AMD by Daniel Blanco，未经修改，经他许可；选用其中一个）
 
-选哪一个：**RX 9000 和 RX 7000** 都用 Alpha0.3.4.2 上的 `v0.5.0-Runtime.zip`（推荐）；`v0.4.3-Runtime.zip`
-（Alpha0.3.4.2 和 Alpha0.3.4.1）、`v0.4.1-Runtime.zip` 和 `v0.4.0-Runtime.zip`（Alpha0.3.4.1）仍然可用。
-lmxxf 运行时在 RX 7000 和 RX 9000 上不需要任何运行时 zip；掌机 APU 只使用 lmxxf。AMDNR Launcher 提供 0.5.0（推荐）、0.4.3、0.4.1 和 0.4.0，并会替你选好。
+选哪一个：Alpha0.3.5.5R4 上的 `v0.6.0-Runtime.zip`（推荐）——适用于 RX 9000 和 RX 7000，也是 RX 6000 唯一可用的一个；
+`v0.5.1-Runtime.zip`（Alpha0.3.5）、`v0.5.0-Runtime.zip`（Alpha0.3.4.2）、`v0.4.3-Runtime.zip`（Alpha0.3.4.2 和
+Alpha0.3.4.1）、`v0.4.1-Runtime.zip` 和 `v0.4.0-Runtime.zip`（Alpha0.3.4.1）在 RX 9000 和 RX 7000 上仍然可用。
+lmxxf 运行时在 RX 7000 和 RX 9000 上不需要任何运行时 zip；掌机 APU 只使用 lmxxf。AMDNR Launcher 会为你的显卡提供 0.6.0（推荐，排在第一位）、0.5.1、0.5.0、0.4.3、0.4.1 和 0.4.0，并会替你选好。
 
 | Zip | 发布页 | danielblnc 运行时 |
 |---|---|---|
-| `v0.5.0-Runtime.zip` | Alpha0.3.4.2 | 0.5.0，**在 RX 9000 和 RX 7000 上均为推荐版本**；danielblnc 运行时设置可以使用，并且自 0.3.5 起，你在其 `dlssnr_on_amd.ini` 中自己设置的 `Async` 键会传达给它 |
+| `v0.6.0-Runtime.zip` | Alpha0.3.5.5R4 | 0.6.0，**在 RX 9000 和 RX 7000 上为推荐版本，也是 RX 6000 所用的版本**（需安装 AMD 的 HIP SDK）；danielblnc 运行时设置可以使用 |
+| `v0.5.1-Runtime.zip` | Alpha0.3.5 | 0.5.1，仍然可用；danielblnc 运行时设置可以使用 |
+| `v0.5.0-Runtime.zip` | Alpha0.3.4.2 | 0.5.0，仍然可用（它可能在某些显卡上让某些游戏卡死：更新的版本更安全）；danielblnc 运行时设置可以使用 |
 | `v0.4.3-Runtime.zip` | Alpha0.3.4.2（以及 Alpha0.3.4.1） | 0.4.3，仍然可用；danielblnc 运行时设置可以使用 |
 | `v0.4.1-Runtime.zip` | Alpha0.3.4.1（以及 Alpha0.3.4） | 0.4.1，仍然可用。使用它时 Network style、Tone curve、Black lift 和 Game exposure 会变灰 |
 | `v0.4.0-Runtime.zip` | Alpha0.3.4.1（以及 Alpha0.3.4） | 0.4.0，仍然可用；danielblnc 运行时设置可以使用 |
 | `v0.3.3-Runtime.zip` | [Alpha0.3.4](https://github.com/3zwr1/AMD-NR---OptiScaler/releases/tag/Alpha0.3.4) | 0.3.3，已退役：不再推荐。你已经有的话它仍然可用；danielblnc 运行时设置可以使用 |
 | `Runtime.zip` | Alpha0.3.4 | 0.3.1；使用它时 danielblnc 运行时设置会变灰 |
 
-**自 0.3.5 起，danielblnc 0.5.0 是推荐的 danielblnc 运行时**（它在 0.3.4.2 上也能运行）。0.3.5 还会把你在
-`dlssnr_on_amd.ini` 中自己设置的 `Async`（或较旧的 `Inline`）键传递给它，而不是强制使用同帧模式；两个键都没有时，
-默认安装不受影响。比 0.5.0 更新的 danielblnc 版本不会被本次发布驱动。
+**danielblnc 0.6.0 是推荐的 danielblnc 运行时**（启动器会为你的显卡把它排在第一位）。自 0.3.5.5R4 起，AMDNR 以同帧模式
+运行他的运行时：在 AMDNR 下，他的异步模式完成三个任务之后就什么也不做了，因此他的 `dlssnr_on_amd.ini` 中的 `Async=1`
+会按同帧模式运行，并提示一次（`[DlssNr] AmdDanielAsync=true` 可让它通过）。自 0.3.5.6 起，danielblnc 的运行时与
+Model E 搭配，而不与 Model L 搭配。比 0.6.0 更新的 danielblnc 版本不会被本次发布驱动。
 
 每个 zip 都包含：
 
@@ -456,15 +567,16 @@ Daniel Blanco 的名字会打开他的 GitHub 页面）、**Components** 行（O
 **Neural 选项卡，从上到下：**
 
 - **Enable Neural Rendering** 及其按键（按钮，例如 `Home`：点击它，再按另一个键即可重新绑定）。
-- **Neural runtime**（danielblnc / lmxxf，并显示你的文件的确切版本，例如 `lmxxf 0.3.4`），带一个状态词：running、restart the game to switch、not installed、
+- **Neural runtime**（danielblnc / lmxxf，并显示实际运行的版本，例如 `danielblnc 0.6.0` 或 `lmxxf 0.41`；自 0.3.5.6 起，lmxxf 的条目写出实际运行的 lmxxf 内核集，而不是 AMDNR 的发布版本），带一个状态词：running、restart the game to switch、not installed、
   not for this GPU 或 stopped。下方是当前运行时的署名和一行状态，例如
   `Running - 1920x1080 at 100% - NR 62/s - model 62/s - 15.3 ms`（最后的数字是 NR 开销），以及一个收起的 **Live** 行，显示更多
   细节。需要你注意时会出现一行
   橙色提示，若有解决办法则附带按钮（Retry lmxxf、Switch to danielblnc、Open Upscaling）。默认状态下没有任何提示。
 - **Preset**：Quality / Balanced / Performance 把 NR resolution 设为 100 / 85 / 70% 并关闭 Dynamic NR，其他不变。
-  掌机 APU 上还有第四个按钮 **Handheld**（见“掌机 APU”一节）。然后是 **NR style** 和 **Style slots**（Store / Apply /
-  Clear）。
-- **Performance**：**Placement**（放大之前 / 之后，0.3.5 新增；见"值得了解的设置"）、NR resolution（%）及其开销、Neural passes、Full network、Fast mode、Dynamic NR resolution、Model interleave
+  掌机 APU 上还有第四个按钮 **Handheld**（见“掌机 APU”一节）。然后是 **NR style**（先是三种外观——**Full Model Look**
+  （自 0.3.5.6 起为默认）、**NVIDIA look** 和 **AMDNR soft**——然后是四种命名风格；见"值得了解的设置"）和 **Style slots**
+  （Store / Apply / Clear）。
+- **Performance**：**Neural placement**（Before / After upscaling，0.3.5 新增；见"值得了解的设置"）、NR resolution（%）及其开销（自 0.3.5.6 起为 25% 到 200%）、Neural passes、**Refine passes**（danielblnc，0.3.5.6 新增）、Full network、Fast mode、Dynamic NR resolution、Model interleave
   （开启时下方显示 Interleave preset 和节拍行）。
 - **Quality**：Residual strength、Residual limit、Temporal stability、Sharpening (CAS)，以及 **More quality options**
   （Network history——两个运行时共用一个复选框——、Output smoothing、Stability mode、Residual temporal、Residual edge
@@ -472,18 +584,22 @@ Daniel Blanco 的名字会打开他的 GitHub 页面）、**Components** 行（O
 - **Image look**：Colour composition、Detail 与 Colour strength，以及三个折叠区：**Model strength**（Tone 与 Structure
   intensity、Character structure、Edit detail / colour、Edge guard、Native character mask，以及 danielblnc 的 Network
   style、Tone curve 和 Black lift）、**Exposure and highlights**（Auto-exposure、其高光上限、Highlight colour guard、
-  Game exposure）和 **Appearance filter**（名称后显示 off / on）。折叠区块名称后淡色的 "default" 或
-  "custom" 表示其中是否有改动。
+  **Game exposure** Auto / On / Off）和 **Appearance filter**（名称后显示 off / on；其中的 **Anti-halo** 滑块在 0.3.5.6
+  之前叫 Halo protection）。折叠区块名称后淡色的 "default" 或 "custom" 表示其中是否有改动。
 - **Ray Regeneration**：自 0.3.5.3 起不在本选项卡上；它的控件和状态位于其独立的 **Ray Regeneration** 选项卡上（紧跟在 Upscaling 之后）。这里只有运行时下方的橙色提示行可能显示 "Ray Regeneration is off in this title" 或 "Ray Regeneration could not start on this GPU"（把鼠标悬停在上面可查看原因）。
 - **Screen-space GI**（0.3.5.3 新增）：**AMDNR Screen-space GI**，默认关闭，后面有淡色的 "by 3zwr1"；开启时其下方显示：GI quality（Low / Medium / High / Ultra；在你按下其中一个之前，Auto 会为你的显卡选一个；其标签显示实测的 GPU 时间，GI 运行之前显示估算值）、Bounce light、Ambient occlusion、Radius、Object thickness、Camera FOV、**More GI options**（Bounce colour、Sky light、Multi-bounce、FOV axis、Colour encoding、Debug view）和 Reset GI。所有 AMD 显卡上都有，无论是否安装了 NR 运行时；在 AMDNR Anywhere 内会变灰并注明原因。
 - **工具行**，启动时收起：**Diagnostics**（Network output、Debug view、Edit shaper A/B、NR cost、拖影
   与自调读数、GPU 行、**Save report**；自 0.3.5 起 RR 调试视图位于 Ray Regeneration 选项卡上）和 **Runtime options**（Encoding、Every-frame NR、NR slots、Highlight proxy）；只有当你的 ini 开启了继承的、已从菜单中移除的 Screen-space GI（`[AmdRtgi] Enabled`）时才会出现 **Experimental**，其中只有它的复选框，带 "retired" 标签。
 
-当前运行时不具备的控件会变灰并带简短标签（例如 "not in lmxxf yet"），或被隐藏并显示数量（"3 danielblnc-only
-options hidden"）；切换运行时不会移动其他任何行。
+自 0.3.5.6 起，当前运行时无法运行的控件会在该运行时上隐藏，并显示数量（例如 lmxxf 上的 Refine passes 和 Tone
+intensity；danielblnc 上的 Edit detail、Edit colour、Edge guard、Output smoothing 和 Full network）；其 ini 键仍然有效。
+只在某些条件下才起作用的控件会保留，变灰并注明原因（例如 Residual limit、Debug view、Neural passes）；切换运行时不会移动
+其他任何行。
 
 **其他选项卡：** Upscaling 以放大器、一行状态和 Render resolution（原 Upscale Ratio Override 与 Output Scaling）
-开头；在非 NVIDIA 显卡上不再列出 "DLSS w/Dx12"。**Ray Regeneration**（0.3.5 新增）在 Ray Regeneration 于游戏中运行时
+开头；在非 NVIDIA 显卡上不再列出 "DLSS w/Dx12"。自 0.3.5.6 起，放大器列表还有 **HelixSR (Model E) - restart required**
+（D3D12 游戏）和 **Model L (d4r) - restart required**（无法运行时会变灰并注明原因；见"Model E 和 Model L"）。
+**Ray Regeneration**（0.3.5 新增）在 Ray Regeneration 于游戏中运行时
 紧跟在 Upscaling 之后：状态行（按显卡、按 API）、**Denoiser backend** 行（Automatic / AMD FSR Ray Regeneration / AMDNR Ray Denoiser (preview) / Off (the game's own)：Automatic 在 RX 9000 上用 AMD 的降噪器，在其他所有显卡上用 AMDNR Ray Denoiser；前三项可在游戏运行时切换；Off 会告诉游戏光线重建不受支持，于是游戏保留自己的降噪器，重启后生效）、各项控件、More Ray Regeneration options，以及它自己的 Diagnostics 区块，
 其中有 RR 调试视图和噪点数值（输入与输出的颗粒、静止镜头下的闪烁）；它从不在 AMDNR Anywhere 内绘制。Image 包含
 Sharpness、Textures、Init Flags 和 Magnifier。Frame Gen 以 FG Input 和 FG Output 开头，并且自 0.3.5 起有一行文字写出
@@ -496,18 +612,32 @@ Sharpness、Textures、Init Flags 和 Magnifier。Frame Gen 以 FG Input 和 FG 
 
 打开 **Neural** 选项卡。默认值是最近一次测试过的组合，所以最有用的第一步是一次只改一项。
 
+- **NR style**（Neural 选项卡顶部，`[DlssNr] AmdNrLook = auto | 0 | 1`，两个运行时都有）—— 前三项是完整的外观。
+  **Full Model Look**（`auto`，自 0.3.5.6 起为默认）：NVIDIA look 的网络（Style 0，全部 71 个块），配合更强的模型强度——
+  两个运行时上 Structure intensity 均为 2，lmxxf 上 Edit detail 为 1.5、Edit colour 为 1.25——没有 residual limit 或
+  edge guard，Temporal stability 为 0.5，而 output smoothing、网络历史和其他稳定性保护保持开启；只要你没有自己设置
+  placement，它就会请求把 Neural placement 设为 After upscaling（见下文 Neural placement）。**NVIDIA look**（`0`，0.3.5.3
+  至 0.3.5.5R4 的默认）：最接近 NVIDIA 自身输出的观感，Before upscaling。**AMDNR soft**（`1`）：较早的 AMDNR 观感，更柔和、
+  更稳定。外观只在你没有自己设置那些控件时才提供它的数值；在 Model interleave 下，各项保护保持它们之前的数值。在下拉框
+  中选择一种外观，也会把它的 Neural placement（Full Model Look：After upscaling；另外两种：Before）和 Full network 作为
+  你自己的值写入。它们之后的四种命名风格会在当前运行的外观之上设置各自的滑块。
 - **NR resolution** —— 主要的画质/开销杠杆。低于 100% 时模型处理较小的画面，只把它的*修正*带回
-  全分辨率帧，因此帧保留自己的细节。高于 100% 时开销按平方增长（150% 为 2.25 倍）。滑块以 5% 为
-  一档：每个新的 NR 尺寸都可能占住显存直到游戏重启，所以多次调整后请重启游戏。
+  全分辨率帧，因此帧保留自己的细节。高于 100% 时开销按平方增长（150% 为 2.25 倍，200% 为 4 倍）。自 0.3.5.6 起，滑块在
+  两个运行时上都是 25% 到 200%（此前最高 150%）；lmxxf 的网络仍以 1920x1080 为上限，当它成为限制时，该行会说明。
+  滑块以 5% 为一档：每个新的 NR 尺寸都可能占住显存直到游戏重启，所以多次调整后请重启游戏。
   旁边的开销在 100% 时为 1.00x；在 lmxxf 下是网络实际运行档位的价格（悬停提示会写出档位）。Preset 按钮会把它设为
   100 / 85 / 70%。
-- **Placement**（Neural > Performance，`[DlssNr] AmdPlacement = pre | post`，0.3.5 新增，两个运行时都有）—— 神经通道
-  运行的位置。`pre`（默认值，也是以往每个版本的做法）编辑放大器即将读取的渲染分辨率画面。`post` 则改为编辑放大器
-  完成后的显示分辨率画面：更清晰，因为放大器不再对编辑结果重新滤波；也更昂贵——网络以显示尺寸运行，最高到它 1920x1080
-  的上限，因此 1080p 屏幕在任何 NR resolution 下都要付出最高档位的开销，而 1440p 或 4K 屏幕得到的是一个 1080 行的编辑
-  再放大回去——运动中稍欠宽容；如果游戏在放大之前合成 HUD，HUD 也会被包含在内。在 AMDNR Anywhere 内、在最终图像模式
-  （final image mode）下，以及 Ray Regeneration 已在游戏中运行过之后，它会被拒绝（回到 `pre`，`amd_bridge.log` 中记
-  一行）。`post` 运行时，NR resolution 一行会显示两个尺寸。
+- **Neural placement**（Neural > Performance，`[DlssNr] AmdPlacement = pre | post`，0.3.5 新增，两个运行时都有）——
+  神经通道运行的位置。`pre`（该键自身的默认值，也是 0.3.5.6 之前每个版本的做法）编辑放大器即将读取的渲染分辨率画面。
+  `post` 则改为编辑放大器完成后的显示分辨率画面：更清晰，因为放大器不再对编辑结果重新滤波；也更昂贵——在 lmxxf 上，
+  网络以显示尺寸运行，最高到它 1920x1080 的上限，因此 1080p 屏幕在任何 NR resolution 下都要付出最高档位的开销，而
+  1440p 或 4K 屏幕得到的是一个 1080 行的编辑再放大回去（danielblnc 没有这个上限，所以 `post` 对它的开销更大）——运动中
+  稍欠宽容；如果游戏在放大之前合成 HUD，HUD 也会被包含在内。**自 0.3.5.6 起，只要该行为空或为 `auto`，默认的 Full Model
+  Look 就会在每块显卡上请求 `post`**；开销门槛、该游戏的 TDR 记录和实时 TDR 保护会评估它的开销，并在显卡负担不起时于本次
+  会话中把它退回到 `pre`（Neural 状态行和 `amd_bridge.log` 会说明原因）。你自己设置的 `pre`（通过该行、Handheld 预设或
+  启动器）会让该外观保持在放大之前；状态行会说明这一点，在 NR style 中重新选择 Full Model Look 会写入 `post`。在 AMDNR
+  Anywhere 内、在最终图像模式（final image mode）下，以及 Ray Regeneration 已在游戏中运行过之后，它会被拒绝（回到
+  `pre`，`amd_bridge.log` 中记一行）。`post` 运行时，NR resolution 一行会显示两个尺寸。
 - **Residual strength** —— 模型编辑应用的比例；大于 1 会放大。这是改变画面最大的控制项。
 - **Residual limit** —— 单个像素可移动的上限。出现斑块：**调低**它。
 - **Model interleave** —— 每隔一帧运行模型，大幅提升帧率。跳过的帧由 **Interleave preset** 填补；
@@ -517,6 +647,10 @@ Sharpness、Textures、Init Flags 和 Magnifier。Frame Gen 以 FG Input 和 FG 
   时两者都会调节节拍，但会损失一些帧率）；预设下方的一行暗色文字会显示测量值。Adaptive interleave 在本版本中已关闭。
 - **Neural passes** —— 2 和 3 会叠加模型，收益递减。在 lmxxf 下网络的历史保持为第一遍；额外的遍
   只是空间上的精修。danielblnc 在 Vulkan 游戏中只运行 1 遍（滑块下方会有提示）。
+- **Refine passes**（Neural > Performance，`[DlssNr] AmdRefineMode = full | refine`，仅 danielblnc，0.3.5.6 新增）——
+  AMDNR 自己的多遍模式。*Full*（默认）每一遍都以完整尺寸运行。*Refine* 让第 1 遍以完整尺寸运行，第 2、3 遍则以小一档
+  的网络尺寸、在上一遍的结果上运行，再把它们的编辑放大回完整尺寸的画面：每一遍仍然都会运行，额外的几遍开销更小。只有
+  1 遍时没有效果。lmxxf 的运行时每次会话只构建一种网络尺寸，所以它把 Refine 当作 Full 运行，该行在那里隐藏。
 - **Colour composition**（Neural > Image look，两个运行时都有）—— *Classic*（默认）就是你之前的画面。
   *RenoDX (experimental)* 在模型之后运行 RenoDX 的色彩合成，与 NVIDIA 路径相同：Composition detail 与
   Composition colour、以原图为基准约束模型结果的双向 **Highlight guard**（默认 2x），以及可选的皮肤 / 环境
@@ -525,6 +659,16 @@ Sharpness、Textures、Init Flags 和 Magnifier。Frame Gen 以 FG Input 和 FG 
 - **Native character mask**（Image look > Model strength，`[DlssNr] AutoMask`，默认开启）—— 模型自身对脸部和皮肤
   的处理。取消勾选现在对两个运行时都生效（在 lmxxf 上会重建网络：约 1 秒停顿）；在 lmxxf 上，Structure
   intensity 和 Character structure 现在也会生效。
+- **脸部额外细节**（0.3.5.6 新增，两个运行时都有，始终开启）—— 当 Character structure 跟随 Structure intensity 时（默认
+  勾选），脸部和皮肤获得场景结构强度的 1.5 倍，最多为 4（配合 Full Model Look：2.00 -> 3.00）；没有额外的遍，也没有
+  额外开销。你自己设置的 Character structure 始终优先，菜单中变灰的数值会显示提升后的数字。
+  `[DlssNr] AmdFaceDetail=false`（仅限 ini）可将其关闭。
+- **Game exposure**（Image look > Exposure and highlights，`[DlssNr] AmdUseGameExposure = auto | 1 | 0`，两个运行时都有）
+  —— 自 0.3.5.6 起，其选项显示为 **Auto / On / Off**。Auto 在游戏提供自己的亮度值时使用它；On 总是把它交给网络；Off
+  从不交给网络，改由运行时自己的自动曝光接管——如果 NR 让游戏太暗或太亮，请试试 Off。它在下一个模型帧生效。
+- **Anti-halo**（Image look > Appearance filter，`[AmdLook] AntiHalo`，0..1，默认 0.901；0.3.5.6 之前叫 Halo
+  protection，键名相同）—— 限制该滤镜在强边缘旁的编辑，以免形成亮环或暗环；数值越高，边缘越安全，边缘旁的细节略软。
+  它需要该滤镜的 Effect mix 大于 0。
 - **新 ini 中帧生成默认关闭**，开启需要五步：在 Frame Gen 选项卡上选择 FG Input 和 FG Output（例如带 DLSS 帧生成的
   游戏中选 "DLSSG via Streamline"，以及 XeFG）、**Save Settings**、完全重启游戏、在游戏**自己的**设置中开启帧生成，
   然后在 Frame Generation 下勾选 **Active**。自 0.3.5 起，选项卡和日志会写出缺少的是哪一步。完整清单以及需要在游戏中
@@ -555,6 +699,8 @@ Sharpness、Textures、Init Flags 和 Magnifier。Frame Gen 以 FG Input 和 FG 
   可以在那里直接写 0.15、0.10 或 0，不必动 Override；而你的 ini 在 Override 关闭时保留的 `[Sharpness] Sharpness`
   数值，菜单里会标出它正在等待 Override。
 - **AMDNR Screen-space GI by 3zwr1**（默认关闭；Neural > Screen-space GI，或 `[AmdGi] Enabled=true`）—— AMDNR 自己的屏幕空间反弹光和环境光遮蔽，基于游戏的深度，在 NR、放大器和 UI 之前运行；NR 开或关都能用；Low / Medium / High / Ultra（Auto 按显卡选择），在 RX 9070 XT 上 1080p 渲染、High 档约 0.6 ms（实测）。它是屏幕空间效果：来自屏幕外的光会缺失。见 `CHANGELOG.md`。
+- **Model E / Model L**（Upscaling 选项卡，0.3.5.6 新增）—— 由其他作者制作、由 AMDNR Launcher 获取的实验性放大器选项；
+  Model L 配合 lmxxf 运行，或在关闭 NR 时运行。见"Model E 和 Model L"。
 - **Save report**（Neural > Diagnostics 或 Advanced > Logging）—— 一个包含所有日志和 ini 文件的 zip，用于反馈；见上文"如果不起作用"。
 
 ## 出了问题怎么办
@@ -568,16 +714,28 @@ Sharpness、Textures、Init Flags 和 Magnifier。Frame Gen 以 FG Input 和 FG 
 **NR frames 0/s，且 Neural 选项卡或 `amd_presr.log` 说该 pass DLL 是本 AMDNR 不支持的版本？**
 你的 `dlssnr_amd_pass1..3.dll` 是本 AMDNR 不认识的 danielblnc 版本（外面流传着一套 0.2.16），或三个文件中缺了一个。
 自 0.3.3.2 起，Neural 选项卡会写出文件名和版本，并说明该怎么做。请使用推荐的运行时，三个 pass DLL
-须来自同一个压缩包：**RX 9000 和 RX 7000** 都用 Alpha0.3.4.2 上的 `v0.5.0-Runtime.zip`
-（149,550,553 字节，SHA256 以 `7a49ab0e` 开头）；`v0.4.3-Runtime.zip`（Alpha0.3.4.2 和 Alpha0.3.4.1；116,484,918 字节，
+须来自同一个压缩包：Alpha0.3.5.5R4 上的 `v0.6.0-Runtime.zip`（176,366,023 字节，SHA256 以 `d2bb1702` 开头；适用于
+RX 9000、RX 7000 和 RX 6000）；`v0.5.1-Runtime.zip`（Alpha0.3.5）、`v0.5.0-Runtime.zip`（Alpha0.3.4.2；149,550,553 字节，
+SHA256 以 `7a49ab0e` 开头）、`v0.4.3-Runtime.zip`（Alpha0.3.4.2 和 Alpha0.3.4.1；116,484,918 字节，
 SHA256 以 `07dd7774` 开头）、`v0.4.1-Runtime.zip` 和 `v0.4.0-Runtime.zip`（Alpha0.3.4.1）
 仍然可用（`v0.4.1-Runtime.zip` 中的 `dlssnr_amd_pass1.dll` 为 9,916,928 字节，SHA256 以 `823063eb` 开头；
 `v0.4.0-Runtime.zip` 中为 10,027,008 字节，`d62be3d8`）。支持的版本：
-0.2.17、0.3.0、0.3.1、0.3.2、0.3.3、0.4.0 以及上面提到的运行时 zip，最高到 0.5.0。不要在 AMDNR 旁边安装 danielblnc 自己的安装程序或它的 `dxgi.dll` / `version.dll` / `winhttp.dll`：
-AMDNR 已经在运行他的运行时。**比 0.5.0 更新的 danielblnc 版本不会被本次发布驱动：**Neural 选项卡会写出文件名及其
-版本，并说明这一点。使用 0.5.0、0.4.3、0.4.1 和 0.4.0 时，仅 danielblnc 才有的设置（Network style、Tone curve、
-Black lift、Game exposure、Fast mode）可以使用，并且自 0.3.5 起，你在 `dlssnr_on_amd.ini` 中自己设置的 `Async` 键会
-传达给运行时（见"压缩包里有什么"）。
+0.2.17、0.3.0、0.3.1、0.3.2、0.3.3、0.4.0 以及上面提到的运行时 zip，最高到 0.6.0。不要在 AMDNR 旁边安装 danielblnc 自己的安装程序或它的 `dxgi.dll` / `version.dll` / `winhttp.dll`：
+AMDNR 已经在运行他的运行时。**比 0.6.0 更新的 danielblnc 版本不会被本次发布驱动：**Neural 选项卡会写出文件名及其
+版本，并说明这一点。使用 0.6.0、0.5.1、0.5.0、0.4.3、0.4.1 和 0.4.0 时，仅 danielblnc 才有的设置（Network style、
+Tone curve、Black lift、Game exposure、Fast mode）可以使用；自 0.3.5.5R4 起，`dlssnr_on_amd.ini` 中的 `Async=1` 会按
+同帧模式运行（`[DlssNr] AmdDanielAsync=true` 可让它通过；见"压缩包里有什么"）。
+
+**danielblnc：几次"超时"之后 NR 停止了，或者屏幕上说显示驱动重置了 GPU？** 0.3.5.6 已修复（在 Silent Hill 2 中测试）。
+原因已经找到：当游戏目录中有 Model L 的文件时，danielblnc 的运行时拿到的是 Model L 自带的那份 HIP，它的等待因此始终
+看不到任务完成。现在 AMDNR 会把驱动的 HIP 交给 Model L 以外的每一个调用方。放弃等待会如实报告为放弃等待，并且不再
+关闭神经渲染；实际上并没有发生驱动重置，那段文字已被删除；启动器的 Doctor 读取的 "runtime failed" 记录只在真正失败后
+才会写出。danielblnc 的运行时与 Model E 搭配；Model L 请使用 lmxxf。
+
+**你选了 FSR 3 / FSR 4，游戏却运行了 FSR 2.1.2？** 自 0.3.5.6 起，失败或尚未就绪的放大器选项（Model E、Model L 或其他
+选项）应该会保留你自己选的 FSR（FSR 4 / FSR 3.1），而不是退回到 FSR 2.1.2（D3D12）；只有当你选择 FSR 2.1.2，或没有
+其他 FSR 库能够运行时，才会运行 FSR 2.1.2，日志会说明这一点。在某些 D3D11 和 Vulkan 游戏中，失败的放大器仍可能回退到
+FSR 2.2。如果你仍然遇到，请发送报告 zip。
 
 **在带集成显卡的电脑上，lmxxf 没有任何效果，或一开始就停止？** 0.3.3.2 已修复。在开启了集成显卡的 Ryzen 台式机、
 带 AMD APU 和 Radeon 独显的笔记本，或装有两块 AMD 显卡的电脑上，游戏所用的显卡往往不是 HIP 设备 0。lmxxf 因此在
@@ -727,7 +885,16 @@ OptiScaler 问题：把游戏目录中的 `sl.common.dll` 重命名为 `sl.commo
 
 ## 路线图
 
-- **0.3.5**（本构建版）—— **AMDNR Anywhere**（preview，RX 9000，通过启动器）；带按显卡、按 API 状态行的 Ray Regeneration
+- **0.3.5.6**（本构建版）—— **Model E**（HelixSR，作者 lonewolf0622）和 **Model L**（d4r，作者 countervolts）作为
+  实验性、需手动开启的放大器选项，从其作者自己的发布页获取（Model L：RX 9070 / 9070 XT，配合 lmxxf 或关闭 NR）；Full
+  Model Look 成为默认 NR 风格，在显卡负担得起时于放大之后运行；脸部额外细节；lmxxf 拖影更少；RX 7000 和掌机上默认开启
+  Fast mode；Game exposure（Auto / On / Off）和 Anti-halo；NR resolution 最高 200%；隐藏运行时无法运行之
+  控件的菜单；danielblnc 上的 Refine passes；danielblnc 假超时修复；保留 FSR 3 / 4 而不是退回 FSR 2.1.2；XeFG 显存统计；
+  AMDNR Launcher 0.3.5.25。
+- **0.3.5.1 至 0.3.5.5R4** —— danielblnc 0.6.0（在安装了 AMD 的 HIP SDK 时也支持 RX 6000）；RX 9000 上的 lmxxf 0.41；
+  NVIDIA look；AMDNR Ray Denoiser（preview）和 AMDNR Screen-space GI（0.3.5.3）；统计到 GPU 故障后的防卡死保护；根据
+  你们的反馈完成的崩溃修复；带 ASK AI 的重新设计的 AMDNR Launcher。见 `CHANGELOG.md`。
+- **0.3.5** —— **AMDNR Anywhere**（preview，RX 9000，通过启动器）；带按显卡、按 API 状态行的 Ray Regeneration
   选项卡、Denoiser backend 的 Off 选项和噪点数值；放大之后的神经通道（`AmdPlacement`）；Frame Gen 选项卡和日志会说明为什么
   没有生成任何帧；RX 9000 上 Kien 的 lmxxf 0.37（MIT）；0.3.5 模块集（在 RX 7000 和 Z1 Extreme 级掌机上快约 10%，
   画面相同）；动态分辨率的变化步骤被保持而
@@ -762,9 +929,9 @@ OptiScaler 问题：把游戏目录中的 `sl.common.dll` 重命名为 `sl.commo
   `LmxxfNrRuntime.dll` + `LmxxfNrRuntime.pak` 发布：网络历史、真实的 Neural passes、编辑整形器、光线
   重建之后的位置、逐游戏诊断与自我修复。特别感谢 TheAutomatic，本次集成建立在他的 DLSS 5 AMD
   project 工作之上。
-- **0.3.6** —— RX 6000（RDNA 2）：AMDNR 自己的内核，受硬件门槛把关，以 360 档和 Model interleave 作为 Navi 21 上的
-  preview；AMDNR 降噪器（ARD）preview，一个位于光线重建调用背后、AMDNR 自己的降噪器，面向 AMD 降噪器拒绝的显卡；
-  AMDNR Anywhere 在 RX 7000 上测试后登陆 RX 7000。
+- **0.3.6** —— 基于 AMDNR 自己内核的 RX 6000（RDNA 2）支持（danielblnc 的运行时 0.6.0 已经能在那里运行）：受硬件门槛
+  把关，以 360 档和 Model interleave 作为 Navi 21 上的 preview；AMDNR Anywhere 在 RX 7000 上测试后登陆 RX 7000。
+  （AMDNR Ray Denoiser——位于光线重建调用背后、AMDNR 自己的降噪器——自 0.3.5.3 起已作为 preview 提供。）
 - **0.4.0** —— 1440p 网络档位；通过桥接在 Vulkan 游戏上运行 Ray Regeneration；跨适配器的神经渲染（游戏在一块显卡上，
   网络在 AMD 显卡上）；超越 preview 的 Anywhere（自身没有放大器的游戏，由 OptiScaler 同时提供放大器和神经渲染）。
 - **以后** —— 任意窗口（桌面）上的 AMDNR。
@@ -787,7 +954,10 @@ OptiScaler 问题：把游戏目录中的 `sl.common.dll` 重命名为 `sl.commo
 - **Dagherbou / OptiScaler_DLSSNR** —— https://github.com/Dagherbou/OptiScaler_DLSSNR
 - **wilsjo2 / OptiScaler-DLSSNR-PreSR-Multipass** —— https://github.com/wilsjo2/OptiScaler-DLSSNR-PreSR-Multipass
 - **Nukem9** —— dlssg-to-fsr3 —— https://github.com/Nukem9/dlssg-to-fsr3 （GPLv3，未经修改）
-- **Magpie by Blinue, experimental fork by SAOG0721 (GPL-3.0)** —— AMDNR Anywhere 在其中运行的窗口捕获宿主，使用 AMDNR 自己的构建版，发布在 AMDNR 的 GitHub 发布页上（`Magpie.exe` 经重新构建，带四项修复；补丁、基础提交和构建选项在旁边的 `Anywhere-host-source/` 中；不含 NVIDIA 文件）—— https://github.com/Blinue/Magpie （该分支：<https://github.com/SAOG0721/Magpie>）
+- **HelixSR** —— lonewolf0622 —— https://github.com/lonewolf0622/HelixSR （Model E，0.3.5.6：由 AMDNR Launcher 从其自己的发布页获取，按其自己的许可证使用；AMDNR 不分发它；它在你的电脑上根据 NVIDIA 的 DLSS 文件构建网络，该文件由启动器从 NVIDIA 自己的 GitHub 获取或从你的游戏中获取）
+- **d4r** —— countervolts —— https://github.com/countervolts/d4r （Model L，0.3.5.6：NVIDIA 的 DLSS 运行时，受 NVIDIA 的 EULA 约束，通过 **ZLUDA**（vosen，https://github.com/vosen/ZLUDA）和 HIP 运行；由 AMDNR Launcher 从 d4r 自己的发布页获取，适用 d4r 自己的许可证；AMDNR 不分发它，其作者尚未在 Windows 上测试过它）
+- **OptiPatcher** —— 来自 OptiScaler 项目的发布页，https://github.com/optiscaler/OptiPatcher （在你需要时由 AMDNR Launcher 的 GAME SETTINGS 获取；AMDNR 不分发它）
+- **Magpie by Blinue, experimental fork by SAOG0721 (GPL-3.0)** —— AMDNR Anywhere 在其中运行的窗口捕获宿主，使用 AMDNR 自己的构建版，发布在 AMDNR 的 GitHub 发布页上（`Magpie.exe` 经重新构建，带有 AMDNR 的修改；源代码提供声明、一份相对该分支标签的 diff 和构建选项在旁边的 `Anywhere-host-source/` 中；不含 NVIDIA 文件）—— https://github.com/Blinue/Magpie （该分支：<https://github.com/SAOG0721/Magpie>）
 - **RenoDX** —— clshortfuse —— https://github.com/clshortfuse/renodx （色彩合成算法，MIT）
 - **Coldwood1026** —— XeFGUnlock（GPL-3.0），内置 XeFG 多帧解锁及其节拍的基础
 - **Zach Hembree (DarkHelmet)** —— OptiScaler 的 FSR Ray Regeneration，AMDNR 光线再生路径的源头；由 **burak113** 继续开发，AMDNR 从其分支移植（OptiScaler 分支 ffx-denoise-experimental，GPL-3.0）
@@ -800,10 +970,23 @@ OptiScaler 问题：把游戏目录中的 `sl.common.dll` 重命名为 `sl.commo
 **AMDNR Launcher**（0.3.4 新增）是一个 Windows 10 / 11 程序，也可以在 Linux 上通过 Proton 运行
 （实验性，我们尚未测试：见"Linux / Proton"一节）。它按游戏安装和更新 AMDNR：它会找到你的游戏（Steam、Epic、
 Xbox 应用、Ubisoft Connect、EA app、GOG、Rockstar、Battle.net 和 Amazon Games），选好 DLL 名称，下载构建版和你选择的
-danielblnc 运行时，用它的 Doctor 检查每一次安装，为自身没有放大器的游戏运行 AMDNR Anywhere（PLAY ANYWHERE），
+danielblnc 运行时（以及在你选择时，从其作者自己的发布页下载 Model E 和 Model L），用它的 Doctor 检查每一次安装，为自身没有放大器的游戏运行 AMDNR Anywhere（PLAY ANYWHERE），
 并能自我更新。请从发布页下载 `AMDNR-Launcher.exe`，即最新发布版中的
 AMDNR Launcher：
 <https://github.com/3zwr1/AMD-NR---OptiScaler/releases>
+
+**Launcher 0.3.5.25 新内容**（位于 Alpha0.3.5.6 发布页；它会先更新自己，再更新你的游戏）：
+
+- 游戏 GAME SETTINGS 中的 **SR model**：Auto / Model E / Model L（见"Model E 和 Model L"）。第一次选择某个模型时会显示
+  它的说明（ACCEPT / Cancel，默认是 Cancel）；之后启动器会从作者自己的发布页获取其文件，并按哈希校验。Model L 与 lmxxf
+  运行时搭配（或关闭神经渲染）；使用 danielblnc 的运行时时，启动器会拒绝它并说明原因。Auto 会再把 Model L 的文件移出。
+- GAME SETTINGS 中的 **Game exposure**（Auto / On / Off）和 **Anti-halo** 行，只会写入能读取它们的 AMDNR 构建版。
+- 启动器 ANYWHERE 页面上的 **Anywhere 设置**：NR 运行时、passes、神经尺寸、FSR（Auto / FSR 4 / FSR 3 / Off——Off 会保留
+  NR）、帧生成（实验性）、用于放大的运动、锐度和 SR model；它们在下一次 PLAY ANYWHERE 时生效。
+- **Most FPS** 外观：让网络以小一档的尺寸运行（lmxxf），并使用更小的神经尺寸；不会跳过任何神经帧（在 danielblnc 上运行
+  多于一遍时使用 Refine passes）。
+- Community Lab 中的 **Public Chat**：消息是公开的，并经过 AI 审核，可以自动翻译成你的启动器语言；团队可以删除消息。
+- 你为某个游戏选择的运行时会为该游戏保留。
 
 **Launcher 0.3.5.1 新内容**（位于 Alpha0.3.5 发布页；它会先更新自己，再更新你的游戏）：
 
@@ -817,7 +1000,7 @@ AMDNR Launcher：
 - **PLAY** 通过应用 ID 启动 Xbox / Microsoft Store 游戏。
 - **一个 PLAY 按钮**，带路线选择器（游戏自带的放大器或 AMDNR Anywhere，按游戏记住），每个游戏页面上还会显示图形 API
   （DX9 / 10 / 11 / 12 / Vulkan / OpenGL）。
-- **十二种语言**：土耳其语、韩语和匈牙利语加入下面列出的九种语言。
+- **十二种语言**：土耳其语、韩语和匈牙利语加入下面列出的九种语言（现在是十三种：还有乌兹别克语）。
 - **Rockstar 游戏通过其商店启动**（Steam、Epic 或 Rockstar Games Launcher），从不直接运行其 exe。
 - **AMDNR Anywhere**：游戏以低于正常的 GPU 优先级运行，让宿主和神经渲染优先；捕获宿主的托盘图标被隐藏。
 - **Resident Evil 2 / 3 / 4 (2023) / Village**：显示一条设置提示（它们需要 PureDark 的放大器插件配合 REFramework）。
@@ -830,8 +1013,8 @@ AMDNR Launcher：
 
 **Launcher 0.3.4.1 新内容：你们提出，我们实现**（根据 Discord 上的第一批反馈打造）：
 
-- 九种语言（自 0.3.5.1 起为十二种）：英语、阿拉伯语、中文（简体）、法语、西班牙语、葡萄牙语、意大利语、俄语和
-  波兰语，以及土耳其语、韩语和匈牙利语。启动器会跟随你的
+- 九种语言（自 0.3.5.1 起为十二种，现在为十三种）：英语、阿拉伯语、中文（简体）、法语、西班牙语、葡萄牙语、意大利语、
+  俄语和波兰语，以及土耳其语、韩语、匈牙利语和乌兹别克语。启动器会跟随你的
   Windows 语言（不在其中时使用英语）；可以在 LANGUAGE（语言）或 SETTINGS（设置）中改选其他语言，首次启动时
   出现的 SETTINGS 页面上也提供语言选项。Doctor 的检查结果、安装消息和 COLLECT LOGS 报告保持为英文，方便支持人员阅读。
 - 搜索游戏库；收藏（点亮星标，带星标的游戏排在最前）；隐藏游戏（HIDDEN 可以把它们重新显示出来）；重命名游戏。
@@ -870,5 +1053,8 @@ AMDNR 自己的工作附带一条依据 GPL-3.0 第 7(b) 条的附加条款（�
 本构建版按 `LICENSE` 中的 GPL-3.0 许可证分发；第三方库许可证位于 `Licenses\`。AMD 神经运行时及其
 权重按上述原作者署名再分发，仅为方便使用，不主张任何所有权，不提供任何保证。
 
-NVIDIA 的 `nvngx_dlssnr.dll` 不在这些压缩包中。以上内容均未获得 NVIDIA、AMD 或任何游戏发行商的认可、
+NVIDIA 的 `nvngx_dlssnr.dll` 不在这些压缩包中，其他任何 NVIDIA 文件也不在其中。Model L 的 d4r 包（NVIDIA 的 DLSS
+运行时，受 NVIDIA 的 EULA 约束）以及 Model E 用来构建网络的 NVIDIA DLSS 文件，只有在你选择它们时才会由 AMDNR Launcher
+获取，分别来自 d4r 自己的发布页和 NVIDIA 自己的 GitHub（或你的游戏）；AMDNR 不托管也不分发它们，Model E 和 Model L 是
+其作者的作品，而不是 AMDNR 的作品。AMDNR 与 AMD 或 NVIDIA 没有关联，也未获得它们的认可。以上内容均未获得 NVIDIA、AMD 或任何游戏发行商的认可、
 关联或支持。它直接驱动一项未公开的功能。使用风险自负。

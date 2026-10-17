@@ -5,10 +5,11 @@ Copyright (c) 2026 3zwr1 (AMDNR)
 Project:  https://github.com/3zwr1/AMD-NR---OptiScaler
 Discord:  https://discord.gg/AMDNR
 
-AMDNR runs DLSS 5 Neural Rendering on AMD Radeon GPUs, built into OptiScaler.
+AMDNR runs Neural Rendering on AMD Radeon GPUs, built into OptiScaler.
 AMDNR is a fork of OptiScaler and is distributed under the GNU General Public
 License version 3 (see LICENSE), together with the additional terms in sections
 3 and 4 below. The AMDNR Launcher is the exception: see section 7.
+Not affiliated with or endorsed by AMD or NVIDIA.
 
 
 1. What this notice covers
@@ -22,7 +23,8 @@ The following is AMDNR's own work, Copyright (c) 2026 3zwr1 (AMDNR):
   * the release texts, menus and documentation written for AMDNR.
 
 It covers every AMDNR release from 0.1.0 onward, including 0.3.3, 0.3.4, 0.3.5,
-0.3.5.2, 0.3.5.3 and later, as recorded in CHANGELOG.md. Highlights:
+0.3.5.2, 0.3.5.3, 0.3.5.4, 0.3.5.5 (with its revisions 0.3.5.5R2, 0.3.5.5R3 and
+0.3.5.5R4), 0.3.5.6 and later, as recorded in CHANGELOG.md. Highlights:
 
   * AMDNR's AMD Neural Rendering pipeline: model interleave (Guided fill, Edit
     accumulation and the self-tuning interleave), the temporal stability pass,
@@ -64,7 +66,8 @@ It covers every AMDNR release from 0.1.0 onward, including 0.3.3, 0.3.4, 0.3.5,
   * The 0.3.5 RDNA 3 module set of LmxxfNrRuntime.pak (the g2 operand-assembly
     build of lmxxf's kernels for gfx1100 / gfx1101 / gfx1102 / gfx1103): lmxxf's
     kernels (Kien, MIT), built by AMDNR with its own recipe; AMDNR claims the
-    build, not the kernels.
+    build, not the kernels. The same holds for the b1 / b1p builds of 0.3.5.5R4
+    (gfx1100 / gfx1101 and gfx1102 / gfx1103).
   * The lmxxf network size tier policy (the tier snap and its RDNA 3 default),
     the small 360p / 576p network sizes, the per-GPU gating of handheld APUs,
     and the native character mask controls for lmxxf (0.3.4).
@@ -127,6 +130,39 @@ It covers every AMDNR release from 0.1.0 onward, including 0.3.3, 0.3.4, 0.3.5,
     Anti-Lag 2 (ForcedAntiLag2*); the game FSR frame-generation pair, D3D12
     load, FSR 2 context and XeSS exposure rules; and the per-game entries AMDNR
     added to the quirk table.
+  * The 0.3.5.4 and 0.3.5.5 work (including 0.3.5.5R2 - R4) and its suites: the
+    freeze / TDR guard (TdrGuardRules.h) and the neural cost pricing
+    (NrCostGateRules.h); the danielblnc black-picture guard and pre-exposure
+    rule; the Streamline hook rules (SlHookRules.h, DetourBatch.h); the process
+    detach rule (ProcessDetachRules.h); the menu present-budget and input-poll
+    rules; the module-load failure wording (ModuleLoadFailureRules.h); the rule
+    that a Neural Rendering stop needs a real fault, and the runtime fallback;
+    the Anywhere letterbox, dark-fade and FSR 4 migration rules; the
+    frame-generation swapchain, bridge and XeSS frame-generation window rules;
+    the NGX parameter retirement; danielblnc's exposure source, late-submission
+    fill, async-mode and staging rules; and the per-game entries AMDNR added to
+    the quirk table.
+  * The 0.3.5.6 work and its suites: the Full Model Look and its placement fill
+    (NrLookRules.h, PostLookRules.h); the face-detail rule (FaceDetailRules.h);
+    the lmxxf Fast-mode default (LmxxfTierPolicy.h); Refine passes for
+    danielblnc's runtime (RefinePass.h, RefinePassRules.h); the lmxxf history
+    disocclusion test and the history-reset fill (amdnr_history_disocclusion.h,
+    CarryGuardRules.h, FastPanCarryRules.h); the runtime-aware menu
+    (MenuCapRules.h); the NR resolution range (NrCapRules.h); the lmxxf version
+    rule (LmxxfVersionRules.h); the frame-pacing report (FramePaceRules.h); the
+    HIP per-caller rule (HipNameOwnerRules.h); the danielblnc wait and
+    runtime-failed note rules (NrTimeoutRules.h, RuntimeFailedNoteRules.h); the
+    upscaler fallback rules (SrFallbackRules.h, FeatureFallback.h); the
+    upscaler labels (UpscalerLabelRules.h); and the "fastk2" persistent C32
+    kernels in LmxxfNrRuntime.pak (opt-in): c32wp for gfx12, a persistent form
+    of AMDNR's own c32w kernels, and c32p for gfx11, a persistent form of
+    lmxxf's fused C32 kernels (Kien, MIT) made by AMDNR's generator - AMDNR
+    claims the persistent shell and the generator, not lmxxf's kernel code.
+  * AMDNR's integration of the opt-in third-party upscalers Model E and Model L
+    into OptiScaler.dll (0.3.5.6): the provider row and labels, device
+    admission, SHA-256 pins, the runtime pairing rule (ModelLRuntimeRules.h)
+    and the fallback to the stock FSR provider. HelixSR and d4r themselves are
+    not AMDNR's work (section 5).
   * The AMDNR Launcher: AMDNR's own work, under its own licence, not GPL-3.0
     (see section 7).
 
@@ -192,11 +228,17 @@ licences:
     portions contributed to lmxxf by TheAutomatic (MIT). The lmxxf runtime
     integration of 0.3.0 builds on TheAutomatic's DLSS 5 AMD project work.
   * danielblnc - DLSS-NR on AMD by Daniel Blanco,
-    https://github.com/danielblnc/DLSS-NR-on-AMD - the closed runtime. It ships in
-    Runtime.zip, unmodified, with his permission and under its author's own
-    terms (see danielblnc_ATTRIBUTION.txt).
+    https://github.com/danielblnc/DLSS-NR-on-AMD - the closed runtime. It is not
+    in this zip: the AMDNR Launcher installs it separately - his own release
+    files, unmodified, from the runtime packages (vX.Y.Z-Runtime.zip) published
+    on AMDNR's release pages with his permission and with prominent attribution
+    - under its author's own terms (see danielblnc_ATTRIBUTION.txt). All rights
+    stay with him.
   * lmxxf (Kien) - the lmxxf network port, kernels and runtime (MIT; see
     lmxxf_LICENSE.txt), https://github.com/lmxxf/dlss5-on-amd-9070xt-porting.
+    The version AMDNR's menu names is the kernel set the session runs: lmxxf
+    0.41 by default on RX 9000 (0.42 opt-in), lmxxf 0.31's kernels on RDNA 3
+    and the APUs.
   * lmxxf (Kien) - the lmxxf 0.31 kernels in LmxxfNrRuntime.pak
     (the ViT projection (lmxxf031-vit-wide-deep), the C512 QKV and mix kernels (lmxxf031-c512-m32-mh, lmxxf031-c512-m32-deep) and one-wave-per-head attention (lmxxf031-c64-wave2)) are lmxxf's (MIT; lmxxf 0.31), built by AMDNR from lmxxf's
     sources and build recipe. AMDNR's part: loading, SHA-256 pins, per-GPU
@@ -222,6 +264,14 @@ licences:
     the 1440 surfaces) are lmxxf's (MIT; see lmxxf_LICENSE.txt). AMDNR's part:
     loading them as the third set of the same pinned group, SHA-256 pins, the
     set choice ([DlssNr] AmdLmxxfL41) and the fallback to the 0.39 / 0.37 sets.
+  * lmxxf 0.42 by Kien (MIT) - the lmxxf 0.42 kernels in LmxxfNrRuntime.pak
+    (the lmxxf042-* modules for gfx1200 / gfx1201 and two of lmxxf's
+    fast-numerics twins, shipped unmodified as lmxxf built them; where a 0.42
+    module equals the file the 0.41 set already loads, that file is used) are
+    lmxxf's (MIT; see lmxxf_LICENSE.txt). No host code of 0.42 is taken.
+    AMDNR's part: loading them as the fourth set of the same pinned group,
+    SHA-256 pins, the set choice ([DlssNr] AmdLmxxfL42, off by default) and the
+    fallback to the 0.41 set.
   * RenoDX by clshortfuse (Carlos Lopez Jr.) - the colour composition maths (MIT;
     see RenoDX_ATTRIBUTION.txt).
   * Zach Hembree (DarkHelmet) - FSR Ray Regeneration for OptiScaler (branch
@@ -232,8 +282,13 @@ licences:
     (GPL-3.0).
   * Nukem9 - dlssg-to-fsr3 (GPL-3.0; see dlssg-to-fsr3_ATTRIBUTION.txt).
   * zgauthier2000 (cyboman) - fsr4-shader-performance-overrides, the Fast FSR 4
-    shaders (Exact / Lossy) in FSR4Fast\ (GNU GPL v2 or later; see
-    FSR4Fast\NOTICE.md and FSR4Fast\LICENSE-GPL-2.0.txt).
+    shaders (Exact / Lossy) in FSR4Fast\: modified copies of AMD's FSR 4.1.1
+    upscaler DLL from AMD FidelityFX SDK 2.3.0 (AMD's MIT notice is reproduced
+    in FSR4Fast\NOTICE.md), modified by scripts adapted from bbport
+    (deadinside28, https://github.com/deadinside28/bloodborne_pc) (GNU GPL v2
+    or later; see FSR4Fast\NOTICE.md, FSR4Fast\SOURCE.txt and
+    FSR4Fast\LICENSE-GPL-2.0.txt). They are not AMD's originals, not provided
+    or endorsed by AMD, and not signed by AMDNR.
   * Screen-space GI (the inherited effect; retired from the Neural tab's menu in
     0.3.4, still available from the ini) - an effect AMDNR
     inherited from the OptiScaler-AMD-PreSR lineage; the credit belongs to its
@@ -241,23 +296,27 @@ licences:
     the danielblnc package, which AMDNR does not ship.
   * Magpie by Blinue, experimental fork by SAOG0721 (GPL-3.0) - the window-capture
     host AMDNR Anywhere runs inside. https://github.com/SAOG0721/Magpie
-    AMDNR publishes its own build of the host package on its GitHub releases.
+    AMDNR publishes its own build of the host package on its GitHub releases
+    (AMDNR-Anywhere-0.3.5.6.zip for this release).
     Its Magpie.exe is that fork's v0.6.8-experimental.1 (commit
     3841698348bfb246623d4acf791984c8b68a577b, which the tag points at) rebuilt
-    by AMDNR in 2026 with four fixes - an unreadable UI font no longer ends
-    scaling; a class-name rule that holds the full window class matches again,
-    so a profile is found and auto-scaling arms; a stop nobody asked for no
-    longer turns scaling off for the rest of the session; and a window of the
-    game that is gone or shows nothing no longer ends 3D game mode scaling - and
-    with every NVIDIA option of the fork off: the host package AMDNR publishes
-    carries no NVIDIA runtime, library or licence file. The four patches, the
-    base commit and the build options are in Anywhere-host-source/ beside the
-    host, as GPL-3.0 section 6 requires. The first three are being offered to
-    the fork's author; if they are merged and released, AMDNR goes back to his
-    own binary. The package's other files are the fork's own release files,
-    unmodified, without the NVIDIA files AMDNR does not ship. AMDNR's DLL
-    recognises the host by its process name and reads the settings the
-    launcher wrote for it.
+    by AMDNR in 2026 with AMDNR's changes - among them the four fixes earlier
+    host packages carried (an unreadable UI font no longer ends scaling; a
+    class-name rule that holds the full window class matches again; a stop
+    nobody asked for no longer turns scaling off for the rest of the session; a
+    window of the game that is gone or shows nothing no longer ends 3D game
+    mode scaling), a bounded wait on a lost GPU device, capture kept while the
+    AMDNR menu has the focus, experimental FSR frame generation, and the
+    request protocols for the opt-in upscalers Model E and Model L - and with
+    every NVIDIA option of the fork off: the host package AMDNR publishes
+    carries no NVIDIA runtime, library, model or licence file, and no file of
+    HelixSR or d4r. Every change, the base commit and the build options are in
+    Anywhere-host-source/ beside the host, as GPL-3.0 section 6 requires. The
+    package's other files are unmodified: AMD's signed FidelityFX DLLs from AMD
+    FSR SDK 2.3.0 (MIT, with AMD's licence beside them), Microsoft's
+    Microsoft.UI.Xaml.dll, and the fork's own release files with their
+    notices. AMDNR's DLL recognises the host by its process name and reads the
+    settings the launcher wrote for it.
   * ReShade by crosire (BSD-3-Clause) - AMDNR detects ReShade beside it through
     ReShade's public add-on exports and its published unwrap interface GUID;
     no ReShade code is included.
@@ -265,6 +324,39 @@ licences:
     this folder.
   * NVIDIA - DLSS and the neural network's design and weights belong to NVIDIA.
     AMDNR is not affiliated with NVIDIA or AMD.
+
+Fetched by the AMDNR Launcher on the player's PC from their authors' own
+releases, NOT in this zip (each one only when the player turns it on):
+
+  * HelixSR by lonewolf0622 (Model E) - https://github.com/lonewolf0622/HelixSR -
+    under the HelixSR Freeware License (its setup scripts: Apache-2.0); all
+    rights stay with its author. The launcher fetches its official release
+    (1.8.1), unmodified, and checks it by SHA-256. HelixSR's own setup then
+    builds HelixSR's network files on that PC from NVIDIA's DLSS library
+    (nvngx_dlss.dll), which the launcher takes from the game or downloads from
+    NVIDIA's own DLSS repository on GitHub; those files are NVIDIA's, under
+    NVIDIA's licence, and stay on that PC. The build tools it needs (Python,
+    NumPy and Microsoft's DirectX Shader Compiler) come from their own official
+    sources under their own licences, and the AMD FidelityFX file it needs
+    (amd_fidelityfx_dx12.dll, signed by AMD, AMD FidelityFX SDK, MIT) from a
+    package AMDNR publishes, unmodified. AMDNR does not host or ship HelixSR's
+    files or NVIDIA's. Experimental, opt-in.
+  * d4r by countervolts (Model L) - https://github.com/countervolts/d4r -
+    Apache-2.0 (licenses\d4r.txt in its 0.1.4 release). The launcher fetches
+    d4r's own release package (0.1.4, Windows), unmodified, and checks it by
+    SHA-256; RX 9070 / RX 9070 XT only; experimental; untested by its author on
+    Windows. That package bundles NVIDIA's DLSS runtime (DLSS 310.9.1 and the
+    NGX core) under NVIDIA's EULA, run through ZLUDA (vosen, Apache-2.0 / MIT)
+    and AMD's HIP runtime, each with its licence inside the package. NVIDIA's
+    files are not covered by d4r's licence or by AMDNR's, and AMDNR does not
+    host or ship them. Model L runs with the lmxxf runtime or with Neural
+    Rendering off; danielblnc's runtime pairs with Model E.
+  * OptiPatcher by the OptiScaler project (MIT) -
+    https://github.com/optiscaler/OptiPatcher - fetched from its own GitHub
+    releases, unmodified.
+
+The launcher shows each model's disclosure and asks for consent before it
+enables Model E or Model L. Neither is AMDNR's model.
 
 
 6. Source code

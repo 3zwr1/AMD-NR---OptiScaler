@@ -9,6 +9,535 @@ by **burak113**, whose branch AMDNR ported from (commit `3da4808`, 2026-09-19). 
 burak113 only. The file headers, `Licenses\AMDNR_NOTICE.txt`, the README credits and the in-game credits
 now name both. No entry below this line is rewritten.
 
+## 0.3.5.6 — 2026-10-17
+
+Two new upscaler choices you can opt into - **Model E** (HelixSR by lonewolf0622) and **Model L** (d4r by
+countervolts), both fetched by the launcher from their authors' own releases - a fuller default look with extra
+detail on faces, less ghosting with lmxxf, a smaller default network size on RX 7000 and handhelds, and the end of
+danielblnc's false "timeouts". Model E, Model L, the danielblnc fix and the ghosting change were checked on one RX
+9070 XT, in Silent Hill 2 or on AMDNR's in-game test harness; much of the rest is covered by AMDNR's tests on the CPU
+and has not been seen in a game yet - Known limits says which. `OptiScaler.dll`, `LmxxfNrRuntime.dll` and
+`LmxxfNrRuntime.pak` change (the pak adds lmxxf 0.42's kernels and AMDNR's persistent C32 kernels, both off by
+default); the danielblnc runtime is unchanged. AMDNR does not host or ship HelixSR's, d4r's or NVIDIA's files.
+Launcher users: update from the launcher (AMDNR Launcher 0.3.5.25). By hand: drop the zip over 0.3.5.5R4.
+
+**Defaults that change:** the Full Model Look (and with it After upscaling, on cards the cost check lets run it),
+extra detail on faces on both runtimes, lmxxf's Fast mode on RX 7000 / Radeon 8060S / AMD handhelds, the NR
+resolution slider up to 200%, no plain "DLSS" row in the in-game upscaler list on AMD cards, an explicit runtime
+choice that is kept, and a failed upscaler that keeps your own FSR pick instead of FSR 2.1.2. Each entry below names
+its way back.
+
+### Neural Rendering
+**The Full Model Look is the new default**
+- Neural tab > NR style has a new look, **Full Model Look**, and it is the default (`[DlssNr] AmdNrLook=auto`). It
+  starts from the NVIDIA look's network (style 0, all 71 blocks, no residual limit, no edge guard) and adds Structure
+  2.00 and Temporal stability 0.50 on both runtimes, and Edit detail 1.50 / Edit colour 1.25 on lmxxf (danielblnc's
+  runtime has no edit shaper). lmxxf keeps its output smoothing, its network history, the highlight colour guard and
+  the carry guard.
+- While you have not set Neural placement yourself, this look asks for **After upscaling** on every card. The cost
+  check and the TDR guard price it first, as they price the placement row; where your card cannot pay it, NR stays
+  Before upscaling. If your ini holds `[DlssNr] AmdPlacement=pre`, the Neural tab now says that this holds the look
+  at Before - it no longer happens without a word.
+- Picking a look in the menu now also sets what that look needs, through the rows' own paths: Full Model Look = After
+  upscaling + Full network; NVIDIA look = Before upscaling + Full network; AMDNR soft = Before upscaling, Full
+  network off. Save Settings keeps your pick. Inside the Anywhere window no look changes anything, as before.
+- Under Model interleave only the network part of the look changes, as with the NVIDIA look.
+- The way back: NR style > **NVIDIA look** (`AmdNrLook=0`) or **AMDNR soft** (`AmdNrLook=1`). Anything you set
+  yourself (a slider, a named style, a style slot, an ini line) still wins over every look.
+
+**More detail on faces (always on, both runtimes)**
+- While Character structure is on Follow (the default), faces and skin now get 1.5x the scene's Structure, up to 4.00
+  - under the Full Model Look 2.00 for the scene and 3.00 for faces. No extra pass, no extra cost. A Character
+    structure value you pick yourself is never changed, and the greyed Follow value in the menu shows the number that
+    runs. Off: `[DlssNr] AmdFaceDetail=false` (ini only).
+
+**Less ghosting with lmxxf**
+- On fast camera turns, lmxxf's carried edit now follows the motion beyond 7.5% of the frame height instead of
+  stopping there: that stop printed the previous frame's edges on a fast turn (a double image) with plain lmxxf,
+  Model interleave off. The picture presets that need the old bound keep it.
+- lmxxf's network history is now checked where it came from, against the game's own geometry, at Before and at After
+  upscaling, and the frame after a history reset is filled from NR's own brightness response instead of showing one
+  raw frame. Measured on AMDNR's in-game test harness on an RX 9070 XT (real upscaler calls, synthetic moving
+  content): trails behind moving objects are shorter in the first frames at both placements, most of all After
+  upscaling, and the flash after a history reset is about half as strong; flicker is unchanged.
+- **Ghosting is reduced, not gone.** What is left is mostly FSR's own trail where a moving object uncovers the
+  background, plus part of the network's own. danielblnc's runtime answers in the frame it is given and does not use
+  this path.
+
+**RX 7000 and handhelds: one network size smaller by default**
+- On RX 7000 cards, the Radeon 8060S and AMD handheld GPUs, lmxxf's Fast mode is now on by default: the network runs
+  one size below the one your render size would use, which costs less time per frame. A handheld lands on the 360
+  size (one below its default 576); a desktop RX 7000 at a 1080p render runs the 900 size. RX 9000 and danielblnc's
+  runtime are unchanged. Off: `[DlssNr] AmdLmxxfFastMode=false` - a value you set is now kept by Save Settings.
+- On a ROG Ally (Z1 Extreme) test machine the 576 size costs about 96 ms of network time per frame and the 360 size
+  about 47 ms (tester machine, network time only, not game FPS). The 900 size was not measured on an RX 7000 card,
+  and no game report from these cards exists for this build yet.
+
+**Controls**
+- **NR resolution** now goes up to 200% on both runtimes (was 150%). lmxxf's network still tops out at its 1920x1080
+  size; the cost check, the TDR record, the video-memory brake and Dynamic NR's 100% ceiling still apply. Defaults
+  are unchanged.
+- **Refine passes** (danielblnc's runtime only): `[DlssNr] AmdRefineMode=refine` runs Neural passes 2 and 3 at a
+  smaller size on the previous pass's answer while pass 1 stays full size; `full` (the default) is as before. lmxxf
+  can run only one network size per session, so it runs Refine as Full and says so in its log.
+- **The Neural tab shows only what your runtime can run.** On lmxxf, Refine passes and Tone intensity are hidden; on
+  danielblnc's runtime, Edit detail, Edit colour, Edge guard, Output smoothing and Full network are hidden. The ini
+  keys are untouched.
+- New rows: **Game exposure** Auto / On / Off (`[DlssNr] AmdUseGameExposure`) and **Anti-halo** (formerly Halo
+  protection, `[AmdLook] AntiHalo`). The rows are new; what the keys do is not.
+- The runtime list now names the lmxxf version the session really runs (0.41 by default on RX 9000), instead of the
+  file version of AMDNR's own runtime DLL.
+- **Your runtime choice is kept.** An explicit danielblnc or lmxxf choice is no longer switched to the other runtime
+  when its files are missing or its start is refused: Neural Rendering stays off for that session, the log says why,
+  and your runtime is tried again at the next start.
+
+**Opt-in kernel sets (no speed claim)**
+- **lmxxf 0.42 by Kien (MIT)** ships as a fourth pinned kernel set, off by default (`[DlssNr] AmdLmxxfL42=true`). The
+  same picture as 0.41 at the 1080 size in AMDNR's check; no speed change measured on an RX 9070 XT, so 0.41 stays
+  the default.
+- AMDNR's persistent C32 kernels (`[DlssNr] AmdLmxxfFastK2`, off): the same picture, no gain measured on an RX 9070
+  XT and slower on RX 7000 and the Z1 Extreme, so they are refused there by default.
+
+**Frame pacing**
+- The frame pacer (Advanced tab) now measures every frame - also while XeSS frame generation at 3X and above spaces
+  its own frames - and writes the frame-time spread to the log once a minute ("held on N of M frames"), so a report
+  shows whether pacing was even. Checked on the CPU and in our own logs; no FPS figure.
+
+### Model E and Model L (experimental, opt-in)
+Both are separate upscalers you can choose instead of FSR. The AMDNR Launcher fetches each from its author's own
+official release only when you pick it (GAME SETTINGS > SR model), asks for your consent once per model, and checks
+every file by SHA-256. **AMDNR does not host or ship their files, or any NVIDIA file.** Neither is AMDNR's model.
+
+- **Model E is HelixSR by lonewolf0622** (github.com/lonewolf0622/HelixSR, HelixSR Freeware License). HelixSR's setup
+  builds its network on your PC from NVIDIA's DLSS file, which the launcher takes from your game or downloads from
+  NVIDIA's own GitHub; the built files stay on your PC. In the game it runs where FSR 3.1 / FSR 4 runs (`[Upscalers]
+  FfxSRProvider=helix_e`), with both Neural Rendering runtimes, and the closed upscaler list reads "HelixSR (Model
+  E)". When HelixSR is not ready, the game's FSR provider runs instead, never FSR 2.1.2. Seen working in Silent Hill
+  2 on an RX 9070 XT with each runtime. Experimental.
+- **Model L is d4r by countervolts** (github.com/countervolts/d4r, Apache-2.0). It runs NVIDIA's DLSS runtime, under
+  NVIDIA's EULA, through ZLUDA and HIP. d4r has not been tested by its author on Windows. AMDNR does not host or ship
+  any NVIDIA file: the launcher fetches d4r's own release package.
+  - **RX 9070 / RX 9070 XT only** (tested on an RX 9070 XT), DirectX 12 games only.
+  - **Model L runs with the lmxxf runtime, or with Neural Rendering off. danielblnc's runtime pairs with Model E.**
+    Under danielblnc's runtime the Model L row is greyed with that sentence, and a Model L set in the ini is refused
+    at start-up (the game's FSR runs).
+  - It has its own row, **Model L (d4r)**, in the in-game upscaler list under HelixSR (Model E), greyed with its
+    reason when it cannot run (DirectX 12 only, prepare it in the launcher first, needs an RX 9070-class card,
+    restart required). Picking it writes `[DlssNr] AmdSrModel=L`; picking anything else removes that line again.
+  - AMDNR asks the game's DLSS input for preset K, the model d4r runs natively on these cards, unless you set `[DLSS]
+    RenderPresetOverride` yourself.
+  - d4r brings its own copy of AMD's HIP runtime. AMDNR now gives that copy only to d4r and the driver's HIP runtime
+    to everything else in the game.
+  - If Model L cannot start, the game's own FSR upscaler runs, never FSR 2.1.2.
+  - Seen working in Silent Hill 2 on an RX 9070 XT with the lmxxf runtime (thousands of frames, none failed).
+    Experimental, and it can be much slower than FSR. The launcher shows the full disclosure before you enable it.
+- The plain **DLSS** row is no longer offered in the in-game upscaler list on AMD cards (there was nothing behind
+  it); a DLSS request that cannot be served still says what runs instead.
+
+### Fixes
+- **danielblnc's runtime: the false "timeouts" are fixed** (tested in Silent Hill 2 on an RX 9070 XT). The cause:
+  with Model L's files loaded, his runtime was handed d4r's bundled HIP runtime by name instead of the driver's, and
+  its in-frame wait never saw its jobs finish - the jobs themselves ran normally. The driver's HIP runtime now
+  answers him. A wait that gives up is reported as what it is and **no longer turns Neural Rendering off**; the old
+  on-screen text saying the display driver reset the GPU is gone (there was no reset); and the "runtime failed" note
+  the launcher's Doctor reads is written only after a real failed job or a removed device. In those sessions no wait
+  gave up over about 3,500 jobs.
+- **FSR 3 / FSR 4 should no longer drop back to FSR 2.1.2** when another upscaler choice fails or is not ready (a
+  HelixSR that was not ready yet was one way in). A failed upscaler keeps your own FSR pick; FSR 2.1.2 runs only when
+  you pick it, or when no FSR library is there at all, and the log then says so. DirectX 12; covered by AMDNR's tests
+  on the CPU, not yet seen in a game.
+- **Ray Regeneration:** a refused Ray Regeneration should keep the upscaler you chose instead of falling to FSR
+  2.1.2, and the Denoiser backend row now greys AMD's FSR Ray Regeneration on a card with no provider for it (from an
+  RX 7900 XTX Cyberpunk 2077 report; CPU tests only).
+- **XeSS frame generation** is paired with the XeLL module that created it, so a swapchain re-created mid-game should
+  no longer fail with "XeLL context is not supported" (from a real Cyberpunk 2077 log; tested in a synthetic GPU test
+  built from that log, not re-run in the game). `[XeFG] LatencyReduction=false` no longer turns XeLL off under XeSS
+  frame generation.
+- **Video memory:** XeSS frame generation's own memory is now counted in AMDNR's video-memory lines at the multiplier
+  that runs (6X reads as 6X), and the log says once when the budget shrinks while use keeps climbing. Logging only.
+- **Dynamic resolution:** a resize that never landed is cancelled when the game's frame comes back to the last size
+  NR ran at, instead of a rebuild (checked by replaying recorded resizes on the CPU).
+- **Start-up GPU check:** AMDNR's AMD capability check no longer releases references to the game's D3D12 device that
+  it never took (in AMDNR's test program the old DLL crashed in 10 of 10 runs, the fixed one in none of 50). No game
+  claim.
+
+### AMDNR Anywhere
+- Inside the Anywhere window, the Neural tab's working rows are now the first section of the Anywhere tab.
+- **FSR Off** (`[DlssNr] AnywhereUpscaler = auto | fsr4 | fsr3 | off`) should keep Neural Rendering running with no
+  FSR pass, and **Sharpness** (`AnywhereSharpness`) is Auto or 0-1 (0 removes sharpening). With the defaults nothing
+  changes.
+- **SR model** in the Anywhere window: FSR, Model E or Model L, experimental; Model L needs an RX 9070-class card.
+  Model E and Model L together with Neural Rendering in the Anywhere window are still being tested.
+- **FSR x2 frame generation** in the Anywhere window (`[DlssNr] AnywhereFg`), experimental and off: checked only on a
+  synthetic test scene, and input feels about one frame later.
+- The Anywhere host package is rebuilt (still without any NVIDIA component; its source and every change are in
+  `Anywhere-host-source\` beside the host). Among the changes: a lost GPU device no longer leaves the host waiting
+  forever, capture stays on while the AMDNR menu has the focus, and FSR resources are kept until the GPU has finished
+  with them.
+
+### AMDNR Launcher 0.3.5.25
+- **GAME SETTINGS > SR model:** Auto / Model E / Model L, with a consent dialog once per model that says what it
+  contains and where it comes from. Model L is offered only on RX 9070-class cards and only with the lmxxf runtime
+  (or Neural Rendering off).
+- **Anywhere settings in the launcher:** runtime, passes, network size, FSR (Auto / FSR 4 / FSR 3 / Off), frame
+  generation, Motion for upscaling, sharpness and SR model. Changes apply at the next Anywhere start.
+- GAME SETTINGS gets the **Game exposure** and **Anti-halo** rows (written only into an AMDNR build that reads them).
+- **Most FPS** now turns Model interleave off and runs a smaller neural size, with Refine passes (danielblnc) and
+  Fast mode (lmxxf) where the installed AMDNR reads them.
+- **Community Lab: a public chat.** Messages are public, checked by AI and can be auto-translated into your launcher
+  language; the team can remove messages.
+- ASK AI reads only the picked game's latest session logs, and UNDO puts back only what that fix changed.
+- Your runtime choice per game is kept. A MORE menu holds Settings, Help and Announcements.
+
+### Known limits
+- **Ghosting with lmxxf is reduced, not removed.**
+- **Model L** is experimental: RX 9070 / RX 9070 XT only, DirectX 12 only, never with danielblnc's runtime, and it
+  can be much slower than FSR. d4r has not been tested by its author on Windows.
+- The smaller default network on RX 7000 and handhelds has no game reports yet - please send yours (COLLECT LOGS).
+- In some DirectX 11 and Vulkan games a failed upscaler can still fall back to FSR 2.2.
+- **Covered by AMDNR's tests, not yet seen in a game:** the FSR 2.1.2 and Ray Regeneration fallbacks, the extra face
+  detail (no side-by-side picture yet), the look-pick and held-placement notices, the menu changes, the XeSS frame
+  generation pairing, the dynamic-resolution change, the Anywhere FSR Off / Sharpness / SR model / FSR x2 rows, and
+  the new launcher pages.
+- lmxxf 0.42 and AMDNR's persistent C32 kernels brought no speed gain; both stay opt-in.
+- Ray Regeneration is still not clean everywhere, with either denoiser (see 0.3.5.3).
+- The `OptiScaler.ini` in this zip does not yet describe every key added since 0.3.5.5R3; the keys work without a
+  line.
+
+Credits for this release: **lmxxf by Kien (MIT)** - 0.41 by default on RX 9000, 0.42 opt-in; **DLSS-NR on AMD by
+Daniel Blanco (danielblnc)** - his runtime, unmodified, with his permission, installed separately by the launcher;
+**HelixSR by lonewolf0622** (Model E) and **d4r by countervolts** (Model L, with ZLUDA by vosen), each fetched from
+its author's own release; **Magpie by Blinue, experimental fork by SAOG0721 (GPL-3.0)**, built by AMDNR for the
+Anywhere window; AMD's FidelityFX SDK. Copyright (c) 2026 3zwr1 (AMDNR). Not affiliated with or endorsed by AMD or
+NVIDIA. Everyone else is in the README's credits and `Licenses\AMDNR_NOTICE.txt`.
+
+## 0.3.5.5R4 — 2026-10-14
+
+A fix release: every item comes from a report players sent through COLLECT LOGS on 12-13 October and was diagnosed
+from that report's own logs or crash dumps. No new features; three new ini keys. In-game installs are offered it as
+an update (the R4 suffix). `OptiScaler.dll`, `LmxxfNrRuntime.dll` and `LmxxfNrRuntime.pak` change (the pak brings
+measured RDNA 3 kernel stacks); the danielblnc runtime is unchanged. Ships with AMDNR Launcher 0.3.5.12.
+
+**Defaults that change:** danielblnc's look keeps the temporal stability on the picture's base only
+(`AmdDanielLookStability=detail`), danielblnc's runtime is handed the game's exposure texture again and its highlight
+guard is on, the NVIDIA look feeds a 1440p frame to lmxxf at its own size on the RX 9070 class, `[Log]
+LogToFile=auto` means on, danielblnc's `Async=1` runs as same-frame, frame generation is refused on the "old overlay"
+titles, and RX 7000 / Z1 Extreme handhelds run new lmxxf kernel stacks. Each entry below names its way back.
+
+### Crashes and hangs
+- **XeSS frame generation crashed at start-up** (The Witcher 3 and others on RX 9000): XeFG was attached to a small
+  probe swapchain some engines create first and then initialised again for the game's real window; the old swapchain
+  is now released before the new window is used.
+- **Forza Horizon 5 froze on start; The Witcher 3 crashed inside Streamline's start-up:** AMDNR's Streamline plugin
+  hooks could call a missing original function when Streamline loads a plugin twice. Every missing original is now
+  left to Streamline (the same class as the Arknights: Endfield fix of 0.3.5.4, which covered the interposer only).
+- **Lies of P (and others) crashed on RX 6000 when switching to "FSR 3.X" with the fast FSR 4 files installed:** the
+  fast file lists FSR 4 first and AMDNR took that entry even where FSR 4 (INT8) is off on the card. It now takes the
+  first FSR 3 entry there; the fast FSR 4 box is greyed on RX 6000 until `[FSR] Fsr4ForceModel=2`.
+- **A DirectX 11 game without any upscaler (VaM) crashed at launch with frame generation on:** the DirectX 11 -> 12
+  bridge now opens only when the game has an upscaler AMDNR can hook, and says why otherwise.
+- **Dark Souls II (Lighting Engine) showed two black windows with frame generation:** a refused frame-generation
+  bridge is now taken down cleanly and the game keeps its own swapchain.
+- **Red Dead Redemption 2 (DirectX 12) died on alt-tab with FSR frame generation under HDR:** the preserved
+  frame-generation swapchain is no longer handed back across the game's swapchain re-creation (as for Red Dead
+  Redemption).
+- **GTA V Enhanced crashed about a minute after Neural Rendering started (danielblnc's runtime, inline):** the
+  inline-hang marker is now written from AMDNR's own device-lost evidence, so the next start does not repeat it. New
+  diagnostic key `[DlssNr] AmdDred` (off).
+- **Microsoft Flight Simulator 2024 died about 20 s after start with frame generation on:** AMDNR's preserved
+  swapchain kept the window while the game created its own frame-generation swapchain; inside the game's own creation
+  it is now released for real. A second MSFS 2024 crash (Streamline evaluating through an NGX parameter table it had
+  asked AMDNR to destroy) is fixed too: a destroyed table is retired, never freed, and later calls on it are refused
+  with one log line.
+- **Dragon's Dogma 2 ran far too slowly with "1 pass":** danielblnc's runtime writes its log under the game's
+  `_storage_` folder on RE Engine, so AMDNR never saw the failed job; the log is now read where his runtime writes
+  it, and a TDR record needs a real failed job, says when it is applied, and expires after 7 days.
+- **danielblnc "not working" with `Async=1` in his ini:** under AMDNR that mode completed three jobs and then
+  nothing, silently. AMDNR now runs same-frame and says so once (`[DlssNr] AmdDanielAsync=true` lets async through).
+
+### Menus and notices
+- **Resident Evil 2 / 3 / 4 / 7 / Village, GTA V Enhanced, Devil May Cry 5, Street Fighter 6:** turning frame
+  generation on brought back the swapchain wrapper these games cannot have, which hid both AMDNR's menu and
+  REFramework's. Frame generation is refused there with a notice (`[Menu] OverlayMenu=true` overrides). The menu-key
+  notice now also covers REFramework's Temporal Upscaler setup (RE2 / RE4) and the case where NR runs but AMDNR has
+  no swapchain of its own (Helldivers 2).
+- Red Dead Redemption 2 "says Vulkan": the hover explains that the game's own Safe Mode after a crash puts the API
+  back to Vulkan, and where to set DirectX 12 again.
+
+### Picture
+- **Blurrier than danielblnc's standalone (RX 9000):** the stability blend now steadies the picture's base only and
+  the frame keeps its own detail - `[DlssNr] AmdDanielLookStability = detail` (the default) / `true` (0.3.5.5R3's
+  full blend) / `false` (none, as his standalone). Not yet compared on a picture.
+- **The Last of Us Part II flickered with danielblnc + Model interleave:** this engine submits a frame's work after
+  the next frame's upscaler call, and those frames were shown raw between edited ones; they are now filled with the
+  carried edit.
+- **Uncharted's green flashlight reflections, RenoDX colours moving with the camera, skin tones drifting
+  (danielblnc):** his runtime was fed by its own unbounded exposure estimate. The game's exposure texture is handed
+  back to him again (safely) - `[DlssNr] AmdDanielExposureSource = auto | runtime | host` - and the highlight guard
+  (`AmdDanielHighlightGuard`) is on by default, as lmxxf's always was. If a picture looks wrong, A/B `auto` against
+  `runtime` and send the report.
+- **The NVIDIA look on the RX 9070 class (lmxxf):** a 1440p frame is now fed to the network at its own size by
+  default, much closer to NVIDIA's own picture of the same frame in AMDNR's lab, at a higher GPU cost. `[DlssNr]
+  AmdLmxxfTierCap=1080` takes the 1080 size back; 4K stays on the 1080 size unless `=native` is set.
+
+### Speed
+- **RX 7000 and Z1 Extreme handhelds (lmxxf):** the measured `b1` / `b1p` kernel stacks ship - the same picture bit
+  for bit on an RX 7800 XT and a ROG Ally across two test rounds, with a little less network time. Z2 Extreme / Strix
+  keep the previous set until they are measured.
+- Dragon's Dogma 2 stuttered after the game's menu (danielblnc's staging rebuild): one idle moment now replaces a
+  per-frame wait.
+
+### Logs
+- `[Log] LogToFile=auto` now means on (many reports had no OptiScaler.log). Every fix above writes one tagged log
+  line, so the next report shows which rule ran.
+
+### AMDNR Launcher 0.3.5.12
+- **AMDNR Anywhere stays up as long as the game runs** - no three-minute stop, no cap on leaving and coming back;
+  alt-tab keeps it running and the game is brought back to the front.
+- **The launcher names the card that is really in the PC** (an RX 9070 XT was shown as an older card after a driver
+  reinstall): adapters from DXGI first, the registry only as a fallback.
+- ASK AI one-click fixes; RE2 / RE4 get OptiScaler's libxess.dll beside PDPerfPlugin.dll; a game the scan found no
+  upscaler in asks before an in-game install; the proxy name is never one the game's exe does not load; COLLECT LOGS
+  bundles the rotated logs of crashed sessions and Cyberpunk 2077's own crash reports.
+
+### Known limits
+- danielblnc's same-frame mode is heavy on RDNA 3 (measured on an RX 7800 XT): on RX 7000, use lmxxf.
+- The RDNA 3 kernel change is proven by hash on the test kits, not yet by a player report: if NR refuses to start on
+  an RX 7000 card or a ROG Ally, send COLLECT LOGS first.
+
+Credits: **DLSS-NR on AMD by Daniel Blanco (danielblnc)** - his runtime, with his permission and prominent
+attribution; **lmxxf by Kien (MIT)**. Everyone else is in `Licenses\AMDNR_NOTICE.txt`.
+
+## 0.3.5.5R3 — 2026-10-12
+
+A fix release; three of these were defects players were hitting on 0.3.5.5R2. It is a revision of 0.3.5.5, so in-game
+installs offer it as an update. Every fix was made from a player report's own logs; none was re-tested in the
+reporting game, so read each as "should". Ships with AMDNR Launcher 0.3.5.11.
+
+**Defaults that change:** danielblnc's runtime runs the temporal pass again under the NVIDIA look (`[DlssNr]
+AmdDanielLookStability=true`), handhelds run the passes you ask for and an automatic network size of 576 instead of
+360, the Ray Regeneration post pass takes the output size from the output resource (`AmdPostRectFromResource=true`),
+the danielblnc pass load runs off the render thread (`AmdPassInitOffThread=true`), and the FPS overlay shows a Neural
+Rendering segment while it is on (`FpsOverlayNeural`).
+
+### Games that would not start, or showed no menu
+- **Dark Souls II** crashed at launch: a frame-generation bridge that could not build its swapchain left the game
+  with a missing command queue. The game should now start without frame generation, and the Frame Gen tab says so.
+- **Resident Evil Requiem** would not launch and **Assassin's Creed Black Flag** flickered - one cause: a
+  frame-generation swapchain AMDNR keeps past its last release was not recorded.
+- **GTA V Enhanced** and seven RE / DMC / Street Fighter 6 titles draw AMDNR's menu on the upscaled picture, so
+  before the game upscales there is nothing to draw on and the menu key did nothing. Pressing it twice now opens a
+  window that says what to set, and that Neural Rendering starts switched off on a new install. It does not open the
+  menu earlier.
+
+### Neural Rendering switching itself off
+- **It stopped on a fault that never happened.** AMDNR counted the runtime's own same-frame wait giving up as a
+  display-driver reset; one slow job in a two-hour Silent Hill 2 session switched NR off for the rest of it and wrote
+  two files that changed the next launch, while Windows had logged no driver reset and every job had completed.
+- **Neural passes were lowered without a word.** The cost check priced every lmxxf session as if it fed a 1920x1080
+  network, even when the session was capped far below that: the menu said 3 passes, the game ran 1.
+- A wall-clock deadline is no longer read as danielblnc's runtime stopping, and the marker it writes has a way back:
+  the Neural tab's new **Retry danielblnc** button.
+
+### Picture
+- danielblnc's runtime runs the temporal pass again under the NVIDIA look (not measured on a picture).
+- **Ray Regeneration (The Witcher 3):** the crease line and the blurred right and bottom bands came from the neural
+  pass editing only part of the output; it now takes the output size from the output resource.
+
+### Handhelds (Z1 / Z2 / Radeon 700M / 800M)
+- The one-pass clamp is retired: a handheld runs the passes you ask for.
+- The automatic NR network size moves from 360 to 576, so the neural edit is visible on a handheld screen. It is a
+  default, not a ceiling: `[DlssNr] AmdLmxxfTierCap` still wins. These are changed defaults, not a measured speed-up
+  - watch the cost figure in the Neural tab and lower NR resolution if your frame rate suffers.
+
+### Smaller things
+- The roughly one-second freeze when switching the neural pass (danielblnc's runtime) is off the render thread.
+- A XeLL that will not attach no longer costs you frame generation (new key `[XeFG] LatencyReduction`).
+- The log and the FPS overlay say when Neural Rendering ran, with a one-time pop-up.
+- Everything AMDNR remembers about a game is listed in Neural tab > Diagnostics, each with a Forget button.
+- Anywhere: Restore Defaults restores everything the page writes; the menu no longer tells you to "enter the game"
+  you are already in; the one row that is a note is told apart from the controls.
+- danielblnc's video-memory figure under-reported; corrected (a display change, not a leak fix). danielblnc reuses a
+  held working size that is close enough instead of making a new one.
+- The menu header mark is smaller, and `[Menu] ShowMenuLogo=false` replaces it with the word AMDNR.
+
+### AMDNR Launcher 0.3.5.11
+- **Community Lab** - share a setup laid out like the in-game menu, with Anywhere layouts, a name tag, covers and
+  search.
+- **ASK AI** and **Help > FAQ**.
+- **Use an earlier version** - it was hidden for anyone on 0.3.5.5R2, because the version comparison read "0.3.5.5R2"
+  wrongly.
+- **Add a game by hand**, and a way to move a game the scanner misread from Anywhere into your library.
+- UI scale, Install in the game anyway, and an Anywhere screenshot line.
+
+Credits: neural runtimes by **Daniel Blanco (danielblnc)** and **Kien (lmxxf, MIT)**; fast FSR 4 shaders by
+**zgauthier2000 (cyboman)**, GPL-2.0-or-later; frame generation groundwork by **Nukem9** (dlssg-to-fsr3, GPL-3.0).
+Built on **OptiScaler**. See `Licenses\AMDNR_NOTICE.txt`. Do not use AMDNR in multiplayer games.
+
+## 0.3.5.5R2 — 2026-10-12
+
+A revision of 0.3.5.5: in-game installs are offered it as an update (the R2 suffix). Everything fixed here was
+already present in 0.3.5.5; the most common complaint - Neural Rendering switching itself off - had more than one
+cause. Ships with AMDNR Launcher 0.3.5.10. The download is about 100 MB larger than 0.3.5.5: that is entirely the
+optional fast FSR 4 files.
+
+**Defaults that change:** a Neural Rendering stop now needs a real fault, a session whose danielblnc runtime dies
+falls back to lmxxf (`[DlssNr] AmdRuntimeFallback=false` keeps the old stop), the Anywhere dark fade reads the
+captured picture as stored (`[DlssNr] AnywhereDarkFadeStored=true`), and up to 33 host shader passes are built in
+advance instead of in the game.
+
+### Neural Rendering no longer switches itself off without a fault
+- A single slow frame - a shader compile, a loading screen, an alt-tab, an emulator pausing itself - could switch NR
+  off for the rest of the session. A stop now needs a real fault: a counted driver reset or a failed GPU job.
+- One video-memory reading over budget latched for the whole session and refused NR a new working size or your full
+  pass count, even after the card had room again. Lowering NR resolution or texture quality now actually helps.
+- A single slow frame could also drop your 2 or 3 Neural passes to 1 and write a file that lowered the pass count at
+  every later start of that game. Both now need a real fault.
+- On a Vulkan title, a slow first launch could refuse the lmxxf runtime for good - and the main archive ships only
+  lmxxf, so that meant no neural pass at all. A timeout is no longer treated as a fault (`[DlssNr]
+  AmdVkFirstAnswerMs`).
+- When danielblnc's runtime really dies, the session now falls back to lmxxf instead of ending Neural Rendering.
+
+### Fixes
+- **Ghost of Tsushima** crashed on start: AMDNR's FSR 3 create hook attached twice and called itself.
+- **The Anywhere window at night** (danielblnc's runtime) was several times too dark: the captured picture was read
+  after decode instead of as stored.
+- **DLSS and DLSS Ray Reconstruction** were silently replaced by FSR when they could not run, with nothing on screen
+  saying so. The menu now says what is really running, and there are rows for both.
+- **RenoDX colour:** 0.3.5.5 shipped an ini describing behaviour its own DLL did not have. They agree now.
+- Up to 33 host shader passes no longer compile while you are in the game.
+
+### New, all opt-in and off by default
+- **Fast FSR 4.1.1 shaders** by zgauthier2000 (`[FSR] Fsr4FastShaders = off | exact | lossy`), for RX 7000, RX 6000
+  and AMD's integrated graphics; refused on RX 9000. Faster mainly at 4K, with little or no gain at 1440p or 1080p.
+  `lossy` does not give the same picture as AMD's file - read its `WARNING.txt`. These are modified files:
+  single-player games only.
+- **Frame pacing** in the Advanced tab (`[DlssNr] AmdFramePacing`), also without frame generation.
+- The Anywhere size control for danielblnc's runtime.
+- Two image-quality controls for people who want to experiment (`[DlssNr] AmdDetailLiftDomain`, `AmdCarryNoMotion`).
+- A new mark in the menu header.
+
+### AMDNR Launcher 0.3.5.10 (summary)
+- Community Lab v2 (games, gallery and chat with the developers; settings, pictures, comments and votes), the rounded
+  look, an Emulators section on the Anywhere page, the fast FSR 4 row in GAME SETTINGS, and a download that goes
+  quiet no longer keeps the launcher busy for ever.
+
+### Known limits
+- A job that runs long with no counted fault, on a card that is not full, is still left alone rather than stopping
+  Neural Rendering. If NR stops with no explanation, please send a report.
+
+Credits: **DLSS-NR on AMD by Daniel Blanco (danielblnc)** (github.com/danielblnc/DLSS-NR-on-AMD) and **lmxxf by Kien
+(MIT)**; fast FSR 4 shaders by **zgauthier2000 (cyboman)** (GPL-2.0-or-later). Copyright (c) 2026 3zwr1 (AMDNR),
+GPL-3.0; see `Licenses\AMDNR_NOTICE.txt`.
+
+## 0.3.5.5 — 2026-10-11
+
+A release built from your reports: a lighter menu input check in every game, a guard against long freezes and GPU
+resets, the Anywhere window's upscale back on AMDNR's own pass, readable menus, and many messages that now say what
+went wrong. Everything new is opt-in unless it says otherwise. Ships with the redesigned AMDNR Launcher 0.3.5.9.
+
+**Defaults that change:** the freeze / TDR guard is on (`[DlssNr] AmdTdrGuard`), the Anywhere upscale is AMDNR's own
+pass again (`[DlssNr] AnywhereFsr4Upscale=false`), and lmxxf 0.41's wave-owned C256 block runs at the opt-in 1440p
+size.
+
+### Menus
+- **AMDNR's menu input check no longer makes 248 Windows calls per frame on the game's render thread** (about 14
+  now), and a device round trip no longer holds the process-wide input lock the render thread waits on. This check
+  ran in every game, even with Neural Rendering and frame generation off. On AMDNR's test app the frames it pushed
+  over budget are gone; not measured in a game.
+- **The menu no longer waits on the game's present thread or on AMDNR's GPU cache lock** while it builds - the freeze
+  when opening the Neural tab in Dying Light: The Beast. The log now names the slowest menu step when a frame runs
+  long.
+- **The menu's grey text is readable** (lifted to proper contrast levels), and its HDR text is no longer drawn at
+  half brightness.
+
+### Neural Rendering
+- **A guard against long freezes and GPU resets** (new, on by default). If a neural job's time walks toward the
+  display driver's watchdog, AMDNR drops to one pass, or stops feeding the runtime for the session, before the driver
+  resets the GPU; a record keeps the next start from walking back into it without saying so. It came from a real
+  player's log; a reset cannot be made on demand, so it is a guard, not a promise.
+- **The cost of your settings is priced on your card before the first neural frame** (from an RX 7900 XTX report that
+  ended in a system crash): a configuration the card cannot pay is lowered before it runs - Neural placement first,
+  then Neural passes, then NR resolution - and one log line says what was lowered and the way back.
+- **The 1440p network size runs a little faster on RX 9000**, bit for bit the same picture. The size itself is still
+  opt-in (`[DlssNr] AmdLmxxfTierCap=1440`).
+- **A video-memory warning that hid behind Windows' own eviction now shows** - the "fine for two hours, then micro-
+  stutter" report from Death Stranding 2.
+- One failed command-list close no longer ends the DirectX 11 or Vulkan bridge's session, kills a frame-generation
+  slot or drops every third Anywhere frame.
+- **A file Windows refused to load** (Smart App Control and similar) is now said in words, with the folder to allow,
+  instead of a bare error number.
+- **A Vulkan game whose own FSR 2 has the frame (Red Dead Redemption 2 on Vulkan)** now says that Neural Rendering
+  cannot run there and to pick DirectX 12, instead of a switch that does nothing.
+- AMDNR now says what is known from player reports about the danielblnc runtime version you run, and writes every
+  setting of his runtime that it changes into the log.
+
+### AMDNR Anywhere
+- **The Anywhere window's flicker on fine, still detail should be gone.** 0.3.5.2 handed the window's upscale to FSR
+  4; a captured window carries no jitter, so FSR's temporal pass blended earlier frames through estimated motion and
+  shimmered. AMDNR's own pass carries the upscale again, and inside the Anywhere window only the carry with no motion
+  vectors is capped at the shipped stability of 0.6 (games are untouched). Measured on a synthetic harness, not in a
+  game.
+- **If you used the Anywhere window on 0.3.5.2 - 0.3.5.4**, saving settings there wrote `AnywhereFsr4Upscale=true`
+  into your ini, which kept the flicker on. That stamped line is cleared once and the log says so; set it again
+  yourself and it stays. FSR 4 is sharper on one-pixel detail, so it remains a real choice.
+- **New: Letterbox** keeps the window's shape with black bars instead of stretching it to the screen (`[DlssNr]
+  Letterbox=true`, or the row under Picture in the Anywhere tab). Off by default; it does nothing when the shapes
+  match.
+
+### AMDNR Launcher 0.3.5.9
+- **Redesigned launcher**: 13 languages, games from the major PC stores, a page per game (GAME SETTINGS: FSR 4 model,
+  GPU spoofing, frame generation, OptiPatcher), Community Lab, and updates that are your choice (automatic updates
+  stay off unless you turn them on).
+
+### Known limits
+- Neural Rendering still needs an upscaler in the game to sit on. Final Image mode is in the code but switched off,
+  and its key has no effect yet.
+- RX 7000 and the handhelds do not get AMDNR's native RDNA 3 kernels by default yet: they are built and gated off
+  until they are tested on real RDNA 3 hardware.
+- **Death Stranding 2 at 2560x1440 native with NR at 100% does not fit a 16 GB card's video-memory budget** on the
+  reported driver; once over, the frame time degrades the longer the session runs. Lower texture quality one step, or
+  NR resolution, before the game starts - lowering it mid-session gives back much less. Not new, not a regression.
+- The freeze guard was built from a real log and could not be reproduced in a game.
+
+Credits: **DLSS-NR on AMD by Daniel Blanco (danielblnc)** and **lmxxf by Kien (MIT)**. Everyone else is in the
+README's credits and `Licenses\AMDNR_NOTICE.txt`.
+
+## 0.3.5.4 — 2026-10-09
+
+A hotfix for what players reported after 0.3.5.3, published as a new file on the 0.3.5.3 release page, with AMDNR
+Launcher 0.3.5.8. Each fix was made from the report's own logs; none was re-tested in the reporting game.
+
+**Defaults that change:** FSR 4 (INT8) is no longer the default on RX 6000 (back to 0.3.5.2's choice; `[FSR]
+Fsr4ForceModel=2` turns it on again), AMDNR writes `UsePreExposure=0` into danielblnc's own ini on his 0.6.0 build,
+and danielblnc's runtime stops at the first failed GPU job.
+
+### Fixes
+- **danielblnc 0.6.0's black screen, properly this time.** His runtime reads a pre-exposure of its own, and under
+  AMDNR that value was garbage; AMDNR now tells it to ignore it before the runtime loads. A guard watches his output
+  for a black picture (his history is reset after 3 black frames, NR stops after 10 more), and Neural Rendering now
+  stops at the first job whose GPU work fails instead of grinding on against a dead context. A Reference-quality job
+  that takes 500 ms or more moves the session to Fast, once.
+- **Arknights: Endfield closed at start-up** (DirectX 11 and Vulkan, AMDNR as d3d12.dll): AMDNR's Streamline
+  interposer hooks are now decided before their hook transaction opens, a refused transaction touches nothing and is
+  retried, and every interposer hook answers an error instead of calling a missing function.
+- **A game that never feeds Neural Rendering** (Forza Horizon 6 on TAA) no longer loads HIP and the driver's compiler
+  library at its first upscaler call; they now wait for a frame that carries colour, motion vectors and depth. (The
+  reported crash was the PC running out of memory; AMDNR had loaded these for nothing.)
+- **Neural Rendering seemed to give up after a few minutes in the Anywhere window** (Batman: Arkham Knight): the
+  keep-up ladder - a smaller size, then the offer of an FPS limit - was reset by every short pause and never reached
+  you. It now survives short pauses, and Anywhere says when NR stops keeping up.
+- **The Anywhere window's even frame pacing switched itself off** in more than half of the recorded sessions. It now
+  tells a stale capture clock from a broken one, keeps pacing, and can come back.
+- **GTA V Enhanced's AMDNR menu looked washed out and see-through:** the in-image menu no longer draws into an sRGB
+  view that encoded its colours twice.
+- On a normal game exit AMDNR no longer unloads other modules while the process is ending; the clean exit is still
+  recorded.
+- The Anywhere menu's input hook thread that does not stop in time now keeps AMDNR loaded and has its hooks removed,
+  instead of being treated as finished while it still runs AMDNR's code.
+
+Credits: **DLSS-NR on AMD by Daniel Blanco (danielblnc)** and **lmxxf by Kien (MIT)**.
+
 ## 0.3.5.3 — 2026-10-08
 
 Neural Rendering gets the NVIDIA look by default, lmxxf 0.41 by Kien (MIT) on RX 9000 and a history step that costs

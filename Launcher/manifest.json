@@ -146,7 +146,7 @@
     {
       "id": "amdnr",
       "version": "0.3.5.6",
-      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.6/AMDNR-v0.3.5.6.zip",
+      "url": "https://lab.amdnr.workers.dev/v2/releases/public/files/44ef8b2efa81-AMDNR-v0.3.5.6.zip",
       "sha256": "44ef8b2efa81bae52ab4957c8a4878f0c50e0f9d8394a25e1460041dfa977b4e",
       "size": 753231620,
       "exclude": [],
@@ -219,7 +219,7 @@
         }
       ],
       "mirrors": [
-        "https://lab.amdnr.workers.dev/v2/releases/public/files/44ef8b2efa81-AMDNR-v0.3.5.6.zip"
+        "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.6/AMDNR-v0.3.5.6.zip"
       ]
     },
     {
@@ -238,7 +238,7 @@
     {
       "id": "runtime-060",
       "version": "0.6.0",
-      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.5R4/v0.6.0-Runtime.zip",
+      "url": "https://lab.amdnr.workers.dev/v2/releases/public/files/d2bb17027b2e-v0.6.0-Runtime.zip",
       "sha256": "d2bb17027b2e13e11e2198dd0bf70d4dc11fa9a6cba6bdd9fe5b44d9cf351f7e",
       "size": 176366023,
       "passSha256": [
@@ -256,7 +256,7 @@
         "195c4a891b6eac4c1cb7671e10ff62bbbe2b17f1dfae1344dc5a6714e4775721"
       ],
       "mirrors": [
-        "https://lab.amdnr.workers.dev/v2/releases/public/files/d2bb17027b2e-v0.6.0-Runtime.zip"
+        "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.5R4/v0.6.0-Runtime.zip"
       ]
     },
     {
@@ -412,7 +412,7 @@
     {
       "id": "anywhere-host",
       "version": "0.6.8-experimental.1-srtest0356",
-      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.6/AMDNR-Anywhere-0.3.5.6.zip",
+      "url": "https://lab.amdnr.workers.dev/v2/releases/public/files/50d83e482ad4-AMDNR-Anywhere-0.3.5.6.zip",
       "sha256": "50d83e482ad45bfba400e05871bea1cf74404cb2716e3dde3306e44fae151383",
       "size": 132466212,
       "exclude": [
@@ -423,7 +423,7 @@
         "nvsdk_ngx*.dll"
       ],
       "mirrors": [
-        "https://lab.amdnr.workers.dev/v2/releases/public/files/50d83e482ad4-AMDNR-Anywhere-0.3.5.6.zip"
+        "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.6/AMDNR-Anywhere-0.3.5.6.zip"
       ]
     },
     {
@@ -454,10 +454,10 @@
       "version": "9c2ba672",
       "size": 2494181,
       "sha256": "5562d35a059fcaf62242f57f761c1f6ce30281361679fad00cd6bfd772f72fad",
-      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.6/AMDNR-SR-E-AMD-SDK-9c2ba672.zip",
+      "url": "https://lab.amdnr.workers.dev/v2/releases/public/files/5562d35a059f-AMDNR-SR-E-AMD-SDK-9c2ba672.zip",
       "id": "helix-amd-sdk",
       "mirrors": [
-        "https://lab.amdnr.workers.dev/v2/releases/public/files/5562d35a059f-AMDNR-SR-E-AMD-SDK-9c2ba672.zip"
+        "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.6/AMDNR-SR-E-AMD-SDK-9c2ba672.zip"
       ]
     },
     {

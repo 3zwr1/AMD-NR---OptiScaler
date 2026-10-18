@@ -146,7 +146,7 @@
     {
       "id": "amdnr",
       "version": "0.3.5.6",
-      "url": "https://lab.amdnr.workers.dev/v2/releases/public/files/44ef8b2efa81-AMDNR-v0.3.5.6.zip",
+      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.6/AMDNR-v0.3.5.6.zip",
       "sha256": "e7ffc09696f1a4e06d26dc0c228d15a9c74a0e56e3d24be6a130a0f5e49968d8",
       "size": 753231620,
       "exclude": [],
@@ -219,8 +219,8 @@
         }
       ],
       "mirrors": [
-        "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.6/AMDNR-v0.3.5.6.zip"
-      ]
+        "https://lab.amdnr.workers.dev/v2/releases/public/files/44ef8b2efa81-AMDNR-v0.3.5.6.zip"
+      ] 
     },
     {
       "id": "theautomatic",
@@ -478,6 +478,7 @@
     "version.dll",
     "dbghelp.dll",
     "winhttp.dll",
+    "Optiscaler.asi",
     "wininet.dll"
   ],
   "proxyOverrides": [

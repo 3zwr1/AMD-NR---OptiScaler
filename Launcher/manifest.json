@@ -412,7 +412,7 @@
     {
       "id": "anywhere-host",
       "version": "0.6.8-experimental.1-srtest0356",
-      "url": "https://lab.amdnr.workers.dev/v2/releases/public/files/50d83e482ad4-AMDNR-Anywhere-0.3.5.6.zip",
+      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.6/AMDNR-Anywhere-0.3.5.6.zip",
       "sha256": "50d83e482ad45bfba400e05871bea1cf74404cb2716e3dde3306e44fae151383",
       "size": 132466212,
       "exclude": [
@@ -423,7 +423,7 @@
         "nvsdk_ngx*.dll"
       ],
       "mirrors": [
-        "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.6/AMDNR-Anywhere-0.3.5.6.zip"
+        "https://lab.amdnr.workers.dev/v2/releases/public/files/50d83e482ad4-AMDNR-Anywhere-0.3.5.6.zip"
       ]
     },
     {

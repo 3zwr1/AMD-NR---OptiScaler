@@ -1,4 +1,4 @@
-# AMDNR — AMD 显卡上的 DLSS 5 神经渲染（OptiScaler 构建版）— v0.3.5.6
+# AMDNR — AMD 显卡上的 DLSS 5 神经渲染（OptiScaler 构建版）— v0.3.5.7 Public View
 
 [English](README.md) | **中文** | [Português](README.pt-BR.md) | [Español](README.es.md) | [العربية](README.ar.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Русский](README.ru.md) | [Polski](README.pl.md)
 
@@ -21,6 +21,18 @@ DLSS 光线重建游戏的 FSR Ray Regeneration。自 0.3.5 起，**AMDNR Anywhe
 > **DLSS-NR on AMD by Daniel Blanco (danielblnc)** —— <https://github.com/danielblnc/DLSS-NR-on-AMD>。
 > Copyright (c) 2026 Daniel Blanco, all rights reserved. AMDNR 经他许可，未经修改地分发它；它不是 AMDNR 的作品。
 > 请支持他的项目。其他所有人的完整致谢见本页末尾。
+
+## 0.3.5.7 Public View 新内容
+
+AMDNR Launcher **0.3.5.35** 使用公开更新渠道。
+- 启动器更新在徽标画面中完成，再进入主界面；显示进度并处理可恢复的错误。
+- 图库以更大的尺寸显示图片，可查看和复制所选图片关联的配置；缺少配置数据时会明确提示。
+- 保存窗口大小、位置和最大化状态，并根据当前显示器的工作区调整，适用于包括 720p 在内的小屏幕。
+- Guide 更名为 **Overlay Guide**，并标注仍在完善中。FAQ 保留在 **More** 中。
+- 公共聊天消息按原始 UTC 创建时间计算，满 48 小时后过期；服务器和客户端均执行该规则。
+- 异步解码图片，避免重复图库请求，并以原子方式保存设置。
+
+**运行时验证状态：** 本包包含 AMDNR 对 lmxxf 0.4.4 的 Model A/B 集成；mochi 0.0.7 由启动器作为独立组件提供。已在受控测试中验证模型切换、时序历史重置和分辨率切换。这些测试不能证明所有游戏的闪烁、模糊和性能问题均已解决。mochi 的 RDNA 3 支持仍推迟至 0.3.5.9。详情请见 CHANGELOG.md。
 
 > **0.3.5.6 新内容**（2026-10-17，发布标签 Alpha0.3.5.6，配合 AMDNR Launcher 0.3.5.25）：
 > - **两个新的放大器选项**（实验性，需手动开启）：**Model E**（HelixSR，作者 lonewolf0622）和 **Model L**（d4r，作者
@@ -1058,3 +1070,39 @@ NVIDIA 的 `nvngx_dlssnr.dll` 不在这些压缩包中，其他任何 NVIDIA 文
 获取，分别来自 d4r 自己的发布页和 NVIDIA 自己的 GitHub（或你的游戏）；AMDNR 不托管也不分发它们，Model E 和 Model L 是
 其作者的作品，而不是 AMDNR 的作品。AMDNR 与 AMD 或 NVIDIA 没有关联，也未获得它们的认可。以上内容均未获得 NVIDIA、AMD 或任何游戏发行商的认可、
 关联或支持。它直接驱动一项未公开的功能。使用风险自负。
+
+
+## Runtime update - 2026-10-22
+
+AMDNR 0.3.5.7 Public View - lmxxf 0.4.4 integration
+
+Kien/lmxxf (MIT), integrated with AMDNR settings and own host lifecycle.
+Includes Model A/B, C32 W16h, C512 W16, paired byte edges, variable Small
+geometry, corrected adaptive Small token stride and uploads before producer waits.
+
+New in this complete local package:
+- Separate A/B networks retain their weights while switching at unchanged
+  geometry, controls and tier policy. At most two networks belong to one bridge.
+- Shared D3D input/history/output buffers and image codecs remain in place.
+- Temporal history and adaptive anchors reset on every model change.
+- Geometry/policy/control changes release the cache and rebuild correctly.
+- If allocating the second network reports out-of-memory, release the previous
+  network through the established drained teardown before loading the new model.
+  Other errors propagate; GPU completion failures are never bypassed.
+
+Qualification: 132 temporal model switches, final output byte-identical to a
+fresh model, VRAM stable about2059MB from frame16 through512 in both cycle runs.
+Two-pass model-switch tests and live scale tests accompany this delivery.
+The cache uses additional VRAM to retain the second model; it is bounded, not
+a claim that long-session VRAM leaks or every game issue have been eliminated.
+First loading each model still takes time. Revisited-model timings are recorded
+in the local qualification evidence; no steady-state game FPS claim is made.
+
+Includes unchanged signed launcher0.3.5.35 and separate unchanged Daniel0.8.0
+runtime and mochi0.0.7 component downloads, with schema1 server/GitHub manifests.
+Mochi RDNA3 remains deferred. NVIDIA DLLs/weights are not included.
+
+This is AMDNR's clean-room integration, not every upstream implementation copied
+verbatim. Excluded vit-stream/VBE modules remain excluded. AMDNR's own temporal
+pipeline remains. Model A retains its configured resolution ceiling.
+No upload or live manifest activation was performed.

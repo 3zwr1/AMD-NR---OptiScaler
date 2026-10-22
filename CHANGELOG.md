@@ -9,6 +9,28 @@ by **burak113**, whose branch AMDNR ported from (commit `3da4808`, 2026-09-19). 
 burak113 only. The file headers, `Licenses\AMDNR_NOTICE.txt`, the README credits and the in-game credits
 now name both. No entry below this line is rewritten.
 
+## 0.3.5.7 Public View — 2026-10-22
+
+Launcher version: **0.3.5.35**, public channel. This public release cut preserves the qualified mod/runtime payloads and adds the updated public launcher and documentation. Experimental runtime upgrades remain excluded as described below.
+
+### Launcher
+- Mandatory launcher updates run on the logo screen before opening the main interface, with progress, bounded waits and recoverable failures. Runtime downloads remain separately skippable.
+- Larger Gallery viewer with aspect-ratio preservation and copyable settings from the displayed image's associated entry; missing metadata is reported.
+- Saved normal/maximized window state, DPI-aware positioning and work-area clamping, including 720p desktops.
+- Overlay Guide naming and work-in-progress notice; FAQ removed from Help but retained in More.
+- Asynchronous image decoding, stale-request protection, duplicate Gallery request prevention, stream disposal and atomic configuration writes.
+
+### Public Chat backend
+- Rolling 48-hour retention from the original UTC creation timestamp, applied to existing and new messages.
+- Server-side expiration, minute cleanup, translation invalidation and no restoration of expired messages from Trash. Physical cleanup runs on access or the scheduled sweep; client expiration also works while the view is offline.
+
+### Validation and remaining limits
+- Launcher acceptance: 245 passed; Preview configuration: 26 passed; public build/channel/branding checks: 21 passed. Worker: 778 passed; TypeScript check passed.
+- A 12-image 4K fixture measured 266.33 ms synchronous UI blocking before the change versus 20.16 ms maximum dispatcher gap afterward. This is not a whole-startup or game-FPS benchmark.
+- The full App suite retained eight failures reproduced on the baseline; an additional animation timing failure passed on rerun. Real multi-monitor transitions, long-duration memory behavior and production self-replacement still need qualification.
+- Daniel 0.8.0 FSR/XeSS/DLSS and NR-size transitions have controlled fixture coverage. General flicker, blur, crashes and performance problems are NOT declared resolved.
+- lmxxf 0.4.4 remains a candidate requiring complete release qualification; mochi 0.0.7 requires updated live-size/control qualification. No experimental binary is promoted by this changelog. Mochi RDNA 3 support is deferred to 0.3.5.9.
+
 ## 0.3.5.6 — 2026-10-17
 
 Two new upscaler choices you can opt into - **Model E** (HelixSR by lonewolf0622) and **Model L** (d4r by
@@ -3584,3 +3606,39 @@ Credits: TheAutomatic (DLSS 5 AMD project) · danielblnc (DLSS-NR on AMD) · lmx
 third-party licences in `Licenses\`. The "c32w" RDNA 4 kernels (0.3.3.2) are AMDNR's own work, Copyright (c)
 2026 3zwr1 (AMDNR); they run lmxxf's network (Kien, MIT), with thanks to AMD's public RDNA 4 WMMA documentation
 (AMD GPUOpen, ROCm matrix instruction calculator) for ideas.
+
+
+## Runtime update - 2026-10-22
+
+AMDNR 0.3.5.7 Public View - lmxxf 0.4.4 integration
+
+Kien/lmxxf (MIT), integrated with AMDNR settings and own host lifecycle.
+Includes Model A/B, C32 W16h, C512 W16, paired byte edges, variable Small
+geometry, corrected adaptive Small token stride and uploads before producer waits.
+
+New in this complete local package:
+- Separate A/B networks retain their weights while switching at unchanged
+  geometry, controls and tier policy. At most two networks belong to one bridge.
+- Shared D3D input/history/output buffers and image codecs remain in place.
+- Temporal history and adaptive anchors reset on every model change.
+- Geometry/policy/control changes release the cache and rebuild correctly.
+- If allocating the second network reports out-of-memory, release the previous
+  network through the established drained teardown before loading the new model.
+  Other errors propagate; GPU completion failures are never bypassed.
+
+Qualification: 132 temporal model switches, final output byte-identical to a
+fresh model, VRAM stable about2059MB from frame16 through512 in both cycle runs.
+Two-pass model-switch tests and live scale tests accompany this delivery.
+The cache uses additional VRAM to retain the second model; it is bounded, not
+a claim that long-session VRAM leaks or every game issue have been eliminated.
+First loading each model still takes time. Revisited-model timings are recorded
+in the local qualification evidence; no steady-state game FPS claim is made.
+
+Includes unchanged signed launcher0.3.5.35 and separate unchanged Daniel0.8.0
+runtime and mochi0.0.7 component downloads, with schema1 server/GitHub manifests.
+Mochi RDNA3 remains deferred. NVIDIA DLLs/weights are not included.
+
+This is AMDNR's clean-room integration, not every upstream implementation copied
+verbatim. Excluded vit-stream/VBE modules remain excluded. AMDNR's own temporal
+pipeline remains. Model A retains its configured resolution ceiling.
+No upload or live manifest activation was performed.

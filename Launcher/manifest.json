@@ -1,13 +1,10 @@
 {
   "schemaVersion": 1,
   "launcher": {
-    "version": "0.3.5.36",
-    "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.8/AMDNR-Launcher.exe",
-    "mirrors": [
-      "https://lab.amdnr.workers.dev/v2/releases/public/files/432d09c509c8-AMDNR-Launcher.exe"
-    ],
-    "sha256": "432d09c509c83c58582acdc0227d0539d9f923d166b9a957a919626b2fba14df",
-    "size": 74223304
+    "version": "0.3.5.38",
+    "url": "https://lab.amdnr.workers.dev/v2/releases/public/files/2ac68630676b-AMDNR-Launcher.exe",
+    "sha256": "2ac68630676b898c5ed91a16216763a4afdb62bdaa1ec669f95eab3f8745f7cd",
+    "size": 74243488
   },
   "sources": [
     {

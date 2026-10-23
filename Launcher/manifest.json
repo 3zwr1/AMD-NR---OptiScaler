@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "launcher": {
-    "version": "0.3.5.38",
-    "url": "https://lab.amdnr.workers.dev/v2/releases/public/files/2ac68630676b-AMDNR-Launcher.exe",
-    "sha256": "2ac68630676b898c5ed91a16216763a4afdb62bdaa1ec669f95eab3f8745f7cd",
-    "size": 74243488
+    "version": "0.3.5.39",
+    "url": "https://lab.amdnr.workers.dev/v2/releases/public/files/7892edd7dd4b-AMDNR-Launcher.exe",
+    "sha256": "7892edd7dd4b7b0ff663fe1eb13d8982705270e75545ea1b04cf498055e674bc",
+    "size": 74248816
   },
   "sources": [
     {

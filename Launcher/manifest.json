@@ -75,6 +75,74 @@
         "mochizuki": "amdnr-modelb-mochizuki"
       }
     },
+    {
+      "id": "theautomatic",
+      "name": "OptiScaler AMD pre-SR",
+      "author": "TheAutomatic",
+      "summary": "OptiScaler AMD pre-SR: TheAutomatic's independent fork of the same family, offered for comparison. Downloaded unchanged from their GitHub releases; same danielblnc files, his own lmxxf backend and menu, his own fixes.",
+      "homepage": "https://github.com/TheAutomatic/dlss-5-amd-project",
+      "package": "theautomatic",
+      "forwarder": "forwarder",
+      "runtimeRequired": false,
+      "runtimeNote": "Required: this build does not include danielblnc's runtime, and its lmxxf backend needs model files that are not in its release.",
+      "iniWhenRuntime": [
+        {
+          "section": "DlssNr",
+          "key": "Enabled",
+          "value": "true"
+        },
+        {
+          "section": "DlssNr",
+          "key": "NrBackend",
+          "value": "daniel"
+        }
+      ],
+      "runtimes": [
+        {
+          "package": "runtime-060",
+          "gpus": [
+            "rdna4",
+            "rdna3",
+            "rdna2"
+          ]
+        },
+        {
+          "package": "runtime-051",
+          "gpus": [
+            "rdna4",
+            "rdna3"
+          ]
+        },
+        {
+          "package": "runtime-050",
+          "gpus": [
+            "rdna4",
+            "rdna3"
+          ]
+        },
+        {
+          "package": "runtime-043",
+          "gpus": [
+            "rdna4",
+            "rdna3"
+          ]
+        },
+        {
+          "package": "runtime-041",
+          "gpus": [
+            "rdna4",
+            "rdna3"
+          ]
+        },
+        {
+          "package": "runtime-040",
+          "gpus": [
+            "rdna4",
+            "rdna3"
+          ]
+        }
+      ]
+    }
   ],
   "packages": [
     {
@@ -166,6 +234,19 @@
       ],
       "mirrors": [
         "https://lab.amdnr.workers.dev/v2/releases/public/files/5be27149c194-AMDNR-v0.3.5.8.zip"
+      ]
+    },
+    {
+      "id": "theautomatic",
+      "version": "1.9.1-alpha",
+      "url": "https://github.com/TheAutomatic/dlss-5-amd-project/releases/download/v1.9.1-alpha/OptiScaler-AMD-PreSR-1.9.1-alpha.zip",
+      "sha256": "bc0799ee408f50a0766f250118022a6c030f46a3d2bf75e9715266ad2a3c247a",
+      "size": 132549025,
+      "exclude": [
+        "Setup.bat",
+        "Setup.ps1",
+        "Uninstall_OptiScaler_NR.bat",
+        "Uninstall_OptiScaler_NR.ps1"
       ]
     },
     {

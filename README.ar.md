@@ -1,19 +1,6 @@
-> تحديث التجهيز المحلي: قائمة جودة NR موحدة مع Friendly use، وخيار Handheld للأجهزة المحمولة المدعومة فقط. تصحيح تمرير العمق والحركة إلى mochi A/B وعدّ مخرجات NR الفعلية. Classic carry مقفّل افتراضيًا في lmxxf Model A وmochi A/B وموجود في Neural > Quality بنفس شكل المنيو. تاريخ الشبكة مستقل، وModel interleave عند تشغيله يتحكم بالتعبئة. تصحيح نقل اللون يعالج سبب الزراق الذي أعدنا إنتاجه، ولا يثبت اختفاء كل آثار الحركة أو اللون. الشيدرات المحدّثة مضمّنة وقت البناء.
-
-# AMDNR 0.3.5.8
-
-مرشح محلي كامل — لم يُنشر بعد. اللانشر 0.3.5.36.
-
-منيو أوضح ووضع Friendly use مع Multi-pass للمسارات الداعمة وإعادة ضبط آمنة عند التشغيل التالي. تحميل تلقائي، إصلاح ملفات Daniel الناقصة، تنظيف النسخ القديمة المؤهلة واختيار proxy أفضل. يتضمن إصلاح رفض صيغة الحركة المعروفة في RE3 وإصلاحات محددة للذاكرة والكراش. ما زالت بعض مشاكل الألعاب والفلكر غير محسومة؛ اقرأ KNOWN-LIMITS.md. الدليل السابق أدناه للمرجع، وملاحظات 0.3.5.8 أعلاه مقدمة عليه.
-
-[CHANGELOG](CHANGELOG.md) · [Limits](KNOWN-LIMITS.md)
 
 
----
-
-## Earlier manual (historical reference)
-
-# AMDNR — DLSS 5 Neural Rendering على AMD (نسخة OptiScaler) — v0.3.5.7 Public View
+# AMDNR — DLSS 5 Neural Rendering على AMD (نسخة OptiScaler) — v0.3.5.8R1 Public View
 
 [English](README.md) | [中文](README.zh-CN.md) | [Português](README.pt-BR.md) | [Español](README.es.md) | **العربية** | [Français](README.fr.md) | [Italiano](README.it.md) | [Русский](README.ru.md) | [Polski](README.pl.md)
 

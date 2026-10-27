@@ -1,19 +1,6 @@
-> Локальное обновление: общий выбор качества NR с Friendly use; Handheld только на поддерживаемых устройствах. Исправлены данные глубины и движения mochi A/B и счётчик реальных результатов NR. Classic carry по умолчанию выключен для lmxxf Model A и mochi A/B и доступен в Neural > Quality. История сети независима. Исправлен перенос цвета; шейдеры встроены при сборке. Устранение всех артефактов не подтверждено.
-
-# AMDNR 0.3.5.8
-
-Полная локальная сборка-кандидат, пока не опубликована. Launcher 0.3.5.36.
-
-Упрощённое меню, режим Friendly use с несколькими проходами там, где они поддерживаются, и сброс с резервной копией при следующем запуске. Автоматическая загрузка, восстановление файлов Daniel, очистка старого кэша и улучшенный выбор proxy. Исправлен отказ формата движения в RE3 и конкретные ошибки памяти и стабильности. Не все проблемы решены; см. KNOWN-LIMITS.md. Прежнее руководство сохранено ниже для справки.
-
-[CHANGELOG](CHANGELOG.md) · [Limits](KNOWN-LIMITS.md)
 
 
----
-
-## Earlier manual (historical reference)
-
-# AMDNR — DLSS 5 Neural Rendering на AMD (сборка OptiScaler) — v0.3.5.7 Public View
+# AMDNR — DLSS 5 Neural Rendering на AMD (сборка OptiScaler) — v0.3.5.8R1 Public View
 
 [English](README.md) | [中文](README.zh-CN.md) | [Português](README.pt-BR.md) | [Español](README.es.md) | [العربية](README.ar.md) | [Français](README.fr.md) | [Italiano](README.it.md) | **Русский** | [Polski](README.pl.md)
 

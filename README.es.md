@@ -1,20 +1,23 @@
-# AMDNR — DLSS 5 Neural Rendering en AMD (build de OptiScaler) — v0.3.5.8 Public View
+> 0.3.5.8R1: see README.md, CHANGELOG.md and KNOWN-LIMITS.md for the current update. The guide below is retained from 0.3.5.8.
+
+> Actualización local: selector de calidad NR compartido con Friendly use; Handheld solo en dispositivos compatibles. Guías de profundidad/movimiento corregidas para mochi A/B y contador de salidas NR reales. Classic carry desactivado por defecto para lmxxf Model A y mochi A/B; sigue disponible en Neural > Quality. Historial de red independiente. Transporte de color corregido y shaders integrados al compilar. No se garantiza la eliminación de todos los artefactos.
+
+# AMDNR 0.3.5.8
+
+Candidato local completo; aún no publicado. Launcher 0.3.5.36.
+
+Menú más claro, modo Friendly use con varias pasadas donde se admiten y restablecimiento con copia de seguridad al reiniciar. Descargas automáticas, reparación de archivos de Daniel, limpieza de cachés antiguas y mejor selección del proxy. Incluye la corrección del formato de movimiento de RE3 y correcciones específicas de memoria y cierres. Persisten problemas en algunos juegos; consulte KNOWN-LIMITS.md. El manual anterior se conserva abajo como referencia.
+
+[CHANGELOG](CHANGELOG.md) · [Limits](KNOWN-LIMITS.md)
+
+
+---
+
+## Earlier manual (historical reference)
+
+# AMDNR — DLSS 5 Neural Rendering en AMD (build de OptiScaler) — v0.3.5.7 Public View
 
 [English](README.md) | [中文](README.zh-CN.md) | [Português](README.pt-BR.md) | **Español** | [العربية](README.ar.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Русский](README.ru.md) | [Polski](README.pl.md)
-
-> **Novedades de 0.3.5.8 Public View — Launcher 0.3.5.36** (2026-10-23)
-> 
-> - Esta sección describe la versión actual; se conserva debajo la documentación histórica fechada. Descargas completas al final de este bloque.
-> - Friendly use mantiene el estilo original: NR, escalado, FG y 1–3 pasadas cuando se admiten; mochi usa una. Advanced incluye restablecimiento con confirmación y copia de seguridad, aplicado al reiniciar. Classic carry es opcional y está desactivado por defecto en lmxxf Model A y mochi A/B; es independiente del historial del modelo y de Model interleave.
-> - lmxxf 0.4.4 A/B, Daniel 0.8.0 y mochizuki 0.0.7. El launcher descarga componentes, repara archivos ausentes y limpia copias antiguas aptas tras verificarlas. Instale con el launcher; no extraiga todos los ZIP en el juego. No se incluyen DLL de NVIDIA ni pesos NR.
-> - Correcciones de entradas de profundidad/movimiento y color de mochi, formato SNORM de RE3, vida de recursos y sincronización de Model E en Anywhere. HelixSR 2.0.0 procede de su autor. Se incluyen FSR SR 4.1.1 / FG 4.0.1; SR 4.1.2 / FG 4.0.2 dependen del controlador.
-> - Overlay Guide, Gallery ampliada con configuración de cada imagen y preparación/reparación automática. El servidor comunitario está desplegado: reacciones, menciones y envío con Enter requieren el launcher correspondiente; retención móvil de 48 horas.
-> - No se han resuelto todos los cierres, parpadeos, desenfoque, ghosting ni problemas RR/MFG. Mochi RDNA 3 sigue aplazado; quedan pendientes las pruebas finales en juegos y la entrega del código fuente correspondiente. Envíe COLLECT LOGS.
-> 
-> [AMDNR-v0.3.5.8.zip](https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.8/AMDNR-v0.3.5.8.zip) · [AMDNR-Anywhere-0.3.5.8.zip](https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.8/AMDNR-Anywhere-0.3.5.8.zip) · [AMDNR-Mochi-0.0.7-component.zip](https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.8/AMDNR-Mochi-0.0.7-component.zip) · [v0.8.0-Runtime.zip](https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.8/v0.8.0-Runtime.zip) · [AMDNR-Launcher.exe](https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.8/AMDNR-Launcher.exe)
-> 
-> [CHANGELOG.md](CHANGELOG.md) · [0.3.5.8](https://github.com/3zwr1/AMD-NR---OptiScaler/releases/tag/Alpha0.3.5.8)
-
 
 > **Necesitamos tu apoyo.** Únete al servidor de Discord — <https://discord.gg/AMDNR> — para
 > ayuda, reportes de errores y builds de prueba; cada reporte con un log hace mejor la siguiente build.
@@ -39,6 +42,18 @@ de prueba.
 > <https://github.com/danielblnc/DLSS-NR-on-AMD>. Copyright (c) 2026 Daniel Blanco, all rights reserved.
 > AMDNR lo distribuye sin modificar, con su permiso; no es obra de AMDNR. Por favor, apoya su proyecto.
 > Los créditos completos de todos los demás están al final de esta página.
+
+## Novedades de 0.3.5.7 Public View
+
+AMDNR Launcher **0.3.5.35** utiliza el canal público.
+- Las actualizaciones del launcher se instalan en la pantalla del logotipo antes de abrir la interfaz, con progreso y recuperación de errores.
+- Galería con imágenes más grandes y la configuración asociada a la imagen seleccionada, que se puede copiar; se indica cuando faltan los metadatos.
+- Se recuerdan tamaño, posición y estado maximizado de la ventana, ajustándolos al área visible, incluso a 720p.
+- Guide pasa a llamarse **Overlay Guide**, con aviso de desarrollo. FAQ permanece en **More**.
+- Los mensajes del chat público caducan 48 horas después de su creación original en UTC, con control en servidor y cliente.
+- Decodificación asíncrona de imágenes, prevención de solicitudes duplicadas de la Galería y guardado atómico de ajustes.
+
+**Estado de los runtimes:** El paquete incluye la integración de lmxxf 0.4.4 de AMDNR para Model A/B; mochi 0.0.7 se ofrece como componente separado del launcher. Se probaron los cambios de modelo, el reinicio del historial temporal y los cambios de resolución en pruebas controladas. Esto no demuestra la solución de los problemas de todos los juegos. Mochi para RDNA 3 sigue aplazado a 0.3.5.9. Consulta CHANGELOG.md.
 
 > **Novedades de 0.3.5.6** (2026-10-17, release Alpha0.3.5.6, con el AMDNR Launcher 0.3.5.25):
 > - **Dos opciones nuevas de upscaler, experimentales y opcionales:** **Model E** (HelixSR de lonewolf0622) y **Model L**
@@ -1315,3 +1330,39 @@ NVIDIA (o de tu juego); AMDNR no los aloja ni los distribuye, y Model E y Model 
 AMDNR no está afiliado a AMD ni a NVIDIA ni cuenta con su respaldo. Nada de esto está respaldado, afiliado ni
 soportado por NVIDIA, AMD ni ningún editor de juegos. Maneja directamente una función no documentada.
 Úsalo bajo tu propio riesgo.
+
+
+## Runtime update - 2026-10-22
+
+AMDNR 0.3.5.7 Public View - lmxxf 0.4.4 integration
+
+Kien/lmxxf (MIT), integrated with AMDNR settings and own host lifecycle.
+Includes Model A/B, C32 W16h, C512 W16, paired byte edges, variable Small
+geometry, corrected adaptive Small token stride and uploads before producer waits.
+
+New in this complete local package:
+- Separate A/B networks retain their weights while switching at unchanged
+  geometry, controls and tier policy. At most two networks belong to one bridge.
+- Shared D3D input/history/output buffers and image codecs remain in place.
+- Temporal history and adaptive anchors reset on every model change.
+- Geometry/policy/control changes release the cache and rebuild correctly.
+- If allocating the second network reports out-of-memory, release the previous
+  network through the established drained teardown before loading the new model.
+  Other errors propagate; GPU completion failures are never bypassed.
+
+Qualification: 132 temporal model switches, final output byte-identical to a
+fresh model, VRAM stable about2059MB from frame16 through512 in both cycle runs.
+Two-pass model-switch tests and live scale tests accompany this delivery.
+The cache uses additional VRAM to retain the second model; it is bounded, not
+a claim that long-session VRAM leaks or every game issue have been eliminated.
+First loading each model still takes time. Revisited-model timings are recorded
+in the local qualification evidence; no steady-state game FPS claim is made.
+
+Includes unchanged signed launcher0.3.5.35 and separate unchanged Daniel0.8.0
+runtime and mochi0.0.7 component downloads, with schema1 server/GitHub manifests.
+Mochi RDNA3 remains deferred. NVIDIA DLLs/weights are not included.
+
+This is AMDNR's clean-room integration, not every upstream implementation copied
+verbatim. Excluded vit-stream/VBE modules remain excluded. AMDNR's own temporal
+pipeline remains. Model A retains its configured resolution ceiling.
+No upload or live manifest activation was performed.

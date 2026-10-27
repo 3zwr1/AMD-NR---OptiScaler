@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "launcher": {
-    "version": "0.3.5.39",
-    "url": "https://lab.amdnr.workers.dev/v2/releases/public/files/7892edd7dd4b-AMDNR-Launcher.exe",
-    "sha256": "7892edd7dd4b7b0ff663fe1eb13d8982705270e75545ea1b04cf498055e674bc",
-    "size": 74248816
+    "version": "0.3.5.53",
+    "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.8R1/AMDNR-Launcher.exe",
+    "sha256": "4241f9e9b0c575f7436e01428dd18d77ffc563af956e81ff6920559a41d39293",
+    "size": 74792640
   },
   "sources": [
     {
@@ -72,7 +72,8 @@
       },
       "components": {
         "neuralHub080": "amdnr-neuralhub080-host",
-        "mochizuki": "amdnr-modelb-mochizuki"
+        "mochizuki": "amdnr-modelb-mochizuki",
+        "lmxxf": "amdnr-lmxxf"
       }
     },
     {
@@ -147,12 +148,18 @@
   "packages": [
     {
       "id": "amdnr",
-      "version": "0.3.5.8",
-      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.8/AMDNR-v0.3.5.8.zip",
-      "sha256": "5be27149c19442c4b022e993c679fdd17879fa68a5b472afa4521205e1e90695",
-      "size": 1008053921,
+      "version": "0.3.5.8R1",
+      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.8R1/AMDNR-v0.3.5.8R1.zip",
+      "sha256": "518b69c5e7266e89c63f9c500a46f03d8a0c6ba32283d58d42b11f8c41a19c66",
+      "size": 243528940,
       "exclude": [],
       "previous": [
+        {
+          "version": "0.3.5.8",
+          "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.8/AMDNR-v0.3.5.8.zip",
+          "sha256": "5be27149c19442c4b022e993c679fdd17879fa68a5b472afa4521205e1e90695",
+          "size": 1008053921
+        },
         {
           "version": "0.3.5.7",
           "url": "https://lab.amdnr.workers.dev/v2/releases/public/files/c7d4b8158cfc-AMDNR-v0.3.5.7.zip",
@@ -231,9 +238,6 @@
           "sha256": "c49aa4afb508e3ef84c1e6bb0e7dd7509b9bb33b583a8b14232097151ba6c4ce",
           "size": 603436972
         }
-      ],
-      "mirrors": [
-        "https://lab.amdnr.workers.dev/v2/releases/public/files/5be27149c194-AMDNR-v0.3.5.8.zip"
       ]
     },
     {
@@ -426,18 +430,15 @@
     {
       "id": "anywhere-host",
       "version": "0.6.8-experimental.1-srtest0356",
-      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.8/AMDNR-Anywhere-0.3.5.8.zip",
-      "sha256": "05462b0f40eb1a2340168b54e2e0a5dd53df2d598b1059cbc12616b80ce5c64b",
-      "size": 101623094,
+      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.8R1/AMDNR-Anywhere-0.3.5.8R1.zip",
+      "sha256": "205e6994a79839ec977417c46157f0acb84d70bab6c06a96922157d26c388d27",
+      "size": 132209533,
       "exclude": [
         "nvngx_*.dll",
         "sl.*.dll",
         "nvofapi*.dll",
         "NvLowLatency*.dll",
         "nvsdk_ngx*.dll"
-      ],
-      "mirrors": [
-        "https://lab.amdnr.workers.dev/v2/releases/public/files/05462b0f40eb-AMDNR-Anywhere-0.3.5.8.zip"
       ]
     },
     {
@@ -488,13 +489,25 @@
     },
     {
       "id": "amdnr-modelb-mochizuki",
-      "version": "0.0.7",
-      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.8/AMDNR-Mochi-0.0.7-component.zip",
-      "mirrors": [
-        "https://lab.amdnr.workers.dev/v2/releases/public/files/fa9a8bb7a56e-AMDNR-Mochi-0.0.7-component.zip"
+      "version": "0.3.5.8R1",
+      "sha256": "5f0156bc0f34529deb5ebb4a17a2735e4eea30275817de34233e3177c3242905",
+      "size": 38236838,
+      "previous": [
+        {
+          "version": "0.0.7",
+          "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.8/AMDNR-Mochi-0.0.7-component.zip",
+          "sha256": "fa9a8bb7a56e2da84f58a4ce28cf9235489e2af9409ea1a35b1fc3fbb75b7b98",
+          "size": 56816796
+        }
       ],
-      "sha256": "fa9a8bb7a56e2da84f58a4ce28cf9235489e2af9409ea1a35b1fc3fbb75b7b98",
-      "size": 56816796
+      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.8R1/AMDNR-Mochi-0.3.5.8R1-component.zip"
+    },
+    {
+      "version": "0.3.5.8R1",
+      "url": "https://github.com/3zwr1/AMD-NR---OptiScaler/releases/download/Alpha0.3.5.8R1/AMDNR-lmxxf-0.3.5.8R1.zip",
+      "sha256": "2ebfa9aec570028b920c33f135671f87cd565af9dd2e7fa9def88f0b0c708fd9",
+      "size": 765998880,
+      "id": "amdnr-lmxxf"
     }
   ],
   "compatibility": [],

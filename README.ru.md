@@ -1,5 +1,3 @@
-> 0.3.5.8R1: see README.md, CHANGELOG.md and KNOWN-LIMITS.md for the current update. The guide below is retained from 0.3.5.8.
-
 > Локальное обновление: общий выбор качества NR с Friendly use; Handheld только на поддерживаемых устройствах. Исправлены данные глубины и движения mochi A/B и счётчик реальных результатов NR. Classic carry по умолчанию выключен для lmxxf Model A и mochi A/B и доступен в Neural > Quality. История сети независима. Исправлен перенос цвета; шейдеры встроены при сборке. Устранение всех артефактов не подтверждено.
 
 # AMDNR 0.3.5.8

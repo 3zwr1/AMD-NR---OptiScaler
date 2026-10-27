@@ -1,5 +1,3 @@
-> 0.3.5.8R1: see README.md, CHANGELOG.md and KNOWN-LIMITS.md for the current update. The guide below is retained from 0.3.5.8.
-
 > Aggiornamento locale: selettore qualità NR condiviso con Friendly use; Handheld solo sui dispositivi compatibili. Guide profondità/movimento corrette per mochi A/B e conteggio degli output NR reali. Classic carry disattivato per impostazione predefinita per lmxxf Model A e mochi A/B, disponibile in Neural > Quality. Cronologia della rete separata. Trasporto colore corretto e shader incorporati durante la compilazione. Non tutti gli artefatti sono dichiarati risolti.
 
 # AMDNR 0.3.5.8

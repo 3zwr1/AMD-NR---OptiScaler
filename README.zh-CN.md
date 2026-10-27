@@ -1,5 +1,3 @@
-> 0.3.5.8R1: see README.md, CHANGELOG.md and KNOWN-LIMITS.md for the current update. The guide below is retained from 0.3.5.8.
-
 > 本地更新：NR 质量选择器与 Friendly use 共用；Handheld 仅在受支持的掌机上显示。修正 mochi A/B 的深度和运动数据，并统计实际 NR 输出。lmxxf Model A 和 mochi A/B 默认关闭 Classic carry，可在 Neural > Quality 中启用；网络历史独立保留。修正颜色传递，并在构建时嵌入着色器。不代表所有拖影和颜色问题均已解决。
 
 # AMDNR 0.3.5.8

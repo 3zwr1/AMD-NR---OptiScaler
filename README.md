@@ -1110,6 +1110,7 @@ upstream.
 - **Screen-space GI** (the inherited effect; retired from the menu in 0.3.4, `[AmdRtgi] Enabled` in the ini) — an effect AMDNR inherited from the OptiScaler-AMD-PreSR lineage; the credit belongs to its original authors. It needs the `experimental_lighting` folder of the danielblnc package, which AMDNR does not ship.
 - **AMDNR Screen-space GI by 3zwr1** - AMDNR's own, Copyright (c) 2026 3zwr1 (AMDNR), written from published research (listed in `CHANGELOG.md` and `Licenses/AMDNR_NOTICE.txt`).
 - **OptiScaler** — Overclockers — https://github.com/Overclockers/OptiScaler-Releases
+- **FSR LOSSY, EXACT** — zgauthier2000 — [FSR LOSSY AND EXACT](https://github.com/zgauthier2000/)
 
 ## AMDNR Launcher
 

@@ -7,7 +7,7 @@
 > **We need your support.** Join the Discord server — <https://discord.gg/AMDNR> — for
 > help, bug reports and test builds; every report with a log makes the next build better.
 
-DLSS 5 Neural Rendering running on AMD GPUs, built into OptiScaler so it works in any
+AMDNR 5 Neural Rendering running on AMD GPUs, built into OptiScaler so it works in any
 Direct3D 12 game OptiScaler already hooks. On top of the neural pass: model interleave for a
 large frame-rate gain, residual composition, XeSS frame generation unlocked up to 6X (up to 10X
 opt-in in D3D12 games), and FSR Ray Regeneration for games that use DLSS Ray Reconstruction. Since 0.3.5,

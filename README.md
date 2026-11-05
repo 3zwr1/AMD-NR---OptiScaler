@@ -1,6 +1,6 @@
 
 
-# AMDNR — DLSS 5 Neural Rendering on AMD (OptiScaler build) — v0.3.5.8R Public View
+# DLSS ON AMD AMDNR — DLSS 5 Neural Rendering on AMD (OptiScaler build) — v0.3.5.8R Public View
 
 **English** | [中文](README.zh-CN.md) | [Português](README.pt-BR.md) | [Español](README.es.md) | [العربية](README.ar.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Русский](README.ru.md) | [Polski](README.pl.md)
 

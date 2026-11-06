@@ -383,7 +383,7 @@ bool FFXFeatureDx12::EvaluateInternal(ID3D12GraphicsCommandList* InCommandList, 
 
         if ((outX != 0 || outY != 0) && !outputSubrectWarned)
         {
-            LOG_WARN("Output sub-rectangle at ({}, {}) is not supported by the FFX path, writing at (0, 0)", outX, outY);
+            LOG_WARN("Output sub-rectangle at ({}, {}) is not supported by FFX, writing at (0, 0)", outX, outY);
             outputSubrectWarned = true;
         }
 

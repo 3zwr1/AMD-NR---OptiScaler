@@ -16,11 +16,14 @@ class FFXFeatureDx12 : public FFXFeature, public IFeature_Dx12
     ID3D12Resource* subrectDepth = nullptr;
     ID3D12Resource* subrectMv = nullptr;
     ID3D12Resource* subrectMask = nullptr;
+    // Whole copy of a depth-stencil depth, for GPUs that do not allow a box on a depth-stencil copy source
+    ID3D12Resource* subrectDepthWhole = nullptr;
+    std::optional<bool> depthStencilBoxCopy;
     bool outputSubrectWarned = false;
 
     ID3D12Resource* CropToSubrect(ID3D12GraphicsCommandList* InCommandList, ID3D12Resource* InSource,
-                                  ID3D12Resource** InScratch, UINT InX, UINT InY, UINT InWidth, UINT InHeight,
-                                  const char* InName);
+                                  ID3D12Resource** InScratch, ID3D12Resource** InWhole, UINT InX, UINT InY,
+                                  UINT InWidth, UINT InHeight, const char* InName);
 
     NVSDK_NGX_Parameter* SetParameters(NVSDK_NGX_Parameter* InParameters);
 
@@ -55,5 +58,6 @@ class FFXFeatureDx12 : public FFXFeature, public IFeature_Dx12
         SAFE_RELEASE(subrectDepth);
         SAFE_RELEASE(subrectMv);
         SAFE_RELEASE(subrectMask);
+        SAFE_RELEASE(subrectDepthWhole);
     }
 };
